@@ -1,760 +1,1094 @@
-# Golang Backend Interview Guide
-## Clean Architecture & DI Focus - Compact Edition
+# Техническое интервью Go Backend разработчика
+## 100 вопросов с постепенным углублением
 
 ---
 
-## 🎯 Interview Structure
+## 🎯 Раздел 1: Основы Go (Вопросы 1-20)
 
-**50 core questions** with practical examples and progressive difficulty. Focus on Clean Architecture, Dependency Injection, and real-world scenarios.
+### 1. Что такое Go и каковы его основные особенности?
+**Ожидаемый ответ:** Компилируемый язык от Google, статическая типизация, garbage collector, встроенная поддержка concurrency, простой синтаксис.
 
-**Time allocation:** 60-90 minutes
-- **Junior (0-2 years):** Questions 1-20
-- **Middle (2-4 years):** Questions 1-35  
-- **Senior (4+ years):** All questions
+### 2. Какие примитивные типы данных есть в Go?
+**Ожидаемый ответ:** `bool`, `string`, числовые типы (`int`, `int8`-`int64`, `uint`, `uint8`-`uint64`, `float32`, `float64`, `complex64`, `complex128`), `byte` (alias для `uint8`), `rune` (alias для `int32`).
 
----
+### 3. В чем разница между `var`, `:=` и `const`?
+```go
+var name string = "John"
+name := "John"  // короткая запись
+const PI = 3.14
+```
 
-## 1. Language Fundamentals (10 questions)
+### 4. Объясните zero values в Go
+**Ожидаемый ответ:** `0` для чисел, `false` для bool, `""` для string, `nil` для указателей, слайсов, карт, каналов, функций и интерфейсов.
 
-### 1.1 Pointers and Memory Management
+### 5. Что такое указатели в Go? Как они работают?
+```go
+var x int = 10
+var p *int = &x
+fmt.Println(*p) // 10
+```
+
+### 6. Какие есть циклы в Go?
+**Ожидаемый ответ:** Только `for`, но в разных формах:
+```go
+for i := 0; i < 10; i++ {}
+for condition {}
+for {}
+for key, value := range collection {}
+```
+
+### 7. Как работает `switch` в Go?
+```go
+switch x {
+case 1:
+    fmt.Println("one")
+case 2, 3:
+    fmt.Println("two or three")
+default:
+    fmt.Println("other")
+}
+```
+
+### 8. Что такое `defer` и как он работает?
+**Пример из кода:**
 ```go
 func (pg *Postgres) Insert(ctx context.Context, query string, args ...any) (any, error) {
-    var id any
-    err := tx.QueryRow(ctx, query, args...).Scan(&id) // Why &id?
-    return id, nil
+    ctx, span := pg.tracer.Start(ctx, "Postgres.Insert")
+    defer span.End() // выполнится в конце функции
+    
+    // логика функции
 }
 ```
-**Key questions:**
-- Why use pointer receiver `(pg *Postgres)`?
-- When do pointers cause memory leaks?
-- Explain Go's escape analysis
 
-### 1.2 Interfaces and Duck Typing
+### 9. Как обрабатываются ошибки в Go?
+**Пример из кода:**
 ```go
-type IUserbotService interface {
-    CreateUserbot(ctx context.Context, accountID int) (*bytes.Buffer, error)
-    SendMessage(ctx context.Context, userbot, contact, text string) error
-}
-```
-**Key questions:**
-- How do interfaces enable DI?
-- Interface segregation: split this interface into smaller ones
-- Empty interface vs generics (Go 1.18+)
-
-### 1.3 Error Handling Patterns
-```go
-func (r *RepoAmocrmSource) CreateAmocrmSource(ctx context.Context) error {
-    _, err := r.db.Insert(ctx, query, args)
+func (r *RepoAmocrmSource) CreateAmocrmSource(ctx context.Context, ...) error {
+    _, err := r.db.Insert(ctx, CreateAmocrmSource, args)
     if err != nil {
         r.logger.Error(ctx, err.Error())
-        span.RecordError(err)
-        return err // Should we wrap this error?
+        return err
     }
     return nil
 }
 ```
-**Key questions:**
-- When to wrap errors vs return as-is?
-- `errors.Is()` vs `errors.As()` usage
-- Should you log at every layer?
 
-### 1.4 Context Usage Patterns
+### 10. Что такое пустой интерфейс `interface{}`?
+**Ожидаемый ответ:** Может содержать значение любого типа. В Go 1.18+ заменен на `any`.
+
+### 11. Как работает приведение типов в Go?
 ```go
-func (pg *Postgres) CtxWithTx(ctx context.Context) (context.Context, error) {
-    tx, err := pg.db.Begin(ctx)
-    if err != nil {
-        return nil, err
+var i interface{} = "hello"
+s := i.(string)
+s, ok := i.(string) // безопасное приведение
+```
+
+### 12. Что такое struct embedding?
+```go
+type Person struct {
+    Name string
+}
+
+type Employee struct {
+    Person  // встраивание
+    ID int
+}
+```
+
+### 13. В чем разница между методами с value и pointer receiver?
+```go
+func (p Person) GetName() string { return p.Name }     // value receiver
+func (p *Person) SetName(name string) { p.Name = name } // pointer receiver
+```
+
+### 14. Как работает инициализация в Go?
+**Ожидаемый ответ:** `init()` функции, порядок инициализации пакетов, различие между `var` блоками и `init()`.
+
+### 15. Что такое type alias и type definition?
+```go
+type MyInt = int        // alias
+type MyCustomInt int    // новый тип
+```
+
+### 16. Как работают вариативные функции?
+```go
+func sum(nums ...int) int {
+    total := 0
+    for _, num := range nums {
+        total += num
     }
-    return context.WithValue(ctx, txKey{}, tx), nil
-}
-```
-**Key questions:**
-- Why use empty struct `txKey{}` as key?
-- Context values vs function parameters - when to use what?
-- How to handle context cancellation in DB operations?
-
-### 1.5 Slices and Memory Sharing
-```go
-func appendProblem() {
-    s1 := []int{1, 2, 3}
-    s2 := append(s1, 4)
-    s1[0] = 999
-    fmt.Println(s2[0]) // What prints and why?
+    return total
 }
 ```
 
-### 1.6 Struct Tags and Reflection
+### 17. Что такое blank identifier `_`?
+**Ожидаемый ответ:** Используется для игнорирования значений, которые не нужны.
+
+### 18. Как работает область видимости в Go?
+**Ожидаемый ответ:** Блочная область видимости, экспорт через заглавную букву.
+
+### 19. Объясните понятие "shadowing" в Go
 ```go
-type AmocrmSource struct {
-    ID           int       `db:"id" json:"id"`
-    PhoneNumber  string    `db:"phone" json:"phone" validate:"required,phone"`
-    CreatedAt    time.Time `db:"created_at" json:"created_at"`
-}
-```
-**Key questions:**
-- How do struct tags work internally?
-- Performance implications of reflection
-- Custom validation tags
-
-### 1.7 Method Sets and Receivers
-```go
-type Counter struct{ value int }
-
-func (c Counter) Get() int      { return c.value }     // value receiver
-func (c *Counter) Inc()         { c.value++ }          // pointer receiver
-
-var c Counter
-var p *Counter = &c
-// Which method calls are valid? c.Inc(), p.Get(), etc.
-```
-
-### 1.8 Channels and Select
-```go
-func processWithTimeout(data chan string, timeout time.Duration) error {
-    select {
-    case result := <-data:
-        return processResult(result)
-    case <-time.After(timeout):
-        return ErrTimeout
-    }
-}
-```
-**Key questions:**
-- Buffered vs unbuffered channels
-- Channel directions (`<-chan`, `chan<-`)
-- Avoiding goroutine leaks
-
-### 1.9 Defer and Panic Recovery
-```go
-func RecoverMiddleware(next func(evt interface{})) func(evt interface{}) {
-    return func(evt interface{}) {
-        defer func() {
-            if r := recover(); r != nil {
-                log.Printf("Panic: %v\n%s", r, debug.Stack())
-            }
-        }()
-        next(evt)
-    }
-}
-```
-
-### 1.10 Type Assertions and Switches
-```go
-func handleEvent(evt interface{}) error {
-    switch event := evt.(type) {
-    case *MessageEvent:
-        return handleMessage(event)
-    case *JoinEvent:
-        return handleJoin(event)
-    default:
-        return fmt.Errorf("unknown event type: %T", evt)
-    }
-}
-```
-
----
-
-## 2. Dependency Injection & Architecture (15 questions)
-
-### 2.1 Manual DI vs Containers
-```go
-// Current approach
+var x = "global"
 func main() {
-    cfg := config.New()
-    tel := telemetry.New(cfg)
-    db := postgres.New(tel, cfg.DB)
-    
-    amocrmRepo := repository.NewAmocrm(db, tel)
-    amocrmService := service.NewAmocrm(amocrmRepo, tel)
-    
-    server.Run(amocrmService, tel, cfg.Port)
+    x := "local" // затеняет глобальную переменную
+    fmt.Println(x) // "local"
 }
 ```
-**Key questions:**
-- Pros/cons of manual DI vs DI containers (wire, fx)
-- How to handle circular dependencies?
-- Dependency lifecycle management
 
-### 2.2 Interface Design Principles
+### 20. Как работает `iota`?
 ```go
-// Too big?
-type IAmocrmService interface {
-    CreateSource(ctx context.Context, pipelineID int, phone string) error
-    DeleteSource(ctx context.Context, token, subdomain string, id int) error
-    FindByPhone(ctx context.Context, phone string) ([]*AmocrmSource, error)
-    CreateChat(ctx context.Context, sourceID int, contactID int) error
-    SendMessage(ctx context.Context, chatID int, text string) error
-    ImportMessage(ctx context.Context, messageID string) error
-}
-
-// Better approach?
-type SourceManager interface {
-    CreateSource(ctx context.Context, pipelineID int, phone string) error
-    DeleteSource(ctx context.Context, token, subdomain string, id int) error
-    FindByPhone(ctx context.Context, phone string) ([]*AmocrmSource, error)
-}
-
-type MessageHandler interface {
-    SendMessage(ctx context.Context, chatID int, text string) error
-    ImportMessage(ctx context.Context, messageID string) error
-}
+const (
+    Monday = iota  // 0
+    Tuesday        // 1
+    Wednesday      // 2
+)
 ```
-
-### 2.3 Repository Pattern Implementation
-```go
-type IAmocrmRepo interface {
-    Create(ctx context.Context, source *AmocrmSource) error
-    FindByID(ctx context.Context, id int) (*AmocrmSource, error)
-    FindByPhone(ctx context.Context, phone string) ([]*AmocrmSource, error)
-    Update(ctx context.Context, id int, updates map[string]interface{}) error
-    Delete(ctx context.Context, id int) error
-}
-
-type PostgresAmocrmRepo struct {
-    db     IDB
-    logger Logger
-}
-```
-**Key questions:**
-- Repository vs DAO pattern differences
-- Should repository contain business logic?
-- How to handle complex queries and joins?
-
-### 2.4 Clean Architecture Layers
-```
-┌─────────────────────────────────────┐
-│           Controllers               │ ← HTTP handlers, gRPC servers
-├─────────────────────────────────────┤
-│           Use Cases                 │ ← Business logic orchestration  
-├─────────────────────────────────────┤
-│           Entities                  │ ← Domain models and rules
-├─────────────────────────────────────┤
-│           Repositories              │ ← Data access abstractions
-└─────────────────────────────────────┘
-│           Infrastructure            │ ← DB, HTTP clients, etc.
-└─────────────────────────────────────┘
-```
-
-### 2.5 Dependency Inversion in Practice
-```go
-// Service depends on abstractions, not concretions
-type AmocrmService struct {
-    repo   IAmocrmRepo     // ← abstraction
-    client IAmocrmClient   // ← abstraction
-    logger Logger          // ← abstraction
-}
-
-// Concretions implement abstractions
-type PostgresRepo struct { /* implementation */ }
-type HTTPClient struct { /* implementation */ }
-```
-
-### 2.6 Domain Entities vs DTOs
-```go
-// Domain Entity
-type AmocrmSource struct {
-    id       int
-    phone    string
-    pipeline int
-    
-    // Business methods
-    func (a *AmocrmSource) CanReceiveMessages() bool
-    func (a *AmocrmSource) Validate() error
-}
-
-// DTO for API
-type CreateSourceRequest struct {
-    Phone    string `json:"phone" validate:"required"`
-    Pipeline int    `json:"pipeline_id" validate:"required"`
-}
-
-// DTO for DB
-type AmocrmSourceDB struct {
-    ID       int    `db:"id"`
-    Phone    string `db:"phone"`
-    Pipeline int    `db:"pipeline_id"`
-}
-```
-
-### 2.7 Error Handling Across Layers
-```go
-// Domain errors
-type ErrSourceNotFound struct { ID int }
-func (e ErrSourceNotFound) Error() string { return fmt.Sprintf("source %d not found", e.ID) }
-
-// Infrastructure errors  
-type ErrDatabaseConnection struct { Cause error }
-func (e ErrDatabaseConnection) Error() string { return "database connection failed" }
-
-// Service layer
-func (s *AmocrmService) GetSource(ctx context.Context, id int) (*AmocrmSource, error) {
-    source, err := s.repo.FindByID(ctx, id)
-    if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            return nil, ErrSourceNotFound{ID: id}  // Transform infra error to domain error
-        }
-        return nil, fmt.Errorf("failed to get source: %w", err)
-    }
-    return source, nil
-}
-```
-
-### 2.8 Testing with Mocks
-```go
-//go:generate mockgen -source=interfaces.go -destination=mocks/mock_repo.go
-
-func TestAmocrmService_CreateSource(t *testing.T) {
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
-    
-    mockRepo := mocks.NewMockIAmocrmRepo(ctrl)
-    mockClient := mocks.NewMockIAmocrmClient(ctrl)
-    
-    service := NewAmocrmService(mockRepo, mockClient, logger)
-    
-    // Setup expectations
-    mockClient.EXPECT().
-        CreateSource(gomock.Any(), gomock.Any()).
-        Return(123, nil)
-    
-    mockRepo.EXPECT().
-        Create(gomock.Any(), gomock.Any()).
-        Return(nil)
-    
-    // Execute and assert
-    err := service.CreateSource(ctx, 1, "123456789")
-    assert.NoError(t, err)
-}
-```
-
-### 2.9 Configuration and Environment
-```go
-type Config struct {
-    Database DatabaseConfig `yaml:"database"`
-    Amocrm   AmocrmConfig   `yaml:"amocrm"`
-    Server   ServerConfig   `yaml:"server"`
-}
-
-func NewConfig() (*Config, error) {
-    cfg := &Config{}
-    
-    // Load from file
-    if data, err := os.ReadFile("config.yaml"); err == nil {
-        yaml.Unmarshal(data, cfg)
-    }
-    
-    // Override with env vars
-    if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
-        cfg.Database.URL = dbURL
-    }
-    
-    return cfg, cfg.Validate()
-}
-```
-
-### 2.10 Middleware Pattern
-```go
-type Middleware func(http.Handler) http.Handler
-
-func ChainMiddleware(h http.Handler, middlewares ...Middleware) http.Handler {
-    for i := len(middlewares) - 1; i >= 0; i-- {
-        h = middlewares[i](h)
-    }
-    return h
-}
-
-func LoggingMiddleware(logger Logger) Middleware {
-    return func(next http.Handler) http.Handler {
-        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-            start := time.Now()
-            next.ServeHTTP(w, r)
-            logger.Info("request", "method", r.Method, "path", r.URL.Path, "duration", time.Since(start))
-        })
-    }
-}
-```
-
-### 2.11-2.15 Rapid-Fire Architecture Questions:
-- **2.11** How to implement CQRS in Go?
-- **2.12** Event-driven architecture with channels vs message queues?
-- **2.13** Microservices communication patterns (sync vs async)?
-- **2.14** Database transaction management across layers?
-- **2.15** API versioning strategies in Clean Architecture?
 
 ---
 
-## 3. Concurrency & Performance (15 questions)
+## 📊 Раздел 2: Массивы, слайсы, мапы (Вопросы 21-35)
 
-### 3.1 Goroutine Management and Leaks
+### 21. В чем разница между массивом и слайсом?
+**Ожидаемый ответ:** Массив - фиксированный размер, слайс - динамический. Массив передается по значению, слайс содержит указатель на массив.
+
+### 22. Как устроен слайс внутри?
+**Ожидаемый ответ:** Структура из трех полей: указатель на данные, длина, емкость.
 ```go
-func (s *ServiceUserbot) CreateUserbot(ctx context.Context, accountID int) (*bytes.Buffer, error) {
-    qrChan := make(chan string)
+type slice struct {
+    array unsafe.Pointer
+    len   int
+    cap   int
+}
+```
+
+### 23. Что произойдет в этом коде?
+```go
+s1 := []int{1, 2, 3}
+s2 := s1[1:2]
+s2[0] = 999
+fmt.Println(s1) // что выведет?
+```
+**Ответ:** `[1 999 3]` - слайсы разделяют один массив.
+
+### 24. Когда происходит реаллокация слайса?
+**Пример из кода:**
+```go
+// В middleware/03-metric.go
+attrs := make([]attribute.KeyValue, 0, 8) // cap = 8
+attrs = append(attrs, otellog.String(model.FileKey, fmt.Sprintf("%s:%d", file, line)))
+// Если добавим больше 8 элементов, произойдет реаллокация
+```
+
+### 25. Как правильно скопировать слайс?
+```go
+src := []int{1, 2, 3}
+dst := make([]int, len(src))
+copy(dst, src)
+// или
+dst := append([]int(nil), src...)
+```
+
+### 26. Что такое nil slice и empty slice? В чем разница?
+```go
+var nilSlice []int        // nil slice
+emptySlice := []int{}     // empty slice
+emptySlice2 := make([]int, 0) // empty slice
+```
+
+### 27. Как работает `append` со слайсами?
+**Анализ кода:**
+```go
+// Из telemetry/logger.go
+attrs := make([]otellog.KeyValue, 0, 8)
+attrs = append(attrs, otellog.String(model.FileKey, fmt.Sprintf("%s:%d", file, line)))
+if len(extraParams) > 0 {
+    attrs = append(attrs, otellog.Map(model.ExtraLogFieldsKey, extraParams...))
+}
+```
+
+### 28. Как правильно удалить элемент из слайса?
+```go
+// Удаление элемента по индексу i
+slice = append(slice[:i], slice[i+1:]...)
+// Или с сохранением порядка
+copy(slice[i:], slice[i+1:])
+slice = slice[:len(slice)-1]
+```
+
+### 29. Что такое string slicing и как он работает?
+```go
+s := "hello"
+sub := s[1:4] // "ell"
+```
+
+### 30. Как устроены мапы в Go?
+**Ожидаемый ответ:** Хеш-таблица с открытой адресацией, bucket-based структура.
+
+### 31. Что произойдет при обращении к несуществующему ключу?
+```go
+m := map[string]int{"a": 1}
+value := m["b"]        // 0 (zero value)
+value, ok := m["b"]    // 0, false
+```
+
+### 32. Как правильно проверить существование ключа в мапе?
+**Пример из кода:**
+```go
+// В amocrm/handler.go
+amocrmContactPhone, ok := body.Message.Receiver["phone"].(string)
+if !ok {
+    amocrmContactPhone = "Он нужен, только если менеджер пишет первым из интерфейса амо"
+}
+```
+
+### 33. Потокобезопасны ли мапы в Go?
+**Ожидаемый ответ:** Нет, нужна синхронизация или использование `sync.Map`.
+
+### 34. Как правильно итерироваться по мапе?
+```go
+for key, value := range m {
+    fmt.Printf("%s: %d\n", key, value)
+}
+// Порядок не гарантирован!
+```
+
+### 35. В чем проблема этого кода?
+```go
+var m map[string]int
+m["key"] = 1 // runtime panic!
+```
+**Ответ:** Нужно инициализировать мапу: `m = make(map[string]int)`.
+
+---
+
+## 🚀 Раздел 3: Concurrency - Горутины и каналы (Вопросы 36-55)
+
+### 36. Что такое горутины и чем они отличаются от потоков ОС?
+**Ожидаемый ответ:** Легковесные потоки, управляемые Go runtime, мультиплексирование на OS threads, малый stack (2KB).
+
+### 37. Как создать и запустить горутину?
+**Пример из кода:**
+```go
+// В userbot/service.go
+qrChanForExport := make(chan string)
+go func() {
+    defer span.End()
+    qrCtx := context.Background()
+    qrChan, _ := userbot.GetQRChannel(qrCtx)
+    // ... логика в горутине
+}()
+```
+
+### 38. Что такое каналы и как они работают?
+**Ожидаемый ответ:** Типизированные conduits для передачи данных между горутинами. Реализуют CSP модель.
+
+### 39. В чем разница между буферизованными и небуферизованными каналами?
+```go
+unbuffered := make(chan int)     // блокирующий
+buffered := make(chan int, 10)   // с буфером
+```
+
+### 40. Как закрыть канал и зачем это нужно?
+**Пример из кода:**
+```go
+// В userbot/service.go
+qrChan, _ := userbot.GetQRChannel(qrCtx)
+for evt := range qrChan { // range автоматически завершится при закрытии канала
+    if evt.Event == "code" {
+        qrChanForExport <- evt.Code
+    }
+}
+```
+
+### 41. Что происходит при чтении из закрытого канала?
+```go
+ch := make(chan int, 2)
+ch <- 1
+ch <- 2
+close(ch)
+
+v1 := <-ch  // 1
+v2 := <-ch  // 2
+v3 := <-ch  // 0 (zero value)
+v4, ok := <-ch // 0, false
+```
+
+### 42. Как работает `select` statement?
+```go
+select {
+case msg1 := <-ch1:
+    // обработка msg1
+case msg2 := <-ch2:
+    // обработка msg2
+case <-time.After(5 * time.Second):
+    // timeout
+default:
+    // неблокирующий случай
+}
+```
+
+### 43. Что такое channel directions?
+```go
+func sender(ch chan<- int) {    // только отправка
+    ch <- 42
+}
+
+func receiver(ch <-chan int) {  // только чтение
+    value := <-ch
+}
+```
+
+### 44. Как реализовать worker pool?
+```go
+func workerPool(jobs <-chan Job, results chan<- Result) {
+    for job := range jobs {
+        result := process(job)
+        results <- result
+    }
+}
+
+// Запуск workers
+for w := 1; w <= numWorkers; w++ {
+    go workerPool(jobs, results)
+}
+```
+
+### 45. Что такое deadlock и как его избежать?
+**Ожидаемый ответ:** Взаимная блокировка горутин. Избегать циклических зависимостей, использовать timeout, правильный порядок захвата ресурсов.
+
+### 46. Как работает паттерн fan-in/fan-out?
+```go
+// Fan-out
+func fanOut(in <-chan int, out1, out2 chan<- int) {
+    for val := range in {
+        select {
+        case out1 <- val:
+        case out2 <- val:
+        }
+    }
+}
+
+// Fan-in
+func fanIn(in1, in2 <-chan int, out chan<- int) {
+    for {
+        select {
+        case val := <-in1:
+            out <- val
+        case val := <-in2:
+            out <- val
+        }
+    }
+}
+```
+
+### 47. Что такое context и зачем он нужен?
+**Пример из кода:**
+```go
+// В pg/pg.go
+func (pg *Postgres) Insert(ctx context.Context, query string, args ...any) (any, error) {
+    ctx, span := pg.tracer.Start(ctx, "Postgres.Insert",
+        trace.WithSpanKind(trace.SpanKindClient),
+    )
+    defer span.End()
+    // context передается для отмены операций и передачи значений
+}
+```
+
+### 48. Как создать context с timeout?
+```go
+ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+defer cancel()
+```
+
+### 49. Как правильно передавать данные через context?
+**Пример из кода:**
+```go
+// В middleware/01-trace.go
+ctx = context.WithValue(ctx, model.TraceIDKey, spanCtx.TraceID().String())
+ctx = context.WithValue(ctx, model.SpanIDKey, spanCtx.SpanID().String())
+
+// Получение значения
+traceID := ctx.Value(model.TraceIDKey).(string)
+```
+
+### 50. Что такое channel axioms (правила каналов)?
+**Ожидаемый ответ:**
+- Отправка в nil канал блокируется навсегда
+- Чтение из nil канала блокируется навсегда
+- Отправка в закрытый канал вызывает panic
+- Чтение из закрытого канала возвращает zero value
+
+### 51. Как реализовать graceful shutdown?
+```go
+func main() {
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
     
-    go func() {  // Potential goroutine leak?
-        defer close(qrChan)
-        
-        client := whatsmeow.NewClient(device, nil)
-        qrCodeChan, _ := client.GetQRChannel(ctx)
-        
-        for evt := range qrCodeChan {
-            if evt.Event == "code" {
-                qrChan <- evt.Code
-                return  // Goroutine exits here
-            }
+    // запуск сервера в горутине
+    go func() {
+        if err := server.ListenAndServe(); err != nil {
+            log.Fatal(err)
         }
     }()
     
-    select {
-    case qrCode := <-qrChan:
-        return generateQRImage(qrCode), nil
-    case <-ctx.Done():
-        return nil, ctx.Err()  // But what about the goroutine?
-    }
-}
-```
-**Key questions:**
-- How to prevent goroutine leaks?
-- Proper context propagation to child goroutines
-- When to use `defer close(channel)`?
-
-### 3.2 Race Conditions and Synchronization
-```go
-type ConnectionPool struct {
-    connections map[string]*Connection  // Race condition!
-}
-
-func (p *ConnectionPool) Get(key string) *Connection {
-    return p.connections[key]  // Unsafe read
-}
-
-func (p *ConnectionPool) Set(key string, conn *Connection) {
-    p.connections[key] = conn  // Unsafe write
-}
-
-// Fix with mutex or sync.Map?
-```
-
-### 3.3 Worker Pool Pattern
-```go
-type WorkerPool struct {
-    jobs    chan Job
-    results chan Result
-    workers int
-    wg      sync.WaitGroup
-}
-
-func (wp *WorkerPool) Start(ctx context.Context) {
-    for i := 0; i < wp.workers; i++ {
-        wp.wg.Add(1)
-        go wp.worker(ctx)
-    }
-}
-
-func (wp *WorkerPool) worker(ctx context.Context) {
-    defer wp.wg.Done()
-    for {
-        select {
-        case job, ok := <-wp.jobs:
-            if !ok {
-                return
-            }
-            result := job.Process()
-            wp.results <- result
-        case <-ctx.Done():
-            return
-        }
-    }
-}
-```
-
-### 3.4 Fan-in/Fan-out Pattern
-```go
-func Pipeline(input <-chan Task) <-chan Result {
-    // Fan-out to 3 workers
-    workers := 3
-    channels := make([]<-chan Result, workers)
+    <-quit // ждем сигнал
     
-    for i := 0; i < workers; i++ {
-        ch := make(chan Result)
-        channels[i] = ch
-        
-        go func(out chan<- Result) {
-            defer close(out)
-            for task := range input {
-                out <- processTask(task)
-            }
-        }(ch)
-    }
-    
-    // Fan-in results
-    return merge(channels...)
-}
-```
-
-### 3.5 Context and Cancellation
-```go
-func (c *HTTPClient) RequestWithTimeout(ctx context.Context, url string) (*Response, error) {
-    ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
     
-    req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-    if err != nil {
-        return nil, err
-    }
-    
-    resp, err := c.client.Do(req)
-    if err != nil {
-        // How to distinguish timeout vs other errors?
-        return nil, err
-    }
-    
-    return resp, nil
+    server.Shutdown(ctx)
 }
 ```
 
-### 3.6-3.10 Concurrency Scenarios:
-- **3.6** Rate limiting with channels vs sync primitives
-- **3.7** Graceful shutdown coordination
-- **3.8** Panic recovery in goroutines
-- **3.9** Memory consistency and happens-before
-- **3.10** Channel patterns: pipeline, broadcast, multiplexing
+### 52. Что такое memory model в Go?
+**Ожидаемый ответ:** Гарантии порядка выполнения операций в памяти между горутинами. Happens-before отношения.
 
-### 3.11-3.15 Performance Questions:
-- **3.11** Goroutine vs OS thread overhead
-- **3.12** When to use sync.Pool for object reuse?
-- **3.13** Channel buffer sizing strategies
-- **3.14** Lock-free programming with atomic operations
-- **3.15** Profiling concurrent applications (go tool pprof)
+### 53. Как работает `go` statement?
+**Ожидаемый ответ:** Создает новую горутину, функция выполняется асинхронно, аргументы вычисляются в текущей горутине.
 
----
-
-## 4. Advanced Topics (10 questions)
-
-### 4.1 Database Connection Management
+### 54. Что происходит с паникой в горутине?
 ```go
-type DB struct {
-    *sql.DB
-    maxOpenConns    int
-    maxIdleConns    int
-    connMaxLifetime time.Duration
-}
+go func() {
+    panic("something went wrong") // убьет всю программу
+}()
 
-func (db *DB) CtxWithTx(ctx context.Context) (context.Context, error) {
-    tx, err := db.BeginTx(ctx, nil)
-    if err != nil {
-        return nil, err
-    }
-    return context.WithValue(ctx, txKey{}, tx), nil
-}
-
-func (db *DB) CommitTx(ctx context.Context) error {
-    tx := getTxFromCtx(ctx)
-    if tx == nil {
-        return errors.New("no transaction in context")
-    }
-    return tx.Commit()
-}
-```
-**Key questions:**
-- Connection pooling best practices
-- Transaction management across service boundaries
-- Handling distributed transactions
-
-### 4.2 HTTP Client Optimization
-```go
-type HTTPClient struct {
-    client *http.Client
-    baseURL string
-}
-
-func NewHTTPClient(timeout time.Duration) *HTTPClient {
-    return &HTTPClient{
-        client: &http.Client{
-            Timeout: timeout,
-            Transport: &http.Transport{
-                MaxIdleConns:        100,
-                MaxIdleConnsPerHost: 10,
-                IdleConnTimeout:     90 * time.Second,
-            },
-        },
-    }
-}
-```
-
-### 4.3 Metrics and Observability
-```go
-type MetricsMiddleware struct {
-    requestDuration prometheus.HistogramVec
-    requestsTotal   prometheus.CounterVec
-}
-
-func (m *MetricsMiddleware) Handler(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        start := time.Now()
-        
-        recorder := &statusRecorder{ResponseWriter: w, status: 200}
-        next.ServeHTTP(recorder, r)
-        
-        duration := time.Since(start)
-        
-        m.requestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration.Seconds())
-        m.requestsTotal.WithLabelValues(r.Method, r.URL.Path, fmt.Sprintf("%d", recorder.status)).Inc()
-    })
-}
-```
-
-### 4.4 Custom JSON Marshaling
-```go
-type FlexibleTime struct {
-    time.Time
-}
-
-func (ft *FlexibleTime) UnmarshalJSON(data []byte) error {
-    formats := []string{
-        time.RFC3339,
-        "2006-01-02 15:04:05",
-        "2006-01-02",
-    }
-    
-    str := strings.Trim(string(data), `"`)
-    
-    for _, format := range formats {
-        if t, err := time.Parse(format, str); err == nil {
-            ft.Time = t
-            return nil
+// Правильно:
+go func() {
+    defer func() {
+        if r := recover(); r != nil {
+            log.Printf("Recovered: %v", r)
         }
+    }()
+    panic("something went wrong")
+}()
+```
+
+### 55. Как реализовать timeout для операции?
+```go
+select {
+case result := <-longRunningOperation():
+    return result
+case <-time.After(5 * time.Second):
+    return errors.New("timeout")
+}
+```
+
+---
+
+## 🔒 Раздел 4: Синхронизация (Вопросы 56-70)
+
+### 56. Что такое data race и как его обнаружить?
+**Ожидаемый ответ:** Одновременный доступ к памяти из разных горутин без синхронизации. Детектируется флагом `-race`.
+
+### 57. Как работает `sync.Mutex`?
+**Пример из кода:**
+```go
+// В userbot/service.go - потенциальная проблема
+type ServiceUserbot struct {
+    userbots map[string]*whatsmeow.Client // нужна синхронизация!
+}
+
+// Правильно:
+type ServiceUserbot struct {
+    mu       sync.RWMutex
+    userbots map[string]*whatsmeow.Client
+}
+
+func (s *ServiceUserbot) addUserbot(key string, client *whatsmeow.Client) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    s.userbots[key] = client
+}
+```
+
+### 58. В чем разница между `Mutex` и `RWMutex`?
+**Ожидаемый ответ:** `RWMutex` позволяет множественное чтение, но эксклюзивную запись.
+
+### 59. Что такое `sync.WaitGroup` и как его использовать?
+```go
+var wg sync.WaitGroup
+
+for i := 0; i < 10; i++ {
+    wg.Add(1)
+    go func(id int) {
+        defer wg.Done()
+        // работа
+    }(i)
+}
+
+wg.Wait()
+```
+
+### 60. Как работает `sync.Once`?
+```go
+var once sync.Once
+var config *Config
+
+func GetConfig() *Config {
+    once.Do(func() {
+        config = loadConfig() // выполнится только один раз
+    })
+    return config
+}
+```
+
+### 61. Что такое `sync.Pool` и зачем он нужен?
+```go
+var bufferPool = sync.Pool{
+    New: func() interface{} {
+        return make([]byte, 1024)
+    },
+}
+
+func processData() {
+    buf := bufferPool.Get().([]byte)
+    defer bufferPool.Put(buf)
+    // использование buf
+}
+```
+
+### 62. Как работают атомарные операции?
+```go
+import "sync/atomic"
+
+var counter int64
+
+func increment() {
+    atomic.AddInt64(&counter, 1)
+}
+
+func getCounter() int64 {
+    return atomic.LoadInt64(&counter)
+}
+```
+
+### 63. Что такое happens-before relationship?
+**Ожидаемый ответ:** Гарантии порядка выполнения операций в памяти. Основа memory model Go.
+
+### 64. Как правильно синхронизировать доступ к мапе?
+```go
+type SafeMap struct {
+    mu sync.RWMutex
+    m  map[string]int
+}
+
+func (sm *SafeMap) Get(key string) (int, bool) {
+    sm.mu.RLock()
+    defer sm.mu.RUnlock()
+    val, ok := sm.m[key]
+    return val, ok
+}
+
+func (sm *SafeMap) Set(key string, val int) {
+    sm.mu.Lock()
+    defer sm.mu.Unlock()
+    sm.m[key] = val
+}
+```
+
+### 65. Что такое `sync.Map` и когда его использовать?
+**Ожидаемый ответ:** Потокобезопасная мапа, оптимизированная для случаев с редкими записями и частыми чтениями.
+
+### 66. Как работает `sync.Cond`?
+```go
+var mu sync.Mutex
+var cond = sync.NewCond(&mu)
+var ready bool
+
+func waiter() {
+    mu.Lock()
+    for !ready {
+        cond.Wait()
+    }
+    mu.Unlock()
+    // продолжить работу
+}
+
+func setter() {
+    mu.Lock()
+    ready = true
+    cond.Broadcast()
+    mu.Unlock()
+}
+```
+
+### 67. В чем проблема этого кода?
+```go
+var mu sync.Mutex
+var data map[string]int
+
+func getValue(key string) int {
+    mu.Lock()
+    defer mu.Unlock()
+    return data[key] // Что если data == nil?
+}
+```
+
+### 68. Как избежать deadlock при использовании нескольких мьютексов?
+**Ожидаемый ответ:** Всегда захватывать мьютексы в одинаковом порядке, использовать timeout, минимизировать время удержания.
+
+### 69. Что такое lock contention и как его уменьшить?
+**Ожидаемый ответ:** Соревнование за блокировки. Уменьшить через sharding, RWMutex, атомарные операции, lock-free структуры.
+
+### 70. Как правильно обработать панику с mutex?
+```go
+func riskyOperation() {
+    mu.Lock()
+    defer func() {
+        mu.Unlock()
+        if r := recover(); r != nil {
+            // обработка паники
+        }
+    }()
+    // опасная операция
+}
+```
+
+---
+
+## ⚙️ Раздел 5: Runtime, планировщик, GC (Вопросы 71-85)
+
+### 71. Как работает планировщик Go (G-M-P модель)?
+**Ожидаемый ответ:** 
+- G (Goroutine) - горутина
+- M (Machine) - OS thread
+- P (Processor) - логический процессор
+- Work-stealing алгоритм
+
+### 72. Что такое GOMAXPROCS и как он влияет на производительность?
+```go
+import "runtime"
+
+func init() {
+    runtime.GOMAXPROCS(runtime.NumCPU()) // по умолчанию
+}
+```
+
+### 73. Как работает garbage collector в Go?
+**Ожидаемый ответ:** Concurrent mark-and-sweep, триколорный алгоритм, write barriers, STW фазы минимизированы.
+
+### 74. Что такое GC pacer и как он работает?
+**Ожидаемый ответ:** Контролирует частоту запуска GC на основе GOGC переменной и allocation rate.
+
+### 75. Как настроить garbage collector?
+```go
+import "runtime/debug"
+
+// GOGC=100 по умолчанию (удваивает heap перед GC)
+debug.SetGCPercent(50) // более агрессивная сборка
+```
+
+### 76. Что такое stack growth в Go?
+**Ожидаемый ответ:** Динамическое увеличение стека горутины, начинается с 2KB, может расти до 1GB.
+
+### 77. Как работает escape analysis?
+```go
+func createLocal() *int {
+    x := 42
+    return &x // x "убегает" на heap
+}
+
+func createHeap() {
+    x := make([]int, 1000000) // большой слайс на heap
+    _ = x
+}
+```
+
+### 78. Что показывает `go build -gcflags="-m"`?
+**Ожидаемый ответ:** Результаты escape analysis - какие переменные размещаются на heap.
+
+### 79. Как работает preemption в Go?
+**Ожидаемый ответ:** 
+- Cooperative до Go 1.14
+- Asynchronous preemption с Go 1.14+
+- На основе signals
+
+### 80. Что такое memory layout в Go?
+**Ожидаемый ответ:** Heap, stack, global data, структура объектов в памяти, pointer alignment.
+
+### 81. Как работает write barrier в GC?
+**Ожидаемый ответ:** Отслеживает изменения указателей во время concurrent mark фазы.
+
+### 82. Что такое finalizers в Go?
+```go
+import "runtime"
+
+func createResource() {
+    resource := acquireResource()
+    runtime.SetFinalizer(resource, (*Resource).Close)
+}
+```
+
+### 83. Как работает `runtime.KeepAlive`?
+```go
+func unsafeOperation(ptr unsafe.Pointer) {
+    // работа с указателем
+    runtime.KeepAlive(originalObject) // гарантирует, что объект не будет собран
+}
+```
+
+### 84. Что показывает `runtime.ReadMemStats`?
+**Пример применения:**
+```go
+// В telemetry можно добавить мониторинг памяти
+var m runtime.MemStats
+runtime.ReadMemStats(&m)
+fmt.Printf("Alloc = %d KB", bToKb(m.Alloc))
+fmt.Printf("HeapAlloc = %d KB", bToKb(m.HeapAlloc))
+```
+
+### 85. Как оптимизировать работу с GC?
+**Ожидаемый ответ:** 
+- Минимизировать аллокации
+- Использовать object pooling
+- Избегать pointer-heavy структур
+- Batch operations
+
+---
+
+## 🏗️ Раздел 6: Продвинутые темы (Вопросы 86-100)
+
+### 86. Как работает reflection в Go?
+**Пример из кода (потенциальное использование):**
+```go
+// В middleware для динамической обработки событий
+func processEvent(evt interface{}) {
+    v := reflect.ValueOf(evt)
+    t := reflect.TypeOf(evt)
+    
+    switch t {
+    case reflect.TypeOf(&events.Message{}):
+        // обработка сообщения
+    case reflect.TypeOf(&events.JoinedGroup{}):
+        // обработка присоединения к группе
+    }
+}
+```
+
+### 87. Что такое unsafe пакет и когда его использовать?
+```go
+import "unsafe"
+
+// Конвертация string в []byte без копирования (опасно!)
+func stringToBytes(s string) []byte {
+    return unsafe.Slice(unsafe.StringData(s), len(s))
+}
+```
+
+### 88. Как работают generics в Go 1.18+?
+```go
+// Типизированная мапа с мьютексом
+type SafeMap[K comparable, V any] struct {
+    mu sync.RWMutex
+    m  map[K]V
+}
+
+func (sm *SafeMap[K, V]) Get(key K) (V, bool) {
+    sm.mu.RLock()
+    defer sm.mu.RUnlock()
+    val, ok := sm.m[key]
+    return val, ok
+}
+```
+
+### 89. Как оптимизировать производительность в Go?
+**Анализ кода:**
+```go
+// В telemetry/logger.go - возможная оптимизация
+func (l *OtelLogger) extractExtraParams(fields map[string]interface{}) []otellog.KeyValue {
+    extraAttrs := make([]otellog.KeyValue, 0, len(fields)) // pre-allocate capacity
+    // ...
+}
+```
+
+### 90. Что такое build constraints/tags?
+```go
+//go:build !windows
+// +build !windows
+
+package unix_specific
+
+// код только для не-Windows систем
+```
+
+### 91. Как работает `go:generate`?
+```go
+//go:generate stringer -type=Status
+type Status int
+
+const (
+    StatusActive Status = iota
+    StatusInactive
+)
+```
+
+### 92. Как правильно работать с JSON в Go?
+**Пример из кода:**
+```go
+// В amocrm/model.go
+type TextMessageFromAmocrmBody struct {
+    AccountID string `json:"account_id"`
+    Message   struct {
+        Receiver     map[string]any `json:"receiver"`
+        Conversation struct {
+            ID string `json:"id"`
+        } `json:"conversation"`
+    } `json:"message"`
+}
+```
+
+### 93. Как реализовать middleware pattern?
+**Пример из кода:**
+```go
+// В middleware/05-router.go
+func RouterMiddleware05(
+    messageHandler func(ctx context.Context, event *events.Message) error,
+    joinedGroupHandler func(ctx context.Context, event *events.JoinedGroup) error,
+) func(ctx context.Context, evt interface{}) error {
+    return func(ctx context.Context, evt interface{}) error {
+        switch event := evt.(type) {
+        case *events.Message:
+            return messageHandler(ctx, event)
+        case *events.JoinedGroup:
+            return joinedGroupHandler(ctx, event)
+        }
+        return nil
+    }
+}
+```
+
+### 94. Как работать с базами данных в Go?
+**Анализ кода из pg/pg.go:**
+```go
+func (pg *Postgres) Insert(ctx context.Context, query string, args ...any) (any, error) {
+    var id any
+    tx := pg.getTx(ctx)
+    if tx != nil {
+        // транзакционная вставка
+        err := tx.QueryRow(ctx, query, args...).Scan(&id)
+        return id, err
+    } else {
+        // обычная вставка
+        err := pg.db.QueryRow(ctx, query, args...).Scan(&id)
+        return id, err
+    }
+}
+```
+
+### 95. Как правильно структурировать Go проект?
+**Анализ структуры проекта:**
+```
+crmessenger-whatsapp/
+├── cmd/                    # main приложения
+├── internal/              # приватный код
+│   ├── app/              # конфигурация приложения
+│   ├── controller/       # обработчики
+│   ├── service/          # бизнес-логика
+│   ├── repo/             # работа с данными
+│   └── model/            # модели данных
+├── infrastructure/       # внешние сервисы
+├── pkg/                  # публичные библиотеки
+└── main.go
+```
+
+### 96. Как реализовать graceful shutdown?
+**Пример для проекта:**
+```go
+func main() {
+    // ... инициализация
+    
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+    
+    go func() {
+        server.Run(db, amocrmSourceService, userbotService, tel, cfg.CRMessenger.CRMessengerWhatsapp.Port)
+    }()
+    
+    <-quit
+    
+    ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+    defer cancel()
+    
+    // Shutdown telemetry
+    if err := tel.Shutdown(ctx); err != nil {
+        log.Printf("Telemetry shutdown error: %v", err)
+    }
+}
+```
+
+### 97. Как работать с OpenTelemetry в Go?
+**Анализ кода из telemetry/telemetry.go:**
+```go
+func (t *Telemetry) setupTracing(ctx context.Context, res *resource.Resource) error {
+    exporter, err := otlptracegrpc.New(ctx, otlptracegrpc.WithGRPCConn(conn))
+    if err != nil {
+        return fmt.Errorf("failed to create trace exporter: %w", err)
+    }
+
+    var sampler sdktrace.Sampler
+    if t.environment == "prod" {
+        sampler = sdktrace.TraceIDRatioBased(6) // 6% sampling
+    } else {
+        sampler = sdktrace.AlwaysSample()
     }
     
-    return fmt.Errorf("unable to parse time: %s", str)
+    t.tracerProvider = sdktrace.NewTracerProvider(
+        sdktrace.WithBatcher(exporter),
+        sdktrace.WithResource(res),
+        sdktrace.WithSampler(sampler),
+    )
 }
 ```
 
-### 4.5 Generics in Business Logic
+### 98. Как тестировать Go код?
 ```go
-// Go 1.18+
-type Repository[T any, ID comparable] interface {
-    Create(ctx context.Context, entity T) (ID, error)
-    GetByID(ctx context.Context, id ID) (T, error)
-    Update(ctx context.Context, id ID, entity T) error
-    Delete(ctx context.Context, id ID) error
-    List(ctx context.Context, filter Filter) ([]T, error)
-}
-
-type PostgresRepository[T any, ID comparable] struct {
-    db        *sql.DB
-    tableName string
-}
-
-func (r *PostgresRepository[T, ID]) Create(ctx context.Context, entity T) (ID, error) {
-    // Generic implementation
-}
-```
-
-### 4.6-4.10 Expert Level:
-- **4.6** Memory profiling and optimization
-- **4.7** Custom binary protocols vs JSON/gRPC
-- **4.8** Plugin architecture with Go modules
-- **4.9** Code generation tools (protobuf, sqlc, etc.)
-- **4.10** Go module versioning and backwards compatibility
-
----
-
-## 🚀 Practical Exercises
-
-### Exercise 1: Refactor to Clean Architecture (20 min)
-Given a monolithic handler, separate it into proper layers:
-
-```go
-// Bad: Everything in handler
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-    var req CreateUserRequest
-    json.NewDecoder(r.Body).Decode(&req)
+func TestUserbotService_CreateUserbot(t *testing.T) {
+    // Arrange
+    mockRepo := &MockUserbotRepo{}
+    service := NewUserbotService(mockRepo, tel)
     
-    // Validation
-    if req.Email == "" {
-        http.Error(w, "email required", 400)
-        return
+    // Act
+    result, err := service.CreateUserbot(context.Background(), 123)
+    
+    // Assert
+    assert.NoError(t, err)
+    assert.NotNil(t, result)
+    mockRepo.AssertExpectations(t)
+}
+```
+
+### 99. Как профилировать Go приложения?
+```go
+import _ "net/http/pprof"
+
+func main() {
+    go func() {
+        log.Println(http.ListenAndServe("localhost:6060", nil))
+    }()
+    
+    // основное приложение
+}
+
+// go tool pprof http://localhost:6060/debug/pprof/profile
+```
+
+### 100. Каковы best practices для Go разработки?
+**На основе анализа кода:**
+
+1. **Error Handling**: Всегда проверяйте ошибки
+```go
+if err != nil {
+    span.RecordError(err)
+    span.SetStatus(codes.Error, err.Error())
+    return err
+}
+```
+
+2. **Context Propagation**: Передавайте context везде
+```go
+func (s *ServiceUserbot) CreateUserbot(ctx context.Context, accountID int) (*bytes.Buffer, error)
+```
+
+3. **Dependency Injection**: Используйте интерфейсы
+```go
+type IUserbotService interface {
+    CreateUserbot(ctx context.Context, accountID int) (*bytes.Buffer, error)
+    SendMessage(ctx context.Context, userbotWaPhoneNumber, contactWaPhoneNumber, text string) error
+}
+```
+
+4. **Observability**: Трейсинг, метрики, логирование
+```go
+ctx, span := s.tracer.Start(ctx, "ServiceUserbot.CreateUserbot")
+defer span.End()
+```
+
+5. **Configuration**: Используйте environment variables
+```go
+type Config struct {
+    DB struct {
+        Username string
+        Password string
+        Host     string
     }
-    
-    // Business logic
-    hashedPassword := bcrypt.GenerateFromPassword(req.Password, 10)
-    
-    // Database
-    db := getDBConnection()
-    _, err := db.Exec("INSERT INTO users (email, password) VALUES (?, ?)", req.Email, hashedPassword)
-    
-    // Response
-    json.NewEncoder(w).Encode(map[string]string{"status": "created"})
 }
 ```
 
-### Exercise 2: Fix Concurrency Issues (15 min)
+---
+
+## 🎯 Критерии оценки ответов
+
+### Junior (1-40 вопросов)
+- Знание основ синтаксиса
+- Понимание типов данных
+- Базовая работа с горутинами и каналами
+
+### Middle (41-70 вопросов)
+- Глубокое понимание concurrency
+- Знание sync примитивов
+- Опыт проектирования архитектуры
+
+### Senior (71-100 вопросов)
+- Понимание внутреннего устройства Go
+- Оптимизация производительности
+- Best practices и паттерны
+
+---
+
+## 💡 Дополнительные практические задачи
+
+### Задача 1: Race Condition
 ```go
-type Cache struct {
-    data map[string]interface{}
+// Найдите и исправьте race condition
+type Counter struct {
+    value int
 }
 
-func (c *Cache) Get(key string) interface{} {
-    return c.data[key]
+func (c *Counter) Increment() {
+    c.value++
 }
 
-func (c *Cache) Set(key string, value interface{}) {
-    c.data[key] = value
-}
-
-func (c *Cache) Delete(key string) {
-    delete(c.data, key)
+func (c *Counter) Value() int {
+    return c.value
 }
 ```
 
-### Exercise 3: Design API with Proper Error Handling (10 min)
-Design a REST API endpoint that:
-- Validates input
-- Handles business logic errors
-- Manages database errors  
-- Returns proper HTTP status codes
-- Logs appropriately
+### Задача 2: Deadlock
+```go
+// Почему этот код может привести к deadlock?
+func main() {
+    ch1 := make(chan int)
+    ch2 := make(chan int)
+    
+    go func() {
+        ch1 <- 1
+        <-ch2
+    }()
+    
+    go func() {
+        ch2 <- 2
+        <-ch1
+    }()
+    
+    time.Sleep(time.Second)
+}
+```
 
----
+### Задача 3: Memory Leak
+```go
+// Найдите потенциальную утечку памяти
+func processEvents() {
+    events := make(chan Event, 1000)
+    
+    go func() {
+        for event := range events {
+            process(event)
+        }
+    }()
+    
+    // events канал никогда не закрывается
+}
+```
 
-## 📊 Evaluation Rubric
-
-### Junior Developer (0-2 years)
-- ✅ Understands basic Go syntax and concepts
-- ✅ Can explain pointers, slices, maps
-- ✅ Basic error handling patterns
-- ✅ Simple goroutine usage
-- ✅ Interface basics
-
-### Middle Developer (2-4 years)  
-- ✅ All junior requirements
-- ✅ Clean Architecture principles
-- ✅ Dependency injection patterns
-- ✅ Concurrency patterns and race conditions
-- ✅ Testing strategies with mocks
-- ✅ Performance considerations
-
-### Senior Developer (4+ years)
-- ✅ All middle requirements
-- ✅ System design and scalability
-- ✅ Advanced concurrency patterns
-- ✅ Performance optimization
-- ✅ Observability and monitoring
-- ✅ Code review and mentoring capabilities
-
----
-
-## 🎯 Red Flags to Watch For
-
-1. **Can't explain pointer receivers vs value receivers**
-2. **Doesn't understand interface{} vs generics trade-offs**
-3. **Creates goroutines without considering lifecycle**
-4. **Logs errors at every layer without context**
-5. **Uses big interfaces violating ISP**
-6. **Can't identify race conditions in simple code**
-7. **Doesn't understand dependency direction in Clean Architecture**
-8. **Copies slices incorrectly causing memory issues**
-
----
-
-*This guide focuses on practical, real-world scenarios rather than theoretical knowledge. Adjust question difficulty based on candidate level and role requirements.*
+Этот набор вопросов охватывает все ключевые аспекты Go разработки с реальными примерами из вашего кода и поможет оценить уровень кандидата от Junior до Senior.
