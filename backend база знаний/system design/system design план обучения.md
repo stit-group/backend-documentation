@@ -1,202 +1,159 @@
-# План обучения System Design
-*От основ до продвинутой архитектуры распределенных систем*
+# Детальный план изучения System Design для Backend разработчика
 
----
+## **Фаза 1: Основы (4-6 недель)**
 
-## 📚 Уровень 1: Фундаментальные концепции (2-3 недели)
+### **Неделя 1-2: Базовые концепции**
+- Что такое system design и зачем он нужен
+- Отличие от algorithm design
+- Масштабируемость vs производительность
+- Горизонтальное и вертикальное масштабирование
+- Метрики: latency, throughput, availability, consistency
 
-### Неделя 1: Базовые принципы
-- **Что такое System Design** - цели, задачи, scope
-- **Вертикальное vs горизонтальное масштабирование** - когда применять
-- **Load Balancing** - алгоритмы Round Robin, Weighted, Least Connections
-- **Базовые метрики** - latency, throughput, availability
-- **Single Point of Failure** - выявление и устранение
+### **Неделя 3-4: Архитектурные паттерны**
+- Монолитная архитектура: плюсы и минусы
+- Микросервисная архитектура: когда использовать
+- Service-oriented architecture (SOA)
+- Event-driven architecture
+- Serverless архитектура
 
-### Неделя 2: Хранение данных
-- **SQL vs NoSQL** - критерии выбора
-- **ACID свойства** - практическое значение
-- **Database indexes** - типы, когда использовать
-- **Нормализация vs денормализация** - trade-offs
-- **Connection pooling** - зачем нужен, как настраивать
+### **Неделя 5-6: Сетевые основы**
+- TCP vs UDP: когда что использовать
+- HTTP/HTTPS, REST API принципы
+- gRPC и когда его применять
+- WebSockets для real-time коммуникации
+- Load balancing алгоритмы (round-robin, weighted, least connections)
 
-### Неделя 3: Сетевое взаимодействие
-- **HTTP/HTTPS протоколы** - methods, status codes, headers
-- **REST API принципы** - idempotency, stateless
-- **Синхронное vs асинхронное взаимодействие** - когда что выбирать
-- **Polling vs WebSockets** - real-time коммуникация
-- **DNS и CDN** - как работают, зачем нужны
+## **Фаза 2: Хранение данных (6-8 недель)**
 
----
+### **Неделя 7-9: Типы баз данных**
+- Реляционные БД: ACID свойства, нормализация
+- NoSQL: Document, Key-Value, Column-family, Graph
+- Когда использовать SQL vs NoSQL
+- CAP теорема и ее практическое применение
+- Eventual consistency vs strong consistency
 
-## 🏗️ Уровень 2: Архитектурные паттерны (3-4 недели)
+### **Неделя 10-12: Масштабирование БД**
+- Database sharding стратегии
+- Read replicas и master-slave репликация
+- Database partitioning (horizontal/vertical)
+- Connection pooling
+- Database indexing стратегии для масштабирования
 
-### Неделя 4: Кэширование
-- **Уровни кэширования** - browser, CDN, application, database
-- **Cache patterns** - Cache-aside, Write-through, Write-behind
-- **Cache invalidation** - TTL, manual, event-based
-- **Distributed caching** - Redis, Memcached сравнение
-- **Cache stampede** - проблема и решения
+### **Неделя 13-14: Специализированные хранилища**
+- In-memory databases (Redis, Memcached)
+- Time-series databases
+- Search engines (Elasticsearch)
+- Data warehouses vs data lakes
+- Object storage (S3-like системы)
 
-### Неделя 5: Микросервисы
-- **Монолит vs микросервисы** - когда мигрировать
-- **Domain-driven design** - bounded contexts
-- **Service communication** - REST, gRPC, message queues
-- **API Gateway** - функции, паттерны
-- **Service discovery** - статический vs динамический
+## **Фаза 3: Распределенные системы (8-10 недель)**
 
-### Неделя 6: Обработка данных
-- **Message queues** - FIFO, priorities, delivery guarantees
-- **Event-driven architecture** - publisher/subscriber паттерн
-- **Stream processing** - real-time vs batch
-- **Data pipelines** - ETL процессы
-- **Idempotency** - обеспечение в распределенных системах
+### **Неделя 15-17: Основы распределенных систем**
+- Distributed system challenges
+- Consensus алгоритмы (Raft, Paxos концептуально)
+- Leader election
+- Distributed locking
+- Clock synchronization и logical clocks
 
-### Неделя 7: Безопасность
-- **Authentication vs Authorization** - разница и реализация
-- **OAuth 2.0 и JWT** - flows, best practices
-- **Rate limiting** - алгоритмы, distributed rate limiting
-- **Input validation** - sanitization, injection attacks
-- **HTTPS и TLS** - handshake, certificates
+### **Неделя 18-20: Надежность и отказоустойчивость**
+- Fault tolerance паттерны
+- Circuit breaker pattern
+- Bulkhead pattern  
+- Timeout и retry стратегии
+- Graceful degradation
+- Health checks и monitoring
 
----
+### **Неделя 21-23: Консистентность данных**
+- ACID vs BASE
+- Two-phase commit
+- Saga pattern для distributed transactions
+- Event sourcing
+- CQRS (Command Query Responsibility Segregation)
 
-## ⚡ Уровень 3: Масштабируемость и надежность (4-5 недель)
+### **Неделя 24-25: Асинхронная обработка**
+- Message queues vs message brokers
+- Pub/Sub паттерны
+- Event streaming platforms
+- Dead letter queues
+- Message ordering гарантии
 
-### Неделя 8: Database scaling
-- **Read replicas** - master-slave, читабельные реплики
-- **Database partitioning** - horizontal vs vertical
-- **Sharding strategies** - key-based, directory-based, range-based
-- **Distributed transactions** - 2PC, Saga pattern
-- **Database consistency models** - strong, eventual, weak
+## **Фаза 4: Производительность и масштабирование (6-8 недель)**
 
-### Неделя 9: CAP theorem и консистентность
-- **CAP theorem** - практические implications
-- **ACID vs BASE** - когда выбирать каждый подход
-- **Consistency patterns** - strong, eventual, weak consistency
-- **Conflict resolution** - last-write-wins, vector clocks
-- **Distributed consensus** - Raft, Byzantine fault tolerance
+### **Неделя 26-28: Кэширование**
+- Кэширование на разных уровнях
+- Cache invalidation стратегии
+- Cache-aside, write-through, write-behind паттерны
+- Distributed caching
+- CDN для статического контента
 
-### Неделя 10: Отказоустойчивость
-- **Circuit Breaker pattern** - states, timeout strategies
-- **Retry mechanisms** - exponential backoff, jitter
-- **Bulkhead isolation** - resource separation
-- **Graceful degradation** - priority-based feature disabling
-- **Health checks** - shallow vs deep checks
+### **Неделя 29-31: Оптимизация производительности**
+- Database query optimization
+- Connection management
+- Resource pooling
+- Batching стратегии
+- Compression techniques
+- Rate limiting и throttling
 
-### Неделя 11: Мониторинг и observability
-- **Logging strategies** - structured logging, log levels
-- **Metrics collection** - push vs pull models
-- **Distributed tracing** - correlation IDs, span creation
-- **Alerting** - threshold-based, anomaly detection
-- **SLA/SLO/SLI** - определение и измерение
+### **Неделя 32-33: Мониторинг и наблюдаемость**
+- Metrics, logs, traces
+- SLI/SLO/SLA концепции
+- Distributed tracing
+- Application performance monitoring
+- Capacity planning
 
-### Неделя 12: Deployment и DevOps
-- **Blue-green deployment** - zero-downtime strategies
-- **Canary releases** - gradual rollout
-- **Feature flags** - dynamic configuration
-- **Container orchestration** - Docker, Kubernetes basics
-- **Infrastructure as Code** - reproducible environments
+## **Фаза 5: Продвинутые темы (6-8 недель)**
 
----
+### **Неделя 34-36: Безопасность**
+- Authentication vs authorization
+- OAuth 2.0 / JWT
+- API security best practices
+- Data encryption (at rest/in transit)
+- Network security в distributed systems
 
-## 🎯 Уровень 4: Продвинутые темы (4-6 недель)
+### **Неделя 37-39: Развертывание и операции**
+- Blue-green deployments
+- Canary releases
+- Feature flags
+- Container orchestration концепции
+- Service mesh архитектура
 
-### Неделя 13-14: Специализированные системы
-- **Search systems** - indexing, ranking algorithms
-- **Recommendation engines** - collaborative filtering, content-based
-- **Real-time systems** - low-latency requirements
-- **Geospatial systems** - location-based services
-- **Time-series databases** - metrics, monitoring data
+### **Неделя 40-41: Специализированные системы**
+- Real-time systems design
+- Batch processing systems
+- Stream processing архитектуры
+- Machine learning systems integration
 
-### Неделя 15-16: Производительность
-- **Performance profiling** - CPU, memory, I/O bottlenecks
-- **Database query optimization** - execution plans, index tuning
-- **Network optimization** - connection pooling, keep-alive
-- **Memory management** - garbage collection, memory leaks
-- **Compression** - data compression strategies
+## **Фаза 6: Практическое применение (4-6 недель)**
 
-### Неделя 17-18: Архитектурные решения
-- **Event sourcing** - immutable event log
-- **CQRS** - command query responsibility segregation
-- **Serverless architecture** - functions as a service
-- **Edge computing** - bringing computation closer to users
-- **Multi-tenant architecture** - shared vs isolated resources
+### **Неделя 42-44: Системные интервью**
+- Подход к решению system design задач
+- Estimation techniques
+- Trade-offs анализ
+- Компоненты диаграмм и их взаимодействие
 
----
+### **Неделя 45-47: Изучение реальных систем**
+- Анализ архитектур крупных компаний
+- Case studies: Netflix, Uber, WhatsApp масштабирование
+- Lessons learned из production incidents
+- Industry best practices
 
-## 🛠️ Практические задания по неделям
+## **Рекомендации по изучению**
 
-### Базовый уровень
-- **Неделя 2:** Спроектировать простой URL shortener
-- **Неделя 3:** Добавить кэширование и rate limiting
+### **Еженедельная структура**
+- **Понедельник-среда**: Изучение теории
+- **Четверг-пятница**: Практические схемы и диаграммы
+- **Выходные**: Повторение и углубление
 
-### Средний уровень  
-- **Неделя 6:** Спроектировать chat application
-- **Неделя 7:** Добавить authentication и message persistence
-- **Неделя 9:** Спроектировать distributed cache система
+### **Ресурсы для изучения**
+- Технические блоги крупных компаний
+- System design книги и курсы
+- Архитектурные диаграммы реальных систем
+- Документация облачных провайдеров
 
-### Продвинутый уровень
-- **Неделя 12:** Спроектировать social media feed
-- **Неделя 14:** Спроектировать ride-sharing service
-- **Неделя 16:** Спроектировать e-commerce platform
-- **Неделя 18:** Спроектировать video streaming service
+### **Контроль прогресса**
+- Еженедельные самопроверки
+- Создание архитектурных схем
+- Решение system design задач
+- Анализ trade-offs в различных подходах
 
----
-
-## 📖 Ресурсы для изучения
-
-### Обязательные книги
-- "Designing Data-Intensive Applications" - Martin Kleppmann
-- "System Design Interview" - Alex Xu
-- "Building Microservices" - Sam Newman
-
-### Онлайн ресурсы
-- High Scalability blog
-- AWS Architecture Center
-- Google Cloud Architecture Framework
-- Microsoft Azure Well-Architected Framework
-
-### Практика
-- LeetCode System Design
-- System Design Primer (GitHub)
-- Case studies крупных компаний
-
----
-
-## ✅ Чек-лист готовности
-
-### После уровня 1
-- [ ] Объясняю разницу между SQL и NoSQL
-- [ ] Понимаю основы HTTP и REST API
-- [ ] Знаю что такое load balancing
-- [ ] Могу спроектировать simple web application
-
-### После уровня 2
-- [ ] Понимаю микросервисную архитектуру
-- [ ] Знаю паттерны кэширования
-- [ ] Разбираюсь в message queues
-- [ ] Могу спроектировать API gateway
-
-### После уровня 3
-- [ ] Понимаю CAP theorem на практике
-- [ ] Знаю стратегии database sharding
-- [ ] Разбираюсь в failure handling patterns
-- [ ] Могу спроектировать highly available system
-
-### После уровня 4
-- [ ] Знаю specialized system patterns
-- [ ] Понимаю performance optimization
-- [ ] Разбираюсь в advanced architectural patterns
-- [ ] Готов к senior-level system design интервью
-
----
-
-## 🎯 Финальная цель
-
-После прохождения плана вы сможете:
-- Спроектировать масштабируемую систему для миллионов пользователей
-- Обосновать архитектурные решения с учетом trade-offs
-- Решать проблемы производительности и надежности
-- Уверенно проходить system design интервью
-
-**Общее время обучения:** 18-20 недель при 10-15 часах в неделю
+**Общая длительность**: 10-12 месяцев при изучении 10-15 часов в неделю
