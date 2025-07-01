@@ -1,1906 +1,3 @@
-exec "$SHELL"
-```
-
-**Настройка системы контроля доступа (PAM):**
-
-```bash
-# /etc/pam.d/common-auth - настройка аутентификации
-
-# Блокировка аккаунта после неудачных попыток
-auth    required    pam_tally2.so deny=3 unlock_time=1800 onerr=fail
-
-# Проверка сложности пароля
-password required pam_pwquality.so retry=3 minlen=12 difok=3 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1
-
-# /etc/security/pwquality.conf - детальная настройка паролей
-minlen = 12                                                # минимальная длина
-minclass = 3                                               # минимум классов символов
-maxrepeat = 2                                              # максимум повторяющихся символов
-maxclasrepeat = 3                                          # максимум символов одного класса подряд
-dictcheck = 1                                              # проверка по словарю
-
-# Проверка заблокированных аккаунтов
-sudo pam_tally2 --user=alice                               # статус пользователя
-sudo pam_tally2 --user=alice --reset                       # разблокировка
-```
-
-### Fail2ban - защита от брутфорс атак
-
-Fail2ban анализирует логи и автоматически блокирует IP адреса с подозрительной активностью.
-
-**Установка и базовая настройка:**
-
-```bash
-# Установка
-sudo apt install fail2ban                                  # Ubuntu/Debian
-sudo yum install epel-release && sudo yum install fail2ban # CentOS/RHEL
-
-# Основные файлы конфигурации
-/etc/fail2ban/fail2ban.conf                                # основная конфигурация
-/etc/fail2ban/jail.conf                                    # настройки jail (не редактировать!)
-/etc/fail2ban/jail.local                                   # локальные настройки
-/etc/fail2ban/filter.d/                                    # фильтры логов
-/etc/fail2ban/action.d/                                    # действия при блокировке
-```
-
-**Конфигурация jail.local:**
-
-```ini
-# /etc/fail2ban/jail.local
-[DEFAULT]
-# Время блокировки (в секундах)
-bantime = 3600
-
-# Время анализа логов (в секундах)
-findtime = 600
-
-# Максимальное количество попыток
-maxretry = 3
-
-# Игнорируемые IP адреса
-ignoreip = 127.0.0.1/8 ::1 192.168.1.0/24 10.0.0.0/8
-
-# Email уведомления
-destemail = admin@company.com
-sender = fail2ban@company.com
-mta = sendmail
-
-# Действие по умолчанию
-action = %(action_mwl)s
-
-[sshd]
-enabled = true
-port = ssh,2222
-filter = sshd
-logpath = /var/log/auth.log
-maxretry = 3
-bantime = 3600
-
-[nginx-http-auth]
-enabled = true
-filter = nginx-http-auth
-port = http,https
-logpath = /var/log/nginx/error.log
-maxretry = 3
-
-[nginx-noscript]
-enabled = true
-port = http,https
-filter = nginx-noscript
-logpath = /var/log/nginx/access.log
-maxretry = 6
-
-[nginx-badbots]
-enabled = true
-port = http,https
-filter = nginx-badbots
-logpath = /var/log/nginx/access.log
-maxretry = 2
-
-[nginx-noproxy]
-enabled = true
-port = http,https
-filter = nginx-noproxy
-logpath = /var/log/nginx/access.log
-maxretry = 2
-
-[postfix]
-enabled = true
-port = smtp,465,submission
-filter = postfix
-logpath = /var/log/mail.log
-
-[postfix-sasl]
-enabled = true
-port = smtp,465,submission
-filter = postfix-sasl
-logpath = /var/log/mail.log
-
-[mysql]
-enabled = true
-port = 3306
-filter = mysqld-auth
-logpath = /var/log/mysql/error.log
-maxretry = 3
-
-[postgresql]
-enabled = true
-port = 5432
-filter = postgresql
-logpath = /var/log/postgresql/postgresql-*.log
-maxretry = 3
-```
-
-**Создание пользовательских фильтров:**
-
-```ini
-# /etc/fail2ban/filter.d/nginx-login.conf
-[Definition]
-failregex = ^<HOST> -.*"POST /login.*" 401
-            ^<HOST> -.*"POST /admin.*" 403
-
-ignoreregex =
-
-# /etc/fail2ban/filter.d/django-auth.conf
-[Definition]
-failregex = ^<HOST> -.*"POST /accounts/login.*" 400
-            Django.*Invalid login.*from <HOST>
-
-ignoreregex =
-
-# /etc/fail2ban/filter.d/wordpress.conf
-[Definition]
-failregex = ^<HOST> -.*"POST /wp-login.php.*" 200
-            ^<HOST> -.*"POST /wp-admin.*" 200
-
-ignoreregex =
-```
-
-**Пользовательские действия:**
-
-```bash
-# /etc/fail2ban/action.d/telegram-notify.conf
-[Definition]
-actionstart = 
-actionstop = 
-actioncheck = 
-actionban = curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/sendMessage" -d "chat_id=<CHAT_ID>&text=Fail2ban: banned <ip> for <failures> failures"
-actionunban = curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/sendMessage" -d "chat_id=<CHAT_ID>&text=Fail2ban: unbanned <ip>"
-
-[Init]
-BOT_TOKEN = your_telegram_bot_token
-CHAT_ID = your_chat_id
-```
-
-**Управление Fail2ban:**
-
-```bash
-# Статус сервиса
-sudo systemctl status fail2ban
-
-# Статус всех jail
-sudo fail2ban-client status
-
-# Статус конкретного jail
-sudo fail2ban-client status sshd
-
-# Просмотр заблокированных IP
-sudo fail2ban-client get sshd banip
-
-# Разблокировка IP
-sudo fail2ban-client set sshd unbanip 203.0.113.100
-
-# Блокировка IP вручную
-sudo fail2ban-client set sshd banip 203.0.113.100
-
-# Перезагрузка конфигурации
-sudo fail2ban-client reload
-
-# Перезапуск конкретного jail
-sudo fail2ban-client restart sshd
-
-# Логи Fail2ban
-sudo tail -f /var/log/fail2ban.log
-```
-
-### Аудит безопасности
-
-**Lynis - комплексный аудит безопасности:**
-
-```bash
-# Установка Lynis
-sudo apt install lynis                                     # Ubuntu/Debian
-sudo yum install lynis                                     # CentOS/RHEL
-
-# Или скачивание последней версии
-cd /tmp
-wget https://downloads.cisofy.com/lynis/lynis-3.0.6.tar.gz
-tar xzf lynis-3.0.6.tar.gz
-cd lynis
-
-# Запуск аудита
-sudo ./lynis audit system
-
-# Просмотр отчета
-sudo cat /var/log/lynis.log
-
-# Проверка только определенных категорий
-sudo ./lynis audit system --tests SSH,FILE,NETW
-
-# Тихий режим для скриптов
-sudo ./lynis audit system --quiet
-```
-
-**Chkrootkit и rkhunter - поиск руткитов:**
-
-```bash
-# Установка chkrootkit
-sudo apt install chkrootkit
-
-# Запуск проверки
-sudo chkrootkit
-
-# Установка rkhunter
-sudo apt install rkhunter
-
-# Обновление базы данных
-sudo rkhunter --update
-
-# Инициализация baseline
-sudo rkhunter --propupd
-
-# Запуск проверки
-sudo rkhunter --check
-
-# Автоматические проверки через cron
-echo "0 3 * * * root /usr/bin/rkhunter --check --quiet --report-warnings-only" | sudo tee -a /etc/crontab
-```
-
-**AIDE - мониторинг целостности файлов:**
-
-```bash
-# Установка AIDE
-sudo apt install aide
-
-# Инициализация базы данных
-sudo aideinit
-
-# Копирование базы данных
-sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-
-# Проверка целостности
-sudo aide --check
-
-# Обновление базы данных после изменений
-sudo aide --update
-sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
-
-# Настройка /etc/aide/aide.conf
-# Мониторинг важных директорий
-/bin        BINLIB
-/sbin       BINLIB  
-/usr/bin    BINLIB
-/usr/sbin   BINLIB
-/etc        CONFFILE
-/var/log    LOG
-
-# Исключения
-!/var/log/.*
-!/tmp/.*
-!/proc/.*
-!/sys/.*
-
-# Автоматическая проверка через cron
-echo "0 4 * * * root /usr/bin/aide --check" | sudo tee -a /etc/crontab
-```
-
-### Backup стратегии и восстановление
-
-**Комплексная backup стратегия:**
-
-```bash
-#!/bin/bash
-# /usr/local/bin/backup-system.sh
-# Полная система резервного копирования
-
-set -euo pipefail
-
-# Конфигурация
-BACKUP_ROOT="/backup"
-RETENTION_DAYS=30
-RETENTION_WEEKS=12
-RETENTION_MONTHS=12
-LOG_FILE="/var/log/backup.log"
-NOTIFICATION_EMAIL="admin@company.com"
-
-# Функция логирования
-log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
-}
-
-# Создание структуры backup
-create_backup_structure() {
-    local backup_date=$(date +%Y-%m-%d)
-    local backup_time=$(date +%H%M%S)
-    
-    DAILY_DIR="$BACKUP_ROOT/daily/$backup_date"
-    WEEKLY_DIR="$BACKUP_ROOT/weekly/$(date +%Y-W%V)"
-    MONTHLY_DIR="$BACKUP_ROOT/monthly/$(date +%Y-%m)"
-    
-    mkdir -p "$DAILY_DIR" "$WEEKLY_DIR" "$MONTHLY_DIR"
-    
-    # Текущий backup
-    CURRENT_BACKUP="$DAILY_DIR/$backup_time"
-    mkdir -p "$CURRENT_BACKUP"
-}
-
-# Backup конфигурационных файлов
-backup_configs() {
-    log "Backing up configuration files"
-    
-    tar -czf "$CURRENT_BACKUP/configs.tar.gz" \
-        /etc \
-        /var/spool/cron \
-        /usr/local/etc \
-        2>/dev/null || true
-        
-    log "Configuration backup completed"
-}
-
-# Backup домашних директорий
-backup_home_dirs() {
-    log "Backing up home directories"
-    
-    tar -czf "$CURRENT_BACKUP/home.tar.gz" \
-        --exclude="*/tmp/*" \
-        --exclude="*/.cache/*" \
-        --exclude="*/Downloads/*" \
-        /home \
-        2>/dev/null || true
-        
-    log "Home directories backup completed"
-}
-
-# Backup баз данных
-backup_databases() {
-    log "Backing up databases"
-    
-    # PostgreSQL
-    if systemctl is-active --quiet postgresql; then
-        sudo -u postgres pg_dumpall > "$CURRENT_BACKUP/postgresql.sql"
-        gzip "$CURRENT_BACKUP/postgresql.sql"
-    fi
-    
-    # MySQL
-    if systemctl is-active --quiet mysql; then
-        mysqldump --all-databases --single-transaction --routines --triggers > "$CURRENT_BACKUP/mysql.sql"
-        gzip "$CURRENT_BACKUP/mysql.sql"
-    fi
-    
-    # Redis
-    if systemctl is-active --quiet redis; then
-        cp /var/lib/redis/dump.rdb "$CURRENT_BACKUP/redis.rdb"
-    fi
-    
-    log "Database backup completed"
-}
-
-# Backup Docker данных
-backup_docker() {
-    if command -v docker &> /dev/null; then
-        log "Backing up Docker data"
-        
-        # Остановка контейнеров для консистентности
-        docker-compose down 2>/dev/null || true
-        
-        # Backup volumes
-        docker run --rm -v docker_data_volume:/data -v "$CURRENT_BACKUP":/backup alpine tar czf /backup/docker-volumes.tar.gz -C /data .
-        
-        # Backup образов
-        docker save $(docker images --format "table {{.Repository}}:{{.Tag}}" | tail -n +2) > "$CURRENT_BACKUP/docker-images.tar"
-        gzip "$CURRENT_BACKUP/docker-images.tar"
-        
-        # Запуск контейнеров обратно
-        docker-compose up -d 2>/dev/null || true
-        
-        log "Docker backup completed"
-    fi
-}
-
-# Backup веб-контента
-backup_web_content() {
-    log "Backing up web content"
-    
-    if [ -d "/var/www" ]; then
-        tar -czf "$CURRENT_BACKUP/www.tar.gz" /var/www
-    fi
-    
-    if [ -d "/opt" ]; then
-        tar -czf "$CURRENT_BACKUP/opt.tar.gz" \
-            --exclude="*/node_modules/*" \
-            --exclude="*/venv/*" \
-            --exclude="*/__pycache__/*" \
-            /opt
-    fi
-    
-    log "Web content backup completed"
-}
-
-# Создание инкрементального backup с rsync
-incremental_backup() {
-    local today=$(date +%Y-%m-%d)
-    local yesterday=$(date -d "yesterday" +%Y-%m-%d)
-    local link_dest=""
-    
-    if [ -d "$BACKUP_ROOT/daily/$yesterday" ]; then
-        link_dest="--link-dest=$BACKUP_ROOT/daily/$yesterday"
-    fi
-    
-    log "Creating incremental backup"
-    
-    rsync -avH --delete \
-        $link_dest \
-        --exclude="/dev/*" \
-        --exclude="/proc/*" \
-        --exclude="/sys/*" \
-        --exclude="/tmp/*" \
-        --exclude="/run/*" \
-        --exclude="/mnt/*" \
-        --exclude="/media/*" \
-        --exclude="/lost+found" \
-        --exclude="/var/cache/*" \
-        --exclude="/var/tmp/*" \
-        / "$CURRENT_BACKUP/system/"
-        
-    log "Incremental backup completed"
-}
-
-# Проверка целостности backup
-verify_backup() {
-    log "Verifying backup integrity"
-    
-    # Создание checksums
-    find "$CURRENT_BACKUP" -type f -exec sha256sum {} \; > "$CURRENT_BACKUP/checksums.sha256"
-    
-    # Проверка размера backup
-    local backup_size=$(du -sh "$CURRENT_BACKUP" | cut -f1)
-    log "Backup size: $backup_size"
-    
-    # Тест восстановления (выборочно)
-    if [ -f "$CURRENT_BACKUP/configs.tar.gz" ]; then
-        tar -tzf "$CURRENT_BACKUP/configs.tar.gz" > /dev/null
-        log "Configuration backup verification: OK"
-    fi
-}
-
-# Ротация backup'ов
-rotate_backups() {
-    log "Rotating old backups"
-    
-    # Удаление старых daily backup'ов
-    find "$BACKUP_ROOT/daily" -type d -mtime +$RETENTION_DAYS -exec rm -rf {} \; 2>/dev/null || true
-    
-    # Удаление старых weekly backup'ов
-    find "$BACKUP_ROOT/weekly" -type d -mtime +$((RETENTION_WEEKS * 7)) -exec rm -rf {} \; 2>/dev/null || true
-    
-    # Удаление старых monthly backup'ов
-    find "$BACKUP_ROOT/monthly" -type d -mtime +$((RETENTION_MONTHS * 30)) -exec rm -rf {} \; 2>/dev/null || true
-    
-    log "Backup rotation completed"
-}
-
-# Копирование в weekly/monthly если нужно
-create_weekly_monthly() {
-    local day_of_week=$(date +%u)
-    local day_of_month=$(date +%d)
-    
-    # Weekly backup (воскресенье)
-    if [ "$day_of_week" = "7" ]; then
-        log "Creating weekly backup link"
-        ln -sf "$CURRENT_BACKUP" "$WEEKLY_DIR/$(basename $CURRENT_BACKUP)"
-    fi
-    
-    # Monthly backup (первое число месяца)
-    if [ "$day_of_month" = "01" ]; then
-        log "Creating monthly backup link"
-        ln -sf "$CURRENT_BACKUP" "$MONTHLY_DIR/$(basename $CURRENT_BACKUP)"
-    fi
-}
-
-# Отправка уведомления
-send_notification() {
-    local status=$1
-    local message=$2
-    
-    if command -v mail &> /dev/null; then
-        echo "$message" | mail -s "Backup $status - $(hostname)" "$NOTIFICATION_EMAIL"
-    fi
-    
-    # Slack webhook (если настроен)
-    if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"[$(hostname)] Backup $status: $message\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
-}
-
-# Основная функция
-main() {
-    log "Starting backup process"
-    
-    # Проверка свободного места
-    local available_space=$(df "$BACKUP_ROOT" | awk 'NR==2 {print $4}')
-    if [ "$available_space" -lt 1048576 ]; then  # Менее 1GB
-        log "ERROR: Insufficient disk space"
-        send_notification "FAILED" "Insufficient disk space for backup"
-        exit 1
-    fi
-    
-    create_backup_structure
-    
-    # Выполнение backup'а
-    backup_configs
-    backup_home_dirs
-    backup_databases
-    backup_docker
-    backup_web_content
-    incremental_backup
-    
-    # Проверка и ротация
-    verify_backup
-    create_weekly_monthly
-    rotate_backups
-    
-    # Статистика
-    local total_size=$(du -sh "$BACKUP_ROOT" | cut -f1)
-    local backup_duration=$SECONDS
-    
-    log "Backup completed successfully in ${backup_duration}s, total backup size: $total_size"
-    send_notification "SUCCESS" "Backup completed in ${backup_duration}s, size: $total_size"
-}
-
-# Обработка ошибок
-trap 'log "ERROR: Backup failed"; send_notification "FAILED" "Backup process encountered an error"; exit 1' ERR
-
-# Запуск
-main "$@"
-```
-
-**Автоматизация backup через cron:**
-
-```bash
-# /etc/cron.d/backup-system
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-MAILTO=admin@company.com
-
-# Ежедневный backup в 2:00
-0 2 * * * root /usr/local/bin/backup-system.sh
-
-# Проверка backup'ов каждый час
-0 * * * * root /usr/local/bin/check-backup-health.sh
-
-# Тестовое восстановление раз в неделю
-0 4 * * 0 root /usr/local/bin/test-restore.sh
-```
-
-**Скрипт тестового восстановления:**
-
-```bash
-#!/bin/bash
-# /usr/local/bin/test-restore.sh
-
-BACKUP_ROOT="/backup"
-TEST_RESTORE_DIR="/tmp/restore-test"
-LOG_FILE="/var/log/restore-test.log"
-
-log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
-}
-
-# Поиск последнего backup'а
-latest_backup=$(find "$BACKUP_ROOT/daily" -type d -name "*" | sort | tail -1)
-
-if [ -z "$latest_backup" ]; then
-    log "ERROR: No backup found"
-    exit 1
-fi
-
-log "Testing restore from: $latest_backup"
-
-# Создание временной директории
-rm -rf "$TEST_RESTORE_DIR"
-mkdir -p "$TEST_RESTORE_DIR"
-
-# Тест восстановления конфигураций
-if [ -f "$latest_backup/configs.tar.gz" ]; then
-    log "Testing configuration restore"
-    tar -xzf "$latest_backup/configs.tar.gz" -C "$TEST_RESTORE_DIR"
-    
-    # Проверка ключевых файлов
-    if [ -f "$TEST_RESTORE_DIR/etc/passwd" ] && [ -f "$TEST_RESTORE_DIR/etc/ssh/sshd_config" ]; then
-        log "Configuration restore: SUCCESS"
-    else
-        log "Configuration restore: FAILED"
-        exit 1
-    fi
-fi
-
-# Тест восстановления базы данных
-if [ -f "$latest_backup/postgresql.sql.gz" ]; then
-    log "Testing database restore"
-    
-    # Создание тестовой базы
-    sudo -u postgres createdb test_restore_db
-    
-    # Восстановление
-    gunzip -c "$latest_backup/postgresql.sql.gz" | sudo -u postgres psql test_restore_db
-    
-    # Проверка
-    table_count=$(sudo -u postgres psql -t -c "SELECT count(*) FROM information_schema.tables;" test_restore_db)
-    
-    if [ "$table_count" -gt 0 ]; then
-        log "Database restore: SUCCESS ($table_count tables)"
-    else
-        log "Database restore: FAILED"
-    fi
-    
-    # Очистка
-    sudo -u postgres dropdb test_restore_db
-fi
-
-# Очистка
-rm -rf "$TEST_RESTORE_DIR"
-
-log "Restore test completed successfully"
-```
-
----
-
-## Этап 10: Performance tuning
-
-### Оптимизация системных параметров
-
-Linux предоставляет множество параметров для тюнинга производительности под конкретные рабочие нагрузки.
-
-**Настройка параметров ядра (sysctl):**
-
-```bash
-# Просмотр текущих параметров
-sysctl -a | grep -E "(net|vm|kernel)" | head -20
-
-# Временное изменение параметра
-sudo sysctl net.core.somaxconn=65535
-
-# Постоянные настройки в /etc/sysctl.conf или /etc/sysctl.d/99-custom.conf
-```
-
-```ini
-# /etc/sysctl.d/99-performance.conf
-# Высокопроизводительные сетевые настройки для web-серверов
-
-# === Сетевые параметры ===
-
-# Размер очереди входящих соединений
-net.core.somaxconn = 65535
-
-# Размер буфера для сетевых устройств
-net.core.netdev_max_backlog = 30000
-
-# Размеры сокетных буферов
-net.core.rmem_default = 262144
-net.core.rmem_max = 16777216
-net.core.wmem_default = 262144
-net.core.wmem_max = 16777216
-
-# TCP буферы
-net.ipv4.tcp_rmem = 4096 87380 16777216
-net.ipv4.tcp_wmem = 4096 65536 16777216
-
-# TCP congestion control (BBR для высокой пропускной способности)
-net.core.default_qdisc = fq
-net.ipv4.tcp_congestion_control = bbr
-
-# TCP настройки для высокой нагрузки
-net.ipv4.tcp_fin_timeout = 30
-net.ipv4.tcp_keepalive_time = 600
-net.ipv4.tcp_keepalive_intvl = 30
-net.ipv4.tcp_keepalive_probes = 3
-net.ipv4.tcp_max_syn_backlog = 8192
-net.ipv4.tcp_max_tw_buckets = 2000000
-net.ipv4.tcp_tw_reuse = 1
-net.ipv4.tcp_no_metrics_save = 1
-
-# Увеличение диапазона локальных портов
-net.ipv4.ip_local_port_range = 1024 65535
-
-# === Параметры виртуальной памяти ===
-
-# Агрессивность swap (0-100, меньше = реже swap)
-vm.swappiness = 1
-
-# Процент грязных страниц для начала записи на диск
-vm.dirty_background_ratio = 5
-vm.dirty_ratio = 10
-
-# Время хранения грязных страниц (сотые доли секунды)
-vm.dirty_expire_centisecs = 3000
-vm.dirty_writeback_centisecs = 500
-
-# === Файловая система ===
-
-# Максимальное количество открытых файлов
-fs.file-max = 2097152
-
-# Максимальное количество inotify watches
-fs.inotify.max_user_watches = 524288
-fs.inotify.max_user_instances = 256
-
-# === Безопасность ===
-
-# Защита от SYN flood атак
-net.ipv4.tcp_syncookies = 1
-
-# Игнорирование ICMP redirects
-net.ipv4.conf.all.accept_redirects = 0
-net.ipv6.conf.all.accept_redirects = 0
-
-# Защита от IP spoofing
-net.ipv4.conf.all.rp_filter = 1
-
-# Игнорирование ping запросов (опционально)
-# net.ipv4.icmp_echo_ignore_all = 1
-
-# === Ядро ===
-
-# Размер разделяемой памяти
-kernel.shmmax = 68719476736
-kernel.shmall = 4294967296
-
-# Максимальное количество процессов
-kernel.pid_max = 4194304
-
-# Применение настроек
-# sudo sysctl -p /etc/sysctl.d/99-performance.conf
-```
-
-**Оптимизация лимитов системы:**
-
-```bash
-# /etc/security/limits.conf - лимиты для пользователей
-# <domain> <type> <item> <value>
-
-# Лимиты для всех пользователей
-* soft nofile 65535
-* hard nofile 65535
-* soft nproc 32768
-* hard nproc 32768
-
-# Лимиты для конкретных пользователей/групп
-www-data soft nofile 100000
-www-data hard nofile 100000
-
-postgres soft nofile 8192
-postgres hard nofile 8192
-
-# Память для core dumps
-* soft core unlimited
-
-# Размер стека
-* soft stack 8192
-* hard stack 32768
-
-# /etc/security/limits.d/90-nproc.conf (CentOS/RHEL)
-# Лимит процессов для обычных пользователей
-* soft nproc 4096
-root soft nproc unlimited
-
-# Проверка текущих лимитов
-ulimit -a                                                  # все лимиты
-ulimit -n                                                  # файловые дескрипторы
-ulimit -u                                                  # процессы
-
-# Временное изменение лимитов
-ulimit -n 100000                                           # увеличить лимит файлов
-```
-
-**Настройка systemd лимитов для сервисов:**
-
-```ini
-# /etc/systemd/system/nginx.service.d/limits.conf
-[Service]
-LimitNOFILE=100000
-LimitNPROC=32768
-LimitCORE=infinity
-
-# /etc/systemd/system/postgresql.service.d/limits.conf
-[Service]
-LimitNOFILE=8192
-LimitNPROC=4096
-
-# Глобальные настройки systemd
-# /etc/systemd/system.conf
-DefaultLimitNOFILE=65535
-DefaultLimitNPROC=32768
-
-# Применение изменений
-sudo systemctl daemon-reload
-sudo systemctl restart nginx
-```
-
-### Анализ производительности
-
-**CPU профилирование с perf:**
-
-```bash
-# Установка perf
-sudo apt install linux-tools-common linux-tools-generic    # Ubuntu/Debian
-sudo yum install perf                                       # CentOS/RHEL
-
-# Системное профилирование
-sudo perf top                                               # топ функций в реальном времени
-sudo perf top -p $(pgrep nginx)                            # профилирование конкретного процесса
-
-# Запись профиля
-sudo perf record -g ./my_application                       # запись с call graph
-sudo perf record -F 99 -a -g -- sleep 30                  # запись всей системы 30 секунд
-
-# Анализ записанного профиля
-sudo perf report                                            # интерактивный анализ
-sudo perf report --stdio                                   # текстовый отчет
-
-# CPU события
-sudo perf stat ./my_application                            # статистика выполнения
-sudo perf stat -e cache-misses,cache-references ./app     # конкретные события
-
-# Flamegraphs для визуализации
-git clone https://github.com/brendangregg/FlameGraph.git
-sudo perf record -F 99 -a -g -- sleep 30
-sudo perf script | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > flame.svg
-```
-
-**Анализ памяти:**
-
-```bash
-# Использование памяти процессом
-pmap -x $(pgrep nginx)                                     # карта памяти процесса
-cat /proc/$(pgrep nginx)/smaps                             # детальная информация
-
-# Анализ утечек памяти с valgrind
-sudo apt install valgrind
-valgrind --tool=memcheck --leak-check=full ./my_app
-
-# Профилирование памяти с massif
-valgrind --tool=massif ./my_app
-ms_print massif.out.* | head -50
-
-# Анализ через /proc/meminfo
-watch -n 1 'cat /proc/meminfo | head -20'
-
-# Статистика по слабам (slab allocator)
-sudo cat /proc/slabinfo | head -20
-sudo slabtop                                               # топ потребителей slab памяти
-
-# OOM killer информация
-dmesg | grep -i "killed process"
-cat /var/log/kern.log | grep -i "out of memory"
-```
-
-**I/O анализ:**
-
-```bash
-# iostat для анализа дисковой активности
-iostat -x 1                                               # каждую секунду
-iostat -x -d 1 10                                         # 10 раз каждую секунду
-
-# Важные метрики iostat:
-# %util - процент времени занятости диска
-# await - среднее время ожидания запроса
-# r/s, w/s - операции чтения/записи в секунду
-# rkB/s, wkB/s - KB/s чтения/записи
-
-# iotop для мониторинга I/O по процессам
-sudo iotop -o                                             # только активные процессы
-sudo iotop -a                                             # накопленный I/O
-
-# Анализ конкретного процесса
-sudo iotop -p $(pgrep postgres)
-
-# Мониторинг файловых операций
-sudo lsof +L1                                             # файлы с удаленными ссылками
-sudo lsof | grep "(deleted)"                              # удаленные но открытые файлы
-
-# Тестирование производительности диска
-# Последовательное чтение
-sudo dd if=/dev/sda of=/dev/null bs=1M count=1000
-
-# Последовательная запись
-sudo dd if=/dev/zero of=/tmp/testfile bs=1M count=1000 oflag=direct
-
-# Случайный I/O с fio
-sudo apt install fio
-fio --name=random-rw --ioengine=libaio --iodepth=64 --rw=randrw --bs=4k --direct=1 --size=1G --numjobs=4 --runtime=60 --group_reporting
-```
-
-### Оптимизация веб-стека
-
-**Тюнинг Nginx:**
-
-```nginx
-# /etc/nginx/nginx.conf - оптимизация для высоких нагрузок
-
-# Количество worker процессов (обычно = количество CPU ядер)
-worker_processes auto;
-
-# Максимальные соединения на worker
-events {
-    worker_connections 8192;
-    use epoll;                                             # эффективный event model для Linux
-    multi_accept on;                                       # принимать несколько соединений сразу
-    accept_mutex off;                                      # отключить мьютекс для SMP систем
-}
-
-http {
-    # === Основные оптимизации ===
-    
-    # Эффективная передача файлов
-    sendfile on;
-    tcp_nopush on;                                         # объединение пакетов
-    tcp_nodelay on;                                        # отключение алгоритма Nagle
-    
-    # Keep-alive соединения
-    keepalive_timeout 65;
-    keepalive_requests 1000;                               # запросов на соединение
-    
-    # Размеры буферов
-    client_body_buffer_size 16k;
-    client_header_buffer_size 1k;
-    client_max_body_size 50m;
-    large_client_header_buffers 4 16k;
-    
-    # Таймауты
-    client_body_timeout 12;
-    client_header_timeout 12;
-    send_timeout 10;
-    
-    # === Кеширование ===
-    
-    # Кеш открытых файлов
-    open_file_cache max=10000 inactive=20s;
-    open_file_cache_valid 30s;
-    open_file_cache_min_uses 2;
-    open_file_cache_errors on;
-    
-    # === Сжатие ===
-    
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_comp_level 6;
-    gzip_types
-        text/plain
-        text/css
-        text/javascript
-        text/xml
-        application/json
-        application/javascript
-        application/xml+rss
-        application/atom+xml
-        image/svg+xml;
-    
-    # === SSL оптимизации ===
-    
-    # SSL session cache
-    ssl_session_cache shared:SSL:50m;
-    ssl_session_timeout 1d;
-    ssl_session_tickets off;
-    
-    # OCSP stapling
-    ssl_stapling on;
-    ssl_stapling_verify on;
-    
-    # === Логирование ===
-    
-    # Буферизация логов
-    access_log /var/log/nginx/access.log main buffer=64k flush=5s;
-    error_log /var/log/nginx/error.log warn;
-    
-    # Или отключение access логов для статики
-    location ~* \.(jpg|jpeg|png|gif|css|js|ico|svg)$ {
-        access_log off;
-        expires 1M;
-        add_header Cache-Control "public, immutable";
-    }
-    
-    # === Upstream оптимизации ===
-    
-    upstream backend {
-        least_conn;                                        # балансировка по нагрузке
-        server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
-        server 127.0.0.1:3001 max_fails=3 fail_timeout=30s;
-        keepalive 32;                                      # keep-alive к backend
-    }
-    
-    # === Proxy оптимизации ===
-    
-    proxy_buffering on;
-    proxy_buffer_size 8k;
-    proxy_buffers 8 8k;
-    proxy_busy_buffers_size 16k;
-    
-    # Таймауты к backend
-    proxy_connect_timeout 5s;
-    proxy_send_timeout 10s;
-    proxy_read_timeout 30s;
-    
-    # HTTP/1.1 к backend для keep-alive
-    proxy_http_version 1.1;
-    proxy_set_header Connection "";
-}
-```
-
-**Тюнинг PostgreSQL:**
-
-```ini
-# /etc/postgresql/13/main/postgresql.conf - оптимизация производительности
-
-# === Память ===
-
-# Разделяемая память (25% от RAM)
-shared_buffers = 2GB
-
-# Кеш планировщика (75% от RAM)
-effective_cache_size = 6GB
-
-# Рабочая память для запросов
-work_mem = 64MB
-
-# Память для обслуживания (vacuum, index creation)
-maintenance_work_mem = 512MB
-
-# === WAL (Write-Ahead Logging) ===
-
-# Размер WAL сегментов
-wal_level = replica
-max_wal_size = 4GB
-min_wal_size = 1GB
-
-# Буферы WAL
-wal_buffers = 16MB
-
-# Checkpoint настройки
-checkpoint_completion_target = 0.9
-checkpoint_timeout = 15min
-
-# === Планировщик запросов ===
-
-# Стоимость случайного доступа к диску
-random_page_cost = 1.1                                    # для SSD
-# random_page_cost = 4.0                                  # для HDD
-
-# Стоимость последовательного доступа
-seq_page_cost = 1.0
-
-# Эффективная скорость I/O
-effective_io_concurrency = 200                            # для SSD
-# effective_io_concurrency = 2                            # для HDD
-
-# === Соединения ===
-
-max_connections = 200
-superuser_reserved_connections = 3
-
-# === Логирование медленных запросов ===
-
-log_min_duration_statement = 1000                         # логировать запросы > 1 сек
-log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
-log_lock_waits = on
-log_temp_files = 0
-
-# === Автовакуум ===
-
-autovacuum = on
-autovacuum_max_workers = 4
-autovacuum_naptime = 30s
-autovacuum_vacuum_threshold = 50
-autovacuum_analyze_threshold = 50
-autovacuum_vacuum_scale_factor = 0.1
-autovacuum_analyze_scale_factor = 0.05
-
-# === Расширения для мониторинга ===
-
-shared_preload_libraries = 'pg_stat_statements'
-pg_stat_statements.max = 10000
-pg_stat_statements.track = all
-```
-
-**Мониторинг производительности PostgreSQL:**
-
-```sql
--- Создание расширения для статистики
-CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-
--- Медленные запросы
-SELECT 
-    query,
-    calls,
-    total_time,
-    mean_time,
-    stddev_time,
-    rows
-FROM pg_stat_statements 
-ORDER BY total_time DESC 
-LIMIT 10;
-
--- Статистика по базам данных
-SELECT 
-    datname,
-    numbackends,
-    xact_commit,
-    xact_rollback,
-    blks_read,
-    blks_hit,
-    temp_files,
-    temp_bytes
-FROM pg_stat_database 
-WHERE datname NOT IN ('template0', 'template1', 'postgres');
-
--- Статистика по таблицам
-SELECT 
-    schemaname,
-    tablename,
-    seq_scan,
-    seq_tup_read,
-    idx_scan,
-    idx_tup_fetch,
-    n_tup_ins,
-    n_tup_upd,
-    n_tup_del
-FROM pg_stat_user_tables 
-ORDER BY seq_scan DESC;
-
--- Неиспользуемые индексы
-SELECT 
-    indexrelname,
-    relname,
-    idx_scan,
-    pg_size_pretty(pg_relation_size(indexrelname::regclass)) as size
-FROM pg_stat_user_indexes 
-WHERE idx_scan = 0 
-ORDER BY pg_relation_size(indexrelname::regclass) DESC;
-
--- Блокировки
-SELECT 
-    pid,
-    usename,
-    query,
-    state,
-    wait_event_type,
-    wait_event
-FROM pg_stat_activity 
-WHERE state != 'idle' AND pid != pg_backend_pid();
-
--- Cache hit ratio
-SELECT 
-    'cache hit ratio' as metric,
-    round(
-        sum(blks_hit) * 100.0 / nullif(sum(blks_hit) + sum(blks_read), 0), 2
-    ) as ratio
-FROM pg_stat_database;
-```
-
-### Оптимизация файловой системы
-
-**Выбор и настройка файловой системы:**
-
-```bash
-# Сравнение производительности файловых систем для разных нагрузок:
-
-# ext4 - хороший универсальный выбор
-# - Отличная совместимость
-# - Хорошая производительность для большинства случаев
-# - Поддержка больших файлов и директорий
-
-# XFS - для больших файлов и высокой пропускной способности
-# - Отлично для больших файлов (видео, backup)
-# - Хорошая производительность параллельного I/O
-# - Лучше ext4 для больших файловых систем
-
-# Btrfs - современная FS с продвинутыми возможностями
-# - Снепшоты и клонирование
-# - Сжатие на лету
-# - Проверка целостности данных
-
-# Оптимизация монтирования ext4
-# /etc/fstab
-/dev/sda1 / ext4 defaults,noatime,data=writeback,barrier=0,nobh 0 1
-/dev/sdb1 /var/log ext4 defaults,noatime,data=journal 0 2
-
-# Опции монтирования:
-# noatime - не обновлять время доступа (большой прирост производительности)
-# data=writeback - быстрее, но менее безопасно
-# data=journal - медленнее, но безопаснее
-# barrier=0 - отключить барьеры записи (только для систем с UPS)
-# nobh - отключить buffer heads
-
-# Оптимизация для SSD
-# /etc/fstab для SSD
-/dev/ssd1 / ext4 defaults,noatime,discard,data=ordered 0 1
-
-# discard - включить TRIM для SSD
-# Или использовать fstrim периодически:
-sudo fstrim -av                                           # TRIM всех монтированных FS
-
-# Настройка через cron
-echo "0 1 * * 0 root /sbin/fstrim -av" | sudo tee -a /etc/crontab
-```
-
-**Оптимизация I/O планировщика:**
-
-```bash
-# Просмотр текущего планировщика
-cat /sys/block/sda/queue/scheduler
-# [mq-deadline] kyber bfq none
-
-# Изменение планировщика для SSD
-echo none | sudo tee /sys/block/sda/queue/scheduler       # для NVMe SSD
-echo mq-deadline | sudo tee /sys/block/sda/queue/scheduler # для SATA SSD
-
-# Изменение планировщика для HDD
-echo bfq | sudo tee /sys/block/sda/queue/scheduler         # лучше для интерактивности
-
-# Постоянная настройка через udev
-# /etc/udev/rules.d/60-schedulers.rules
-
-# SSD - отключаем планировщик
-ACTION=="add|change", KERNEL=="sd[a-z]|mmcblk[0-9]*|nvme[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="none"
-
-# HDD - используем BFQ или mq-deadline
-ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
-
-# Применение правил
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-```
-
-**Настройка readahead:**
-
-```bash
-# Просмотр текущего значения readahead
-sudo blockdev --getra /dev/sda
-
-# Установка readahead для SSD (меньше значение)
-sudo blockdev --setra 256 /dev/sda                        # 128KB для SSD
-
-# Установка readahead для HDD (больше значение)
-sudo blockdev --setra 4096 /dev/sda                       # 2MB для HDD
-
-# Постоянная настройка через udev
-# /etc/udev/rules.d/60-readahead.rules
-ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{bdi/read_ahead_kb}="128"
-ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{bdi/read_ahead_kb}="2048"
-```
-
-### Мониторинг производительности в реальном времени
-
-**Комплексный мониторинг с Netdata:**
-
-```bash
-# Установка Netdata (мониторинг в реальном времени)
-bash <(curl -Ss https://my-netdata.io/kickstart.sh)
-
-# Или установка из пакетов
-sudo apt install netdata                                  # Ubuntu/Debian
-
-# Конфигурация /etc/netdata/netdata.conf
-[global]
-    hostname = web-server-01
-    history = 3600                                         # история данных в секундах
-    update every = 1                                       # интервал обновления
-
-[web]
-    bind to = 127.0.0.1:19999                             # только локальный доступ
-    
-# Доступ через nginx proxy
-# /etc/nginx/sites-available/netdata
-server {
-    listen 80;
-    server_name monitoring.example.com;
-    
-    location / {
-        proxy_pass http://127.0.0.1:19999;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-
-# Netdata дает метрики по:
-# - CPU, память, диски, сеть
-# - Процессы и сервисы
-# - Nginx, Apache, MySQL, PostgreSQL
-# - Docker контейнеры
-# - Системные вызовы и прерывания
-```
-
-**Настройка алертов в Netdata:**
-
-```bash
-# /etc/netdata/health.d/cpu_usage.conf
-alarm: cpu_usage_high
-    on: system.cpu
-lookup: average -3m unaligned of user,system,softirq,irq,guest
-  units: %
-  every: 10s
-   warn: $this > 80
-   crit: $this > 95
-  delay: down 15m multiplier 1.5 max 1h
-   info: average CPU utilization over the last 3 minutes
-     to: sysadmin
-
-# /etc/netdata/health.d/memory_usage.conf
-alarm: ram_usage_high
-    on: system.ram
-lookup: average -1m unaligned of used
-calc: $this * 100 / ($this + $free + $buffers + $cached)
-units: %
-every: 10s
-warn: $this > 90
-crit: $this > 95
-delay: down 15m multiplier 1.5 max 1h
-info: system RAM usage
-to: sysadmin
-
-# Настройка уведомлений через Slack
-# /etc/netdata/health_alarm_notify.conf
-SEND_SLACK="YES"
-SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
-DEFAULT_RECIPIENT_SLACK="monitoring"
-```
-
----
-
-## Практические сценарии и решение проблем
-
-### Сценарий 1: Диагностика высокой нагрузки
-
-**Проблема:** Сервер работает медленно, высокий load average.
-
-```bash
-# Шаг 1: Общий обзор системы
-top                                                        # общая картина
-htop                                                       # более удобный интерфейс
-uptime                                                     # load average
-
-# Шаг 2: Анализ загрузки CPU
-iostat -x 1 5                                            # I/O wait
-vmstat 1 5                                                # статистика виртуальной памяти
-sar -u 1 5                                                # детальная статистика CPU
-
-# Если высокий %iowait - проблема с дисками
-# Если высокий %sys - много системных вызовов
-# Если высокий %user - приложения потребляют CPU
-
-# Шаг 3: Поиск процессов-потребителей
-ps aux --sort=-%cpu | head -10                           # топ по CPU
-ps aux --sort=-%mem | head -10                           # топ по памяти
-
-# Детальный анализ процесса
-strace -p PID                                             # системные вызовы
-lsof -p PID                                               # открытые файлы
-pmap -x PID                                               # использование памяти
-
-# Шаг 4: Анализ сетевой активности
-netstat -i                                                # статистика интерфейсов
-ss -tuln | wc -l                                         # количество соединений
-ss -s                                                     # сводная статистика
-
-# Шаг 5: Проверка дискового пространства
-df -h                                                     # свободное место
-du -sh /var/log/* | sort -hr                            # размер логов
-lsof +L1                                                  # удаленные но открытые файлы
-
-# Шаг 6: Анализ логов
-tail -f /var/log/syslog                                  # системные сообщения
-journalctl -f                                            # systemd логи
-tail -f /var/log/nginx/error.log                        # ошибки веб-сервера
-
-# Комплексный скрипт диагностики
-#!/bin/bash
-echo "=== System Load ==="
-uptime
-echo -e "\n=== CPU Usage ==="
-top -bn1 | grep "Cpu(s)"
-echo -e "\n=== Memory Usage ==="
-free -h
-echo -e "\n=== Disk Usage ==="
-df -h | grep -vE '^tmpfs|^devtmpfs'
-echo -e "\n=== Top Processes by CPU ==="
-ps aux --sort=-%cpu | head -5
-echo -e "\n=== Top Processes by Memory ==="
-ps aux --sort=-%mem | head -5
-echo -e "\n=== Network Connections ==="
-ss -s
-echo -e "\n=== Disk I/O ==="
-iostat -x 1 1 | tail -n +4
-```
-
-### Сценарий 2: Проблемы с сетью
-
-**Проблема:** Сайт недоступен или работает медленно.
-
-```bash
-# Шаг 1: Базовая диагностика подключения
-ping -c 4 google.com                                     # доступность интернета
-ping -c 4 localhost                                      # локальная сеть
-curl -I http://localhost                                 # HTTP ответ сервера
-
-# Шаг 2: Проверка сетевых интерфейсов
-ip addr show                                             # IP адреса интерфейсов
-ip route show                                            # таблица маршрутизации
-netstat -i                                               # статистика интерфейсов
-
-# Шаг 3: Проверка слушающих портов
-ss -tlnp | grep :80                                     # кто слушает порт 80
-ss -tlnp | grep :443                                    # кто слушает порт 443
-nmap localhost                                           # сканирование портов
-
-# Шаг 4: Анализ сетевого трафика
-sudo tcpdump -i eth0 port 80                           # HTTP трафик
-sudo tcpdump -i eth0 host 8.8.8.8                      # трафик к DNS серверу
-sudo iftop                                               # мониторинг трафика
-
-# Шаг 5: DNS диагностика
-dig google.com                                          # DNS запрос
-nslookup google.com                                     # альтернативный DNS запрос
-cat /etc/resolv.conf                                    # настройки DNS
-
-# Шаг 6: Проверка firewall
-sudo ufw status                                          # статус UFW
-sudo iptables -L -n                                     # правила iptables
-sudo iptables -L -n -v                                  # с счетчиками пакетов
-
-# Шаг 7: Диагностика конкретного сервиса
-systemctl status nginx                                  # статус веб-сервера
-nginx -t                                                 # проверка конфигурации nginx
-curl -v http://localhost                                # подробный HTTP запрос
-
-# Тест производительности сети
-iperf3 -s                                               # на сервере
-iperf3 -c server_ip                                     # на клиенте
-```
-
-### Сценарий 3: Проблемы с дисковым пространством
-
-**Проблема:** Заканчивается место на диске.
-
-```bash
-# Шаг 1: Обзор использования дисков
-df -h                                                    # общее использование
-df -i                                                    # использование inodes
-
-# Шаг 2: Поиск больших файлов и директорий
-du -sh /* | sort -hr | head -10                        # топ директорий по размеру
-find / -type f -size +1G 2>/dev/null | head -10       # файлы больше 1GB
-find /var/log -type f -size +100M                      # большие лог файлы
-
-# Шаг 3: Анализ конкретных директорий
-du -sh /var/log/* | sort -hr                           # размер логов
-du -sh /home/* | sort -hr                              # размер домашних папок
-du -sh /opt/* | sort -hr                               # установленные приложения
-
-# Шаг 4: Поиск удаленных но открытых файлов
-lsof +L1                                                # файлы удалены но все еще открыты
-lsof | grep "(deleted)"                                # альтернативный способ
-
-# Шаг 5: Очистка места
-# Логи
-sudo journalctl --vacuum-time=7d                       # оставить журналы за 7 дней
-sudo logrotate -f /etc/logrotate.conf                  # принудительная ротация логов
-
-# Temporary файлы
-sudo find /tmp -type f -atime +7 -delete               # удалить старые temp файлы
-sudo find /var/tmp -type f -atime +30 -delete          # удалить старые var/tmp файлы
-
-# Package cache
-sudo apt clean                                          # очистить кеш пакетов (Debian/Ubuntu)
-sudo yum clean all                                      # очистить кеш пакетов (RHEL/CentOS)
-
-# Docker
-docker system prune -a                                  # удалить неиспользуемые образы и контейнеры
-docker volume prune                                     # удалить неиспользуемые volumes
-
-# Автоматический скрипт очистки
-#!/bin/bash
-# /usr/local/bin/cleanup-disk.sh
-
-echo "Starting disk cleanup..."
-
-# Логи старше 30 дней
-find /var/log -name "*.log" -mtime +30 -delete
-find /var/log -name "*.gz" -mtime +30 -delete
-
-# Temporary файлы
-find /tmp -type f -atime +7 -delete
-find /var/tmp -type f -atime +30 -delete
-
-# Cores dumps
-find /var/crash -name "*.crash" -mtime +7 -delete
-
-# Журналы systemd старше недели
-journalctl --vacuum-time=7d
-
-# Package cache
-apt autoremove -y
-apt autoclean
-
-echo "Disk cleanup completed"
-df -h
-```
-
-### Сценарий 4: Проблемы с производительностью базы данных
-
-**Проблема:** PostgreSQL работает медленно.
-
-```bash
-# Шаг 1: Проверка состояния PostgreSQL
-systemctl status postgresql                             # статус сервиса
-sudo -u postgres psql -c "SELECT version();"           # версия PostgreSQL
-
-# Шаг 2: Анализ соединений
-sudo -u postgres psql -c "
-SELECT 
-    count(*) as total_connections,
-    sum(case when state = 'active' then 1 else 0 end) as active,
-    sum(case when state = 'idle' then 1 else 0 end) as idle
-FROM pg_stat_activity;"
-
-# Шаг 3: Поиск медленных запросов
-sudo -u postgres psql -c "
-SELECT 
-    pid,
-    now() - pg_stat_activity.query_start AS duration,
-    query 
-FROM pg_stat_activity 
-WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes';"
-
-# Шаг 4: Анализ блокировок
-sudo -u postgres psql -c "
-SELECT 
-    blocked_locks.pid AS blocked_pid,
-    blocked_activity.usename AS blocked_user,
-    blocking_locks.pid AS blocking_pid,
-    blocking_activity.usename AS blocking_user,
-    blocked_activity.query AS blocked_statement,
-    blocking_activity.query AS blocking_statement
-FROM pg_catalog.pg_locks blocked_locks
-JOIN pg_catalog.pg_stat_activity blocked_activity ON blocked_activity.pid = blocked_locks.pid
-JOIN pg_catalog.pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype
-JOIN pg_catalog.pg_stat_activity blocking_activity ON blocking_activity.pid = blocking_locks.pid
-WHERE NOT blocked_locks.granted;"
-
-# Шаг 5: Статистика производительности
-sudo -u postgres psql -c "
-SELECT 
-    schemaname,
-    tablename,
-    seq_scan,
-    seq_tup_read,
-    idx_scan,
-    idx_tup_fetch,
-    n_tup_ins + n_tup_upd + n_tup_del as total_writes
-FROM pg_stat_user_tables 
-ORDER BY seq_scan DESC 
-LIMIT 10;"
-
-# Шаг 6: Cache hit ratio
-sudo -u postgres psql -c "
-SELECT 
-    'Buffer cache hit ratio' as metric,
-    round(sum(blks_hit) * 100.0 / nullif(sum(blks_hit) + sum(blks_read), 0), 2) as percentage
-FROM pg_stat_database;"
-
-# Шаг 7: Размеры таблиц и индексов
-sudo -u postgres psql -c "
-SELECT 
-    schemaname,
-    tablename,
-    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as total_size,
-    pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) as table_size,
-    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename) - 
-                   pg_relation_size(schemaname||'.'||tablename)) as index_size
-FROM pg_tables 
-WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
-ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC 
-LIMIT 10;"
-
-# Шаг 8: Система мониторинга ресурсов
-iostat -x 1 5                                          # I/O статистика
-top -p $(pgrep postgres)                               # использование ресурсов процессами postgres
-```
-
----
-
-## Заключение и следующие шаги
-
-Поздравляем! Вы прошли путь от основ Linux до экспертного уровня. Теперь у вас есть глубокие знания в:
-
-### 🔧 Основные навыки
-- **Командная строка** — автоматизация повседневных задач через bash скрипты
-- **Файловая система** — понимание структуры и эффективная работа с файлами
-- **Права доступа** — настройка безопасности на уровне файлов и пользователей
-- **Процессы** — мониторинг, управление и оптимизация системных ресурсов
-
-### 🌐 Сетевые технологии
-- **TCP/IP стек** — глубокое понимание сетевых протоколов
-- **DNS и маршрутизация** — настройка и диагностика сетевой инфраструктуры
-- **Файрволы** — защита сервера с помощью iptables и UFW
-- **Мониторинг трафика** — анализ сетевой активности и решение проблем
-
-### 🚀 Инфраструктура и DevOps
-- **Веб-серверы** — настройка и оптимизация Nginx для production
-- **Базы данных** — администрирование PostgreSQL и оптимизация производительности
-- **Контейнеризация** — Docker и Docker Compose для современного развертывания
-- **Автоматизация** — Ansible для управления конфигурацией множества серверов
-
-### 📊 Мониторинг и безопасность
-- **Prometheus + Grafana** — профессиональный мониторинг инфраструктуры
-- **ELK Stack** — централизованное логирование и анализ
-- **Hardening системы** — укрепление безопасности production серверов
-- **Fail2ban** — автоматическая защита от атак
-
-### ⚡ Performance tuning
-- **Системные параметры** — тюнинг ядра Linux для высоких нагрузок
-- **Анализ производительности** — профилирование CPU, памяти и I/O
-- **Оптимизация стека** — настройка веб-сервера и базы данных
-- **Диагностика проблем** — систематический подход к решению проблем
-
----
-
-## Что дальше?
-
-Теперь, когда у вас есть прочная основа в Linux, рекомендуем развиваться в следующих направлениях:
-
-### 🔄 Оркестрация контейнеров
-**Kubernetes** — следующий естественный шаг после Docker:
-```bash
-# Изучите основы Kubernetes
-kubectl get nodes
-kubectl get pods
-kubectl apply -f deployment.yaml
-
-# Понимание концепций:
-# - Pods, Services, Deployments
-# - Ingress, ConfigMaps, Secrets  
-# - Helm для управления пакетами
-# - Мониторинг с Prometheus Operator
-```
-
-### ☁️ Облачные платформы
-Современная инфраструктура работает в облаке:
-```bash
-# AWS
-aws ec2 describe-instances
-aws s3 ls
-aws eks update-kubeconfig --cluster my-cluster
-
-# Google Cloud Platform  
-gcloud compute instances list
-gcloud container clusters get-credentials my-cluster
-
-# Azure
-az vm list
-az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
-```
-
-### 🏗️ Infrastructure as Code
-Управление инфраструктурой через код:
-```hcl
-# Terraform example
-resource "aws_instance" "web" {
-  ami           = "ami-0c55b159cbfafe1d0"
-  instance_type = "t2.micro"
-  
-  tags = {
-    Name = "WebServer"
-  }
-}
-
-# Изучите также:
-# - Terraform для создания инфраструктуры
-# - Ansible для настройки серверов  
-# - Pulumi как современную альтернативу
-```
-
-### 🔐 Продвинутая безопасность
-Углубление в DevSecOps:
-```bash
-# Сканирование уязвимостей
-trivy image nginx:latest
-clair-scanner nginx:latest
-
-# Secrets management
-vault write secret/myapp/config db_password=secretpassword
-kubectl create secret generic mysecret --from-literal=password=secretpassword
-
-# Compliance as Code
-inspec exec compliance-profile
-```
-
-### 📈 SRE (Site Reliability Engineering)
-Обеспечение надежности больших систем:
-```yaml
-# SLI/SLO определения
-sli:
-  - name: "API availability"
-    description: "Percentage of successful API requests"
-    query: "rate(http_requests_total{status!~'5..'}[5m]) / rate(http_requests_total[5m])"
-    
-slo:
-  - name: "99.9% API availability"
-    target: 99.9
-    time_window: "30d"
-```
-
-### 🤖 GitOps и CI/CD
-Автоматизация всего жизненного цикла приложений:
-```yaml
-# GitHub Actions workflow
-name: Deploy to Production
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl apply -f k8s/
-          kubectl rollout status deployment/app
-```
-
----
-
-## Практические проекты для закрепления
-
-### 🎯 Проект 1: Полный веб-стек
-Создайте complete production-ready окружение:
-```
-Frontend (React) → Load Balancer (Nginx) → Backend (Python/Node.js) → Database (PostgreSQL) → Cache (Redis)
-                                ↓
-                           Мониторинг (Prometheus/Grafana)
-                                ↓
-                           Логирование (ELK Stack)
-                                ↓
-                           Backup и Recovery
-```
-
-### 🎯 Проект 2: Kubernetes кластер
-Разверните собственный Kubernetes кластер:
-```bash
-# Создание кластера
-kubeadm init --pod-network-cidr=10.244.0.0/16
-
-# Установка сетевого плагина
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
-# Развертывание приложения с мониторингом
-helm install prometheus prometheus-community/kube-prometheus-stack
-```
-
-### 🎯 Проект 3: CI/CD pipeline
-Настройте полный конвейер разработки:
-```
-Git Push → Build (Docker) → Test → Security Scan → Deploy to Staging → Manual Approval → Deploy to Production
-    ↓           ↓            ↓         ↓                ↓                    ↓                ↓
-   GitHub    Docker Hub   Jest    Trivy/Snyk      Staging K8s         Slack        Production K8s
-```
-
-### 🎯 Проект 4: Multi-cloud инфраструктура
-Создайте отказоустойчивую инфраструктуру в нескольких облаках:
-```
-Primary Region (AWS)     Secondary Region (GCP)     Tertiary Region (Azure)
-      ↓                          ↓                          ↓
-   Web Servers              Web Servers              Web Servers
-      ↓                          ↓                          ↓
-   Database Master         Database Replica         Database Replica
-      ↓                          ↓                          ↓
-   Global Load Balancer (CloudFlare)
-```
-
----
-
-## Ресурсы для продолжения обучения
-
-### 📚 Книги
-- **"Linux Bible"** by Christopher Negus — всеобъемлющий справочник
-- **"UNIX and Linux System Administration Handbook"** — практическое администрирование
-- **"Site Reliability Engineering"** by Google — SRE принципы и практики
-- **"Kubernetes: Up and Running"** — глубокое погружение в K8s
-- **"Terraform: Up & Running"** — Infrastructure as Code
-
-### 🌐 Онлайн ресурсы
-- **Linux Academy / A Cloud Guru** — курсы по Linux и облачным технологиям
-- **Kubernetes Documentation** — официальная документация K8s
-- **DigitalOcean Tutorials** — практические руководства
-- **Red Hat Learning** — сертификационные курсы
-- **Linux Foundation Training** — официальные курсы Linux
-
-### 🏆 Сертификации
-Подтвердите свои знания профессиональными сертификатами:
-
-**Linux сертификации:**
-- LPIC-1, LPIC-2, LPIC-3 (LPI)
-- RHCSA, RHCE (Red Hat)
-- CompTIA Linux+
-
-**Cloud сертификации:**
-- AWS Solutions Architect
-- Google Cloud Professional
-- Azure Solutions Architect
-
-**DevOps сертификации:**
-- Certified Kubernetes Administrator (CKA)
-- Certified Kubernetes Application Developer (CKAD)
-- Docker Certified Associate
-
-### 💼 Карьерные пути
-
-После освоения Linux открываются множество карьерных возможностей:
-
-**🔧 Systems Administrator**
-- Управление серверной инфраструктурой
-- Автоматизация рутинных задач
-- Мониторинг и обеспечение uptime
-
-**☁️ Cloud Engineer**
-- Проектирование облачной архитектуры
-- Миграция в облако
-- Управление облачными ресурсами
-
-**🚀 DevOps Engineer**
-- Построение CI/CD пайплайнов
-- Infrastructure as Code
-- Культура DevOps в команде
-
-**🛡️ Site Reliability Engineer (SRE)**
-- Обеспечение надежности систем
-- Автоматизация операций
-- Управление инцидентами
-
-**🔒 Security Engineer**
-- Hardening систем
-- Мониторинг безопасности
-- Compliance и аудит
-
-**📊 Platform Engineer**
-- Внутренние платформы для разработчиков
-- Kubernetes операторы
-- Developer Experience
-
----
-
-## Финальные советы
-
-### 🎯 Практика — ключ к успеху
-- **Создавайте проекты** — теория без практики бесполезна
-- **Ломайте и чините** — лучший способ изучить диагностику
-- **Автоматизируйте всё** — если делаете что-то дважды, напишите скрипт
-- **Читайте логи** — они расскажут вам всю правду о системе
-
-### 🤝 Сообщество
-- **Участвуйте в open source** — вносите вклад в Linux проекты
-- **Задавайте вопросы** — Stack Overflow, Reddit, форумы
-- **Делитесь знаниями** — блог, выступления, менторство
-- **Следите за трендами** — Hacker News, /r/sysadmin, технические блоги
-
-### 📈 Непрерывное обучение
-- **Технологии меняются быстро** — будьте готовы учиться постоянно
-- **Изучайте смежные области** — сети, безопасность, разработка
-- **Экспериментируйте** — домашняя лаборатория или cloud playground
-- **Документируйте опыт** — создавайте личную базу знаний
-
 ### 🚀 От новичка к эксперту
 Помните путь, который вы прошли:
 ```
@@ -6994,3 +5091,1906 @@ exec "$SHELL"_on:
       - static_volume:/var/www/static:ro
       - media_volume:/var/www/media:ro
     depends
+
+exec "$SHELL"
+```
+
+**Настройка системы контроля доступа (PAM):**
+
+```bash
+# /etc/pam.d/common-auth - настройка аутентификации
+
+# Блокировка аккаунта после неудачных попыток
+auth    required    pam_tally2.so deny=3 unlock_time=1800 onerr=fail
+
+# Проверка сложности пароля
+password required pam_pwquality.so retry=3 minlen=12 difok=3 ucredit=-1 lcredit=-1 dcredit=-1 ocredit=-1
+
+# /etc/security/pwquality.conf - детальная настройка паролей
+minlen = 12                                                # минимальная длина
+minclass = 3                                               # минимум классов символов
+maxrepeat = 2                                              # максимум повторяющихся символов
+maxclasrepeat = 3                                          # максимум символов одного класса подряд
+dictcheck = 1                                              # проверка по словарю
+
+# Проверка заблокированных аккаунтов
+sudo pam_tally2 --user=alice                               # статус пользователя
+sudo pam_tally2 --user=alice --reset                       # разблокировка
+```
+
+### Fail2ban - защита от брутфорс атак
+
+Fail2ban анализирует логи и автоматически блокирует IP адреса с подозрительной активностью.
+
+**Установка и базовая настройка:**
+
+```bash
+# Установка
+sudo apt install fail2ban                                  # Ubuntu/Debian
+sudo yum install epel-release && sudo yum install fail2ban # CentOS/RHEL
+
+# Основные файлы конфигурации
+/etc/fail2ban/fail2ban.conf                                # основная конфигурация
+/etc/fail2ban/jail.conf                                    # настройки jail (не редактировать!)
+/etc/fail2ban/jail.local                                   # локальные настройки
+/etc/fail2ban/filter.d/                                    # фильтры логов
+/etc/fail2ban/action.d/                                    # действия при блокировке
+```
+
+**Конфигурация jail.local:**
+
+```ini
+# /etc/fail2ban/jail.local
+[DEFAULT]
+# Время блокировки (в секундах)
+bantime = 3600
+
+# Время анализа логов (в секундах)
+findtime = 600
+
+# Максимальное количество попыток
+maxretry = 3
+
+# Игнорируемые IP адреса
+ignoreip = 127.0.0.1/8 ::1 192.168.1.0/24 10.0.0.0/8
+
+# Email уведомления
+destemail = admin@company.com
+sender = fail2ban@company.com
+mta = sendmail
+
+# Действие по умолчанию
+action = %(action_mwl)s
+
+[sshd]
+enabled = true
+port = ssh,2222
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+bantime = 3600
+
+[nginx-http-auth]
+enabled = true
+filter = nginx-http-auth
+port = http,https
+logpath = /var/log/nginx/error.log
+maxretry = 3
+
+[nginx-noscript]
+enabled = true
+port = http,https
+filter = nginx-noscript
+logpath = /var/log/nginx/access.log
+maxretry = 6
+
+[nginx-badbots]
+enabled = true
+port = http,https
+filter = nginx-badbots
+logpath = /var/log/nginx/access.log
+maxretry = 2
+
+[nginx-noproxy]
+enabled = true
+port = http,https
+filter = nginx-noproxy
+logpath = /var/log/nginx/access.log
+maxretry = 2
+
+[postfix]
+enabled = true
+port = smtp,465,submission
+filter = postfix
+logpath = /var/log/mail.log
+
+[postfix-sasl]
+enabled = true
+port = smtp,465,submission
+filter = postfix-sasl
+logpath = /var/log/mail.log
+
+[mysql]
+enabled = true
+port = 3306
+filter = mysqld-auth
+logpath = /var/log/mysql/error.log
+maxretry = 3
+
+[postgresql]
+enabled = true
+port = 5432
+filter = postgresql
+logpath = /var/log/postgresql/postgresql-*.log
+maxretry = 3
+```
+
+**Создание пользовательских фильтров:**
+
+```ini
+# /etc/fail2ban/filter.d/nginx-login.conf
+[Definition]
+failregex = ^<HOST> -.*"POST /login.*" 401
+            ^<HOST> -.*"POST /admin.*" 403
+
+ignoreregex =
+
+# /etc/fail2ban/filter.d/django-auth.conf
+[Definition]
+failregex = ^<HOST> -.*"POST /accounts/login.*" 400
+            Django.*Invalid login.*from <HOST>
+
+ignoreregex =
+
+# /etc/fail2ban/filter.d/wordpress.conf
+[Definition]
+failregex = ^<HOST> -.*"POST /wp-login.php.*" 200
+            ^<HOST> -.*"POST /wp-admin.*" 200
+
+ignoreregex =
+```
+
+**Пользовательские действия:**
+
+```bash
+# /etc/fail2ban/action.d/telegram-notify.conf
+[Definition]
+actionstart = 
+actionstop = 
+actioncheck = 
+actionban = curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/sendMessage" -d "chat_id=<CHAT_ID>&text=Fail2ban: banned <ip> for <failures> failures"
+actionunban = curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/sendMessage" -d "chat_id=<CHAT_ID>&text=Fail2ban: unbanned <ip>"
+
+[Init]
+BOT_TOKEN = your_telegram_bot_token
+CHAT_ID = your_chat_id
+```
+
+**Управление Fail2ban:**
+
+```bash
+# Статус сервиса
+sudo systemctl status fail2ban
+
+# Статус всех jail
+sudo fail2ban-client status
+
+# Статус конкретного jail
+sudo fail2ban-client status sshd
+
+# Просмотр заблокированных IP
+sudo fail2ban-client get sshd banip
+
+# Разблокировка IP
+sudo fail2ban-client set sshd unbanip 203.0.113.100
+
+# Блокировка IP вручную
+sudo fail2ban-client set sshd banip 203.0.113.100
+
+# Перезагрузка конфигурации
+sudo fail2ban-client reload
+
+# Перезапуск конкретного jail
+sudo fail2ban-client restart sshd
+
+# Логи Fail2ban
+sudo tail -f /var/log/fail2ban.log
+```
+
+### Аудит безопасности
+
+**Lynis - комплексный аудит безопасности:**
+
+```bash
+# Установка Lynis
+sudo apt install lynis                                     # Ubuntu/Debian
+sudo yum install lynis                                     # CentOS/RHEL
+
+# Или скачивание последней версии
+cd /tmp
+wget https://downloads.cisofy.com/lynis/lynis-3.0.6.tar.gz
+tar xzf lynis-3.0.6.tar.gz
+cd lynis
+
+# Запуск аудита
+sudo ./lynis audit system
+
+# Просмотр отчета
+sudo cat /var/log/lynis.log
+
+# Проверка только определенных категорий
+sudo ./lynis audit system --tests SSH,FILE,NETW
+
+# Тихий режим для скриптов
+sudo ./lynis audit system --quiet
+```
+
+**Chkrootkit и rkhunter - поиск руткитов:**
+
+```bash
+# Установка chkrootkit
+sudo apt install chkrootkit
+
+# Запуск проверки
+sudo chkrootkit
+
+# Установка rkhunter
+sudo apt install rkhunter
+
+# Обновление базы данных
+sudo rkhunter --update
+
+# Инициализация baseline
+sudo rkhunter --propupd
+
+# Запуск проверки
+sudo rkhunter --check
+
+# Автоматические проверки через cron
+echo "0 3 * * * root /usr/bin/rkhunter --check --quiet --report-warnings-only" | sudo tee -a /etc/crontab
+```
+
+**AIDE - мониторинг целостности файлов:**
+
+```bash
+# Установка AIDE
+sudo apt install aide
+
+# Инициализация базы данных
+sudo aideinit
+
+# Копирование базы данных
+sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+
+# Проверка целостности
+sudo aide --check
+
+# Обновление базы данных после изменений
+sudo aide --update
+sudo cp /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+
+# Настройка /etc/aide/aide.conf
+# Мониторинг важных директорий
+/bin        BINLIB
+/sbin       BINLIB  
+/usr/bin    BINLIB
+/usr/sbin   BINLIB
+/etc        CONFFILE
+/var/log    LOG
+
+# Исключения
+!/var/log/.*
+!/tmp/.*
+!/proc/.*
+!/sys/.*
+
+# Автоматическая проверка через cron
+echo "0 4 * * * root /usr/bin/aide --check" | sudo tee -a /etc/crontab
+```
+
+### Backup стратегии и восстановление
+
+**Комплексная backup стратегия:**
+
+```bash
+#!/bin/bash
+# /usr/local/bin/backup-system.sh
+# Полная система резервного копирования
+
+set -euo pipefail
+
+# Конфигурация
+BACKUP_ROOT="/backup"
+RETENTION_DAYS=30
+RETENTION_WEEKS=12
+RETENTION_MONTHS=12
+LOG_FILE="/var/log/backup.log"
+NOTIFICATION_EMAIL="admin@company.com"
+
+# Функция логирования
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+}
+
+# Создание структуры backup
+create_backup_structure() {
+    local backup_date=$(date +%Y-%m-%d)
+    local backup_time=$(date +%H%M%S)
+    
+    DAILY_DIR="$BACKUP_ROOT/daily/$backup_date"
+    WEEKLY_DIR="$BACKUP_ROOT/weekly/$(date +%Y-W%V)"
+    MONTHLY_DIR="$BACKUP_ROOT/monthly/$(date +%Y-%m)"
+    
+    mkdir -p "$DAILY_DIR" "$WEEKLY_DIR" "$MONTHLY_DIR"
+    
+    # Текущий backup
+    CURRENT_BACKUP="$DAILY_DIR/$backup_time"
+    mkdir -p "$CURRENT_BACKUP"
+}
+
+# Backup конфигурационных файлов
+backup_configs() {
+    log "Backing up configuration files"
+    
+    tar -czf "$CURRENT_BACKUP/configs.tar.gz" \
+        /etc \
+        /var/spool/cron \
+        /usr/local/etc \
+        2>/dev/null || true
+        
+    log "Configuration backup completed"
+}
+
+# Backup домашних директорий
+backup_home_dirs() {
+    log "Backing up home directories"
+    
+    tar -czf "$CURRENT_BACKUP/home.tar.gz" \
+        --exclude="*/tmp/*" \
+        --exclude="*/.cache/*" \
+        --exclude="*/Downloads/*" \
+        /home \
+        2>/dev/null || true
+        
+    log "Home directories backup completed"
+}
+
+# Backup баз данных
+backup_databases() {
+    log "Backing up databases"
+    
+    # PostgreSQL
+    if systemctl is-active --quiet postgresql; then
+        sudo -u postgres pg_dumpall > "$CURRENT_BACKUP/postgresql.sql"
+        gzip "$CURRENT_BACKUP/postgresql.sql"
+    fi
+    
+    # MySQL
+    if systemctl is-active --quiet mysql; then
+        mysqldump --all-databases --single-transaction --routines --triggers > "$CURRENT_BACKUP/mysql.sql"
+        gzip "$CURRENT_BACKUP/mysql.sql"
+    fi
+    
+    # Redis
+    if systemctl is-active --quiet redis; then
+        cp /var/lib/redis/dump.rdb "$CURRENT_BACKUP/redis.rdb"
+    fi
+    
+    log "Database backup completed"
+}
+
+# Backup Docker данных
+backup_docker() {
+    if command -v docker &> /dev/null; then
+        log "Backing up Docker data"
+        
+        # Остановка контейнеров для консистентности
+        docker-compose down 2>/dev/null || true
+        
+        # Backup volumes
+        docker run --rm -v docker_data_volume:/data -v "$CURRENT_BACKUP":/backup alpine tar czf /backup/docker-volumes.tar.gz -C /data .
+        
+        # Backup образов
+        docker save $(docker images --format "table {{.Repository}}:{{.Tag}}" | tail -n +2) > "$CURRENT_BACKUP/docker-images.tar"
+        gzip "$CURRENT_BACKUP/docker-images.tar"
+        
+        # Запуск контейнеров обратно
+        docker-compose up -d 2>/dev/null || true
+        
+        log "Docker backup completed"
+    fi
+}
+
+# Backup веб-контента
+backup_web_content() {
+    log "Backing up web content"
+    
+    if [ -d "/var/www" ]; then
+        tar -czf "$CURRENT_BACKUP/www.tar.gz" /var/www
+    fi
+    
+    if [ -d "/opt" ]; then
+        tar -czf "$CURRENT_BACKUP/opt.tar.gz" \
+            --exclude="*/node_modules/*" \
+            --exclude="*/venv/*" \
+            --exclude="*/__pycache__/*" \
+            /opt
+    fi
+    
+    log "Web content backup completed"
+}
+
+# Создание инкрементального backup с rsync
+incremental_backup() {
+    local today=$(date +%Y-%m-%d)
+    local yesterday=$(date -d "yesterday" +%Y-%m-%d)
+    local link_dest=""
+    
+    if [ -d "$BACKUP_ROOT/daily/$yesterday" ]; then
+        link_dest="--link-dest=$BACKUP_ROOT/daily/$yesterday"
+    fi
+    
+    log "Creating incremental backup"
+    
+    rsync -avH --delete \
+        $link_dest \
+        --exclude="/dev/*" \
+        --exclude="/proc/*" \
+        --exclude="/sys/*" \
+        --exclude="/tmp/*" \
+        --exclude="/run/*" \
+        --exclude="/mnt/*" \
+        --exclude="/media/*" \
+        --exclude="/lost+found" \
+        --exclude="/var/cache/*" \
+        --exclude="/var/tmp/*" \
+        / "$CURRENT_BACKUP/system/"
+        
+    log "Incremental backup completed"
+}
+
+# Проверка целостности backup
+verify_backup() {
+    log "Verifying backup integrity"
+    
+    # Создание checksums
+    find "$CURRENT_BACKUP" -type f -exec sha256sum {} \; > "$CURRENT_BACKUP/checksums.sha256"
+    
+    # Проверка размера backup
+    local backup_size=$(du -sh "$CURRENT_BACKUP" | cut -f1)
+    log "Backup size: $backup_size"
+    
+    # Тест восстановления (выборочно)
+    if [ -f "$CURRENT_BACKUP/configs.tar.gz" ]; then
+        tar -tzf "$CURRENT_BACKUP/configs.tar.gz" > /dev/null
+        log "Configuration backup verification: OK"
+    fi
+}
+
+# Ротация backup'ов
+rotate_backups() {
+    log "Rotating old backups"
+    
+    # Удаление старых daily backup'ов
+    find "$BACKUP_ROOT/daily" -type d -mtime +$RETENTION_DAYS -exec rm -rf {} \; 2>/dev/null || true
+    
+    # Удаление старых weekly backup'ов
+    find "$BACKUP_ROOT/weekly" -type d -mtime +$((RETENTION_WEEKS * 7)) -exec rm -rf {} \; 2>/dev/null || true
+    
+    # Удаление старых monthly backup'ов
+    find "$BACKUP_ROOT/monthly" -type d -mtime +$((RETENTION_MONTHS * 30)) -exec rm -rf {} \; 2>/dev/null || true
+    
+    log "Backup rotation completed"
+}
+
+# Копирование в weekly/monthly если нужно
+create_weekly_monthly() {
+    local day_of_week=$(date +%u)
+    local day_of_month=$(date +%d)
+    
+    # Weekly backup (воскресенье)
+    if [ "$day_of_week" = "7" ]; then
+        log "Creating weekly backup link"
+        ln -sf "$CURRENT_BACKUP" "$WEEKLY_DIR/$(basename $CURRENT_BACKUP)"
+    fi
+    
+    # Monthly backup (первое число месяца)
+    if [ "$day_of_month" = "01" ]; then
+        log "Creating monthly backup link"
+        ln -sf "$CURRENT_BACKUP" "$MONTHLY_DIR/$(basename $CURRENT_BACKUP)"
+    fi
+}
+
+# Отправка уведомления
+send_notification() {
+    local status=$1
+    local message=$2
+    
+    if command -v mail &> /dev/null; then
+        echo "$message" | mail -s "Backup $status - $(hostname)" "$NOTIFICATION_EMAIL"
+    fi
+    
+    # Slack webhook (если настроен)
+    if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+        curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"[$(hostname)] Backup $status: $message\"}" \
+            "$SLACK_WEBHOOK_URL"
+    fi
+}
+
+# Основная функция
+main() {
+    log "Starting backup process"
+    
+    # Проверка свободного места
+    local available_space=$(df "$BACKUP_ROOT" | awk 'NR==2 {print $4}')
+    if [ "$available_space" -lt 1048576 ]; then  # Менее 1GB
+        log "ERROR: Insufficient disk space"
+        send_notification "FAILED" "Insufficient disk space for backup"
+        exit 1
+    fi
+    
+    create_backup_structure
+    
+    # Выполнение backup'а
+    backup_configs
+    backup_home_dirs
+    backup_databases
+    backup_docker
+    backup_web_content
+    incremental_backup
+    
+    # Проверка и ротация
+    verify_backup
+    create_weekly_monthly
+    rotate_backups
+    
+    # Статистика
+    local total_size=$(du -sh "$BACKUP_ROOT" | cut -f1)
+    local backup_duration=$SECONDS
+    
+    log "Backup completed successfully in ${backup_duration}s, total backup size: $total_size"
+    send_notification "SUCCESS" "Backup completed in ${backup_duration}s, size: $total_size"
+}
+
+# Обработка ошибок
+trap 'log "ERROR: Backup failed"; send_notification "FAILED" "Backup process encountered an error"; exit 1' ERR
+
+# Запуск
+main "$@"
+```
+
+**Автоматизация backup через cron:**
+
+```bash
+# /etc/cron.d/backup-system
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+MAILTO=admin@company.com
+
+# Ежедневный backup в 2:00
+0 2 * * * root /usr/local/bin/backup-system.sh
+
+# Проверка backup'ов каждый час
+0 * * * * root /usr/local/bin/check-backup-health.sh
+
+# Тестовое восстановление раз в неделю
+0 4 * * 0 root /usr/local/bin/test-restore.sh
+```
+
+**Скрипт тестового восстановления:**
+
+```bash
+#!/bin/bash
+# /usr/local/bin/test-restore.sh
+
+BACKUP_ROOT="/backup"
+TEST_RESTORE_DIR="/tmp/restore-test"
+LOG_FILE="/var/log/restore-test.log"
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+}
+
+# Поиск последнего backup'а
+latest_backup=$(find "$BACKUP_ROOT/daily" -type d -name "*" | sort | tail -1)
+
+if [ -z "$latest_backup" ]; then
+    log "ERROR: No backup found"
+    exit 1
+fi
+
+log "Testing restore from: $latest_backup"
+
+# Создание временной директории
+rm -rf "$TEST_RESTORE_DIR"
+mkdir -p "$TEST_RESTORE_DIR"
+
+# Тест восстановления конфигураций
+if [ -f "$latest_backup/configs.tar.gz" ]; then
+    log "Testing configuration restore"
+    tar -xzf "$latest_backup/configs.tar.gz" -C "$TEST_RESTORE_DIR"
+    
+    # Проверка ключевых файлов
+    if [ -f "$TEST_RESTORE_DIR/etc/passwd" ] && [ -f "$TEST_RESTORE_DIR/etc/ssh/sshd_config" ]; then
+        log "Configuration restore: SUCCESS"
+    else
+        log "Configuration restore: FAILED"
+        exit 1
+    fi
+fi
+
+# Тест восстановления базы данных
+if [ -f "$latest_backup/postgresql.sql.gz" ]; then
+    log "Testing database restore"
+    
+    # Создание тестовой базы
+    sudo -u postgres createdb test_restore_db
+    
+    # Восстановление
+    gunzip -c "$latest_backup/postgresql.sql.gz" | sudo -u postgres psql test_restore_db
+    
+    # Проверка
+    table_count=$(sudo -u postgres psql -t -c "SELECT count(*) FROM information_schema.tables;" test_restore_db)
+    
+    if [ "$table_count" -gt 0 ]; then
+        log "Database restore: SUCCESS ($table_count tables)"
+    else
+        log "Database restore: FAILED"
+    fi
+    
+    # Очистка
+    sudo -u postgres dropdb test_restore_db
+fi
+
+# Очистка
+rm -rf "$TEST_RESTORE_DIR"
+
+log "Restore test completed successfully"
+```
+
+---
+
+## Этап 10: Performance tuning
+
+### Оптимизация системных параметров
+
+Linux предоставляет множество параметров для тюнинга производительности под конкретные рабочие нагрузки.
+
+**Настройка параметров ядра (sysctl):**
+
+```bash
+# Просмотр текущих параметров
+sysctl -a | grep -E "(net|vm|kernel)" | head -20
+
+# Временное изменение параметра
+sudo sysctl net.core.somaxconn=65535
+
+# Постоянные настройки в /etc/sysctl.conf или /etc/sysctl.d/99-custom.conf
+```
+
+```ini
+# /etc/sysctl.d/99-performance.conf
+# Высокопроизводительные сетевые настройки для web-серверов
+
+# === Сетевые параметры ===
+
+# Размер очереди входящих соединений
+net.core.somaxconn = 65535
+
+# Размер буфера для сетевых устройств
+net.core.netdev_max_backlog = 30000
+
+# Размеры сокетных буферов
+net.core.rmem_default = 262144
+net.core.rmem_max = 16777216
+net.core.wmem_default = 262144
+net.core.wmem_max = 16777216
+
+# TCP буферы
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+
+# TCP congestion control (BBR для высокой пропускной способности)
+net.core.default_qdisc = fq
+net.ipv4.tcp_congestion_control = bbr
+
+# TCP настройки для высокой нагрузки
+net.ipv4.tcp_fin_timeout = 30
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 3
+net.ipv4.tcp_max_syn_backlog = 8192
+net.ipv4.tcp_max_tw_buckets = 2000000
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_no_metrics_save = 1
+
+# Увеличение диапазона локальных портов
+net.ipv4.ip_local_port_range = 1024 65535
+
+# === Параметры виртуальной памяти ===
+
+# Агрессивность swap (0-100, меньше = реже swap)
+vm.swappiness = 1
+
+# Процент грязных страниц для начала записи на диск
+vm.dirty_background_ratio = 5
+vm.dirty_ratio = 10
+
+# Время хранения грязных страниц (сотые доли секунды)
+vm.dirty_expire_centisecs = 3000
+vm.dirty_writeback_centisecs = 500
+
+# === Файловая система ===
+
+# Максимальное количество открытых файлов
+fs.file-max = 2097152
+
+# Максимальное количество inotify watches
+fs.inotify.max_user_watches = 524288
+fs.inotify.max_user_instances = 256
+
+# === Безопасность ===
+
+# Защита от SYN flood атак
+net.ipv4.tcp_syncookies = 1
+
+# Игнорирование ICMP redirects
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+
+# Защита от IP spoofing
+net.ipv4.conf.all.rp_filter = 1
+
+# Игнорирование ping запросов (опционально)
+# net.ipv4.icmp_echo_ignore_all = 1
+
+# === Ядро ===
+
+# Размер разделяемой памяти
+kernel.shmmax = 68719476736
+kernel.shmall = 4294967296
+
+# Максимальное количество процессов
+kernel.pid_max = 4194304
+
+# Применение настроек
+# sudo sysctl -p /etc/sysctl.d/99-performance.conf
+```
+
+**Оптимизация лимитов системы:**
+
+```bash
+# /etc/security/limits.conf - лимиты для пользователей
+# <domain> <type> <item> <value>
+
+# Лимиты для всех пользователей
+* soft nofile 65535
+* hard nofile 65535
+* soft nproc 32768
+* hard nproc 32768
+
+# Лимиты для конкретных пользователей/групп
+www-data soft nofile 100000
+www-data hard nofile 100000
+
+postgres soft nofile 8192
+postgres hard nofile 8192
+
+# Память для core dumps
+* soft core unlimited
+
+# Размер стека
+* soft stack 8192
+* hard stack 32768
+
+# /etc/security/limits.d/90-nproc.conf (CentOS/RHEL)
+# Лимит процессов для обычных пользователей
+* soft nproc 4096
+root soft nproc unlimited
+
+# Проверка текущих лимитов
+ulimit -a                                                  # все лимиты
+ulimit -n                                                  # файловые дескрипторы
+ulimit -u                                                  # процессы
+
+# Временное изменение лимитов
+ulimit -n 100000                                           # увеличить лимит файлов
+```
+
+**Настройка systemd лимитов для сервисов:**
+
+```ini
+# /etc/systemd/system/nginx.service.d/limits.conf
+[Service]
+LimitNOFILE=100000
+LimitNPROC=32768
+LimitCORE=infinity
+
+# /etc/systemd/system/postgresql.service.d/limits.conf
+[Service]
+LimitNOFILE=8192
+LimitNPROC=4096
+
+# Глобальные настройки systemd
+# /etc/systemd/system.conf
+DefaultLimitNOFILE=65535
+DefaultLimitNPROC=32768
+
+# Применение изменений
+sudo systemctl daemon-reload
+sudo systemctl restart nginx
+```
+
+### Анализ производительности
+
+**CPU профилирование с perf:**
+
+```bash
+# Установка perf
+sudo apt install linux-tools-common linux-tools-generic    # Ubuntu/Debian
+sudo yum install perf                                       # CentOS/RHEL
+
+# Системное профилирование
+sudo perf top                                               # топ функций в реальном времени
+sudo perf top -p $(pgrep nginx)                            # профилирование конкретного процесса
+
+# Запись профиля
+sudo perf record -g ./my_application                       # запись с call graph
+sudo perf record -F 99 -a -g -- sleep 30                  # запись всей системы 30 секунд
+
+# Анализ записанного профиля
+sudo perf report                                            # интерактивный анализ
+sudo perf report --stdio                                   # текстовый отчет
+
+# CPU события
+sudo perf stat ./my_application                            # статистика выполнения
+sudo perf stat -e cache-misses,cache-references ./app     # конкретные события
+
+# Flamegraphs для визуализации
+git clone https://github.com/brendangregg/FlameGraph.git
+sudo perf record -F 99 -a -g -- sleep 30
+sudo perf script | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > flame.svg
+```
+
+**Анализ памяти:**
+
+```bash
+# Использование памяти процессом
+pmap -x $(pgrep nginx)                                     # карта памяти процесса
+cat /proc/$(pgrep nginx)/smaps                             # детальная информация
+
+# Анализ утечек памяти с valgrind
+sudo apt install valgrind
+valgrind --tool=memcheck --leak-check=full ./my_app
+
+# Профилирование памяти с massif
+valgrind --tool=massif ./my_app
+ms_print massif.out.* | head -50
+
+# Анализ через /proc/meminfo
+watch -n 1 'cat /proc/meminfo | head -20'
+
+# Статистика по слабам (slab allocator)
+sudo cat /proc/slabinfo | head -20
+sudo slabtop                                               # топ потребителей slab памяти
+
+# OOM killer информация
+dmesg | grep -i "killed process"
+cat /var/log/kern.log | grep -i "out of memory"
+```
+
+**I/O анализ:**
+
+```bash
+# iostat для анализа дисковой активности
+iostat -x 1                                               # каждую секунду
+iostat -x -d 1 10                                         # 10 раз каждую секунду
+
+# Важные метрики iostat:
+# %util - процент времени занятости диска
+# await - среднее время ожидания запроса
+# r/s, w/s - операции чтения/записи в секунду
+# rkB/s, wkB/s - KB/s чтения/записи
+
+# iotop для мониторинга I/O по процессам
+sudo iotop -o                                             # только активные процессы
+sudo iotop -a                                             # накопленный I/O
+
+# Анализ конкретного процесса
+sudo iotop -p $(pgrep postgres)
+
+# Мониторинг файловых операций
+sudo lsof +L1                                             # файлы с удаленными ссылками
+sudo lsof | grep "(deleted)"                              # удаленные но открытые файлы
+
+# Тестирование производительности диска
+# Последовательное чтение
+sudo dd if=/dev/sda of=/dev/null bs=1M count=1000
+
+# Последовательная запись
+sudo dd if=/dev/zero of=/tmp/testfile bs=1M count=1000 oflag=direct
+
+# Случайный I/O с fio
+sudo apt install fio
+fio --name=random-rw --ioengine=libaio --iodepth=64 --rw=randrw --bs=4k --direct=1 --size=1G --numjobs=4 --runtime=60 --group_reporting
+```
+
+### Оптимизация веб-стека
+
+**Тюнинг Nginx:**
+
+```nginx
+# /etc/nginx/nginx.conf - оптимизация для высоких нагрузок
+
+# Количество worker процессов (обычно = количество CPU ядер)
+worker_processes auto;
+
+# Максимальные соединения на worker
+events {
+    worker_connections 8192;
+    use epoll;                                             # эффективный event model для Linux
+    multi_accept on;                                       # принимать несколько соединений сразу
+    accept_mutex off;                                      # отключить мьютекс для SMP систем
+}
+
+http {
+    # === Основные оптимизации ===
+    
+    # Эффективная передача файлов
+    sendfile on;
+    tcp_nopush on;                                         # объединение пакетов
+    tcp_nodelay on;                                        # отключение алгоритма Nagle
+    
+    # Keep-alive соединения
+    keepalive_timeout 65;
+    keepalive_requests 1000;                               # запросов на соединение
+    
+    # Размеры буферов
+    client_body_buffer_size 16k;
+    client_header_buffer_size 1k;
+    client_max_body_size 50m;
+    large_client_header_buffers 4 16k;
+    
+    # Таймауты
+    client_body_timeout 12;
+    client_header_timeout 12;
+    send_timeout 10;
+    
+    # === Кеширование ===
+    
+    # Кеш открытых файлов
+    open_file_cache max=10000 inactive=20s;
+    open_file_cache_valid 30s;
+    open_file_cache_min_uses 2;
+    open_file_cache_errors on;
+    
+    # === Сжатие ===
+    
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_comp_level 6;
+    gzip_types
+        text/plain
+        text/css
+        text/javascript
+        text/xml
+        application/json
+        application/javascript
+        application/xml+rss
+        application/atom+xml
+        image/svg+xml;
+    
+    # === SSL оптимизации ===
+    
+    # SSL session cache
+    ssl_session_cache shared:SSL:50m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+    
+    # OCSP stapling
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    
+    # === Логирование ===
+    
+    # Буферизация логов
+    access_log /var/log/nginx/access.log main buffer=64k flush=5s;
+    error_log /var/log/nginx/error.log warn;
+    
+    # Или отключение access логов для статики
+    location ~* \.(jpg|jpeg|png|gif|css|js|ico|svg)$ {
+        access_log off;
+        expires 1M;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # === Upstream оптимизации ===
+    
+    upstream backend {
+        least_conn;                                        # балансировка по нагрузке
+        server 127.0.0.1:3000 max_fails=3 fail_timeout=30s;
+        server 127.0.0.1:3001 max_fails=3 fail_timeout=30s;
+        keepalive 32;                                      # keep-alive к backend
+    }
+    
+    # === Proxy оптимизации ===
+    
+    proxy_buffering on;
+    proxy_buffer_size 8k;
+    proxy_buffers 8 8k;
+    proxy_busy_buffers_size 16k;
+    
+    # Таймауты к backend
+    proxy_connect_timeout 5s;
+    proxy_send_timeout 10s;
+    proxy_read_timeout 30s;
+    
+    # HTTP/1.1 к backend для keep-alive
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+}
+```
+
+**Тюнинг PostgreSQL:**
+
+```ini
+# /etc/postgresql/13/main/postgresql.conf - оптимизация производительности
+
+# === Память ===
+
+# Разделяемая память (25% от RAM)
+shared_buffers = 2GB
+
+# Кеш планировщика (75% от RAM)
+effective_cache_size = 6GB
+
+# Рабочая память для запросов
+work_mem = 64MB
+
+# Память для обслуживания (vacuum, index creation)
+maintenance_work_mem = 512MB
+
+# === WAL (Write-Ahead Logging) ===
+
+# Размер WAL сегментов
+wal_level = replica
+max_wal_size = 4GB
+min_wal_size = 1GB
+
+# Буферы WAL
+wal_buffers = 16MB
+
+# Checkpoint настройки
+checkpoint_completion_target = 0.9
+checkpoint_timeout = 15min
+
+# === Планировщик запросов ===
+
+# Стоимость случайного доступа к диску
+random_page_cost = 1.1                                    # для SSD
+# random_page_cost = 4.0                                  # для HDD
+
+# Стоимость последовательного доступа
+seq_page_cost = 1.0
+
+# Эффективная скорость I/O
+effective_io_concurrency = 200                            # для SSD
+# effective_io_concurrency = 2                            # для HDD
+
+# === Соединения ===
+
+max_connections = 200
+superuser_reserved_connections = 3
+
+# === Логирование медленных запросов ===
+
+log_min_duration_statement = 1000                         # логировать запросы > 1 сек
+log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+log_lock_waits = on
+log_temp_files = 0
+
+# === Автовакуум ===
+
+autovacuum = on
+autovacuum_max_workers = 4
+autovacuum_naptime = 30s
+autovacuum_vacuum_threshold = 50
+autovacuum_analyze_threshold = 50
+autovacuum_vacuum_scale_factor = 0.1
+autovacuum_analyze_scale_factor = 0.05
+
+# === Расширения для мониторинга ===
+
+shared_preload_libraries = 'pg_stat_statements'
+pg_stat_statements.max = 10000
+pg_stat_statements.track = all
+```
+
+**Мониторинг производительности PostgreSQL:**
+
+```sql
+-- Создание расширения для статистики
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+-- Медленные запросы
+SELECT 
+    query,
+    calls,
+    total_time,
+    mean_time,
+    stddev_time,
+    rows
+FROM pg_stat_statements 
+ORDER BY total_time DESC 
+LIMIT 10;
+
+-- Статистика по базам данных
+SELECT 
+    datname,
+    numbackends,
+    xact_commit,
+    xact_rollback,
+    blks_read,
+    blks_hit,
+    temp_files,
+    temp_bytes
+FROM pg_stat_database 
+WHERE datname NOT IN ('template0', 'template1', 'postgres');
+
+-- Статистика по таблицам
+SELECT 
+    schemaname,
+    tablename,
+    seq_scan,
+    seq_tup_read,
+    idx_scan,
+    idx_tup_fetch,
+    n_tup_ins,
+    n_tup_upd,
+    n_tup_del
+FROM pg_stat_user_tables 
+ORDER BY seq_scan DESC;
+
+-- Неиспользуемые индексы
+SELECT 
+    indexrelname,
+    relname,
+    idx_scan,
+    pg_size_pretty(pg_relation_size(indexrelname::regclass)) as size
+FROM pg_stat_user_indexes 
+WHERE idx_scan = 0 
+ORDER BY pg_relation_size(indexrelname::regclass) DESC;
+
+-- Блокировки
+SELECT 
+    pid,
+    usename,
+    query,
+    state,
+    wait_event_type,
+    wait_event
+FROM pg_stat_activity 
+WHERE state != 'idle' AND pid != pg_backend_pid();
+
+-- Cache hit ratio
+SELECT 
+    'cache hit ratio' as metric,
+    round(
+        sum(blks_hit) * 100.0 / nullif(sum(blks_hit) + sum(blks_read), 0), 2
+    ) as ratio
+FROM pg_stat_database;
+```
+
+### Оптимизация файловой системы
+
+**Выбор и настройка файловой системы:**
+
+```bash
+# Сравнение производительности файловых систем для разных нагрузок:
+
+# ext4 - хороший универсальный выбор
+# - Отличная совместимость
+# - Хорошая производительность для большинства случаев
+# - Поддержка больших файлов и директорий
+
+# XFS - для больших файлов и высокой пропускной способности
+# - Отлично для больших файлов (видео, backup)
+# - Хорошая производительность параллельного I/O
+# - Лучше ext4 для больших файловых систем
+
+# Btrfs - современная FS с продвинутыми возможностями
+# - Снепшоты и клонирование
+# - Сжатие на лету
+# - Проверка целостности данных
+
+# Оптимизация монтирования ext4
+# /etc/fstab
+/dev/sda1 / ext4 defaults,noatime,data=writeback,barrier=0,nobh 0 1
+/dev/sdb1 /var/log ext4 defaults,noatime,data=journal 0 2
+
+# Опции монтирования:
+# noatime - не обновлять время доступа (большой прирост производительности)
+# data=writeback - быстрее, но менее безопасно
+# data=journal - медленнее, но безопаснее
+# barrier=0 - отключить барьеры записи (только для систем с UPS)
+# nobh - отключить buffer heads
+
+# Оптимизация для SSD
+# /etc/fstab для SSD
+/dev/ssd1 / ext4 defaults,noatime,discard,data=ordered 0 1
+
+# discard - включить TRIM для SSD
+# Или использовать fstrim периодически:
+sudo fstrim -av                                           # TRIM всех монтированных FS
+
+# Настройка через cron
+echo "0 1 * * 0 root /sbin/fstrim -av" | sudo tee -a /etc/crontab
+```
+
+**Оптимизация I/O планировщика:**
+
+```bash
+# Просмотр текущего планировщика
+cat /sys/block/sda/queue/scheduler
+# [mq-deadline] kyber bfq none
+
+# Изменение планировщика для SSD
+echo none | sudo tee /sys/block/sda/queue/scheduler       # для NVMe SSD
+echo mq-deadline | sudo tee /sys/block/sda/queue/scheduler # для SATA SSD
+
+# Изменение планировщика для HDD
+echo bfq | sudo tee /sys/block/sda/queue/scheduler         # лучше для интерактивности
+
+# Постоянная настройка через udev
+# /etc/udev/rules.d/60-schedulers.rules
+
+# SSD - отключаем планировщик
+ACTION=="add|change", KERNEL=="sd[a-z]|mmcblk[0-9]*|nvme[0-9]*", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="none"
+
+# HDD - используем BFQ или mq-deadline
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
+
+# Применение правил
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+**Настройка readahead:**
+
+```bash
+# Просмотр текущего значения readahead
+sudo blockdev --getra /dev/sda
+
+# Установка readahead для SSD (меньше значение)
+sudo blockdev --setra 256 /dev/sda                        # 128KB для SSD
+
+# Установка readahead для HDD (больше значение)
+sudo blockdev --setra 4096 /dev/sda                       # 2MB для HDD
+
+# Постоянная настройка через udev
+# /etc/udev/rules.d/60-readahead.rules
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{bdi/read_ahead_kb}="128"
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{bdi/read_ahead_kb}="2048"
+```
+
+### Мониторинг производительности в реальном времени
+
+**Комплексный мониторинг с Netdata:**
+
+```bash
+# Установка Netdata (мониторинг в реальном времени)
+bash <(curl -Ss https://my-netdata.io/kickstart.sh)
+
+# Или установка из пакетов
+sudo apt install netdata                                  # Ubuntu/Debian
+
+# Конфигурация /etc/netdata/netdata.conf
+[global]
+    hostname = web-server-01
+    history = 3600                                         # история данных в секундах
+    update every = 1                                       # интервал обновления
+
+[web]
+    bind to = 127.0.0.1:19999                             # только локальный доступ
+    
+# Доступ через nginx proxy
+# /etc/nginx/sites-available/netdata
+server {
+    listen 80;
+    server_name monitoring.example.com;
+    
+    location / {
+        proxy_pass http://127.0.0.1:19999;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+# Netdata дает метрики по:
+# - CPU, память, диски, сеть
+# - Процессы и сервисы
+# - Nginx, Apache, MySQL, PostgreSQL
+# - Docker контейнеры
+# - Системные вызовы и прерывания
+```
+
+**Настройка алертов в Netdata:**
+
+```bash
+# /etc/netdata/health.d/cpu_usage.conf
+alarm: cpu_usage_high
+    on: system.cpu
+lookup: average -3m unaligned of user,system,softirq,irq,guest
+  units: %
+  every: 10s
+   warn: $this > 80
+   crit: $this > 95
+  delay: down 15m multiplier 1.5 max 1h
+   info: average CPU utilization over the last 3 minutes
+     to: sysadmin
+
+# /etc/netdata/health.d/memory_usage.conf
+alarm: ram_usage_high
+    on: system.ram
+lookup: average -1m unaligned of used
+calc: $this * 100 / ($this + $free + $buffers + $cached)
+units: %
+every: 10s
+warn: $this > 90
+crit: $this > 95
+delay: down 15m multiplier 1.5 max 1h
+info: system RAM usage
+to: sysadmin
+
+# Настройка уведомлений через Slack
+# /etc/netdata/health_alarm_notify.conf
+SEND_SLACK="YES"
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+DEFAULT_RECIPIENT_SLACK="monitoring"
+```
+
+---
+
+## Практические сценарии и решение проблем
+
+### Сценарий 1: Диагностика высокой нагрузки
+
+**Проблема:** Сервер работает медленно, высокий load average.
+
+```bash
+# Шаг 1: Общий обзор системы
+top                                                        # общая картина
+htop                                                       # более удобный интерфейс
+uptime                                                     # load average
+
+# Шаг 2: Анализ загрузки CPU
+iostat -x 1 5                                            # I/O wait
+vmstat 1 5                                                # статистика виртуальной памяти
+sar -u 1 5                                                # детальная статистика CPU
+
+# Если высокий %iowait - проблема с дисками
+# Если высокий %sys - много системных вызовов
+# Если высокий %user - приложения потребляют CPU
+
+# Шаг 3: Поиск процессов-потребителей
+ps aux --sort=-%cpu | head -10                           # топ по CPU
+ps aux --sort=-%mem | head -10                           # топ по памяти
+
+# Детальный анализ процесса
+strace -p PID                                             # системные вызовы
+lsof -p PID                                               # открытые файлы
+pmap -x PID                                               # использование памяти
+
+# Шаг 4: Анализ сетевой активности
+netstat -i                                                # статистика интерфейсов
+ss -tuln | wc -l                                         # количество соединений
+ss -s                                                     # сводная статистика
+
+# Шаг 5: Проверка дискового пространства
+df -h                                                     # свободное место
+du -sh /var/log/* | sort -hr                            # размер логов
+lsof +L1                                                  # удаленные но открытые файлы
+
+# Шаг 6: Анализ логов
+tail -f /var/log/syslog                                  # системные сообщения
+journalctl -f                                            # systemd логи
+tail -f /var/log/nginx/error.log                        # ошибки веб-сервера
+
+# Комплексный скрипт диагностики
+#!/bin/bash
+echo "=== System Load ==="
+uptime
+echo -e "\n=== CPU Usage ==="
+top -bn1 | grep "Cpu(s)"
+echo -e "\n=== Memory Usage ==="
+free -h
+echo -e "\n=== Disk Usage ==="
+df -h | grep -vE '^tmpfs|^devtmpfs'
+echo -e "\n=== Top Processes by CPU ==="
+ps aux --sort=-%cpu | head -5
+echo -e "\n=== Top Processes by Memory ==="
+ps aux --sort=-%mem | head -5
+echo -e "\n=== Network Connections ==="
+ss -s
+echo -e "\n=== Disk I/O ==="
+iostat -x 1 1 | tail -n +4
+```
+
+### Сценарий 2: Проблемы с сетью
+
+**Проблема:** Сайт недоступен или работает медленно.
+
+```bash
+# Шаг 1: Базовая диагностика подключения
+ping -c 4 google.com                                     # доступность интернета
+ping -c 4 localhost                                      # локальная сеть
+curl -I http://localhost                                 # HTTP ответ сервера
+
+# Шаг 2: Проверка сетевых интерфейсов
+ip addr show                                             # IP адреса интерфейсов
+ip route show                                            # таблица маршрутизации
+netstat -i                                               # статистика интерфейсов
+
+# Шаг 3: Проверка слушающих портов
+ss -tlnp | grep :80                                     # кто слушает порт 80
+ss -tlnp | grep :443                                    # кто слушает порт 443
+nmap localhost                                           # сканирование портов
+
+# Шаг 4: Анализ сетевого трафика
+sudo tcpdump -i eth0 port 80                           # HTTP трафик
+sudo tcpdump -i eth0 host 8.8.8.8                      # трафик к DNS серверу
+sudo iftop                                               # мониторинг трафика
+
+# Шаг 5: DNS диагностика
+dig google.com                                          # DNS запрос
+nslookup google.com                                     # альтернативный DNS запрос
+cat /etc/resolv.conf                                    # настройки DNS
+
+# Шаг 6: Проверка firewall
+sudo ufw status                                          # статус UFW
+sudo iptables -L -n                                     # правила iptables
+sudo iptables -L -n -v                                  # с счетчиками пакетов
+
+# Шаг 7: Диагностика конкретного сервиса
+systemctl status nginx                                  # статус веб-сервера
+nginx -t                                                 # проверка конфигурации nginx
+curl -v http://localhost                                # подробный HTTP запрос
+
+# Тест производительности сети
+iperf3 -s                                               # на сервере
+iperf3 -c server_ip                                     # на клиенте
+```
+
+### Сценарий 3: Проблемы с дисковым пространством
+
+**Проблема:** Заканчивается место на диске.
+
+```bash
+# Шаг 1: Обзор использования дисков
+df -h                                                    # общее использование
+df -i                                                    # использование inodes
+
+# Шаг 2: Поиск больших файлов и директорий
+du -sh /* | sort -hr | head -10                        # топ директорий по размеру
+find / -type f -size +1G 2>/dev/null | head -10       # файлы больше 1GB
+find /var/log -type f -size +100M                      # большие лог файлы
+
+# Шаг 3: Анализ конкретных директорий
+du -sh /var/log/* | sort -hr                           # размер логов
+du -sh /home/* | sort -hr                              # размер домашних папок
+du -sh /opt/* | sort -hr                               # установленные приложения
+
+# Шаг 4: Поиск удаленных но открытых файлов
+lsof +L1                                                # файлы удалены но все еще открыты
+lsof | grep "(deleted)"                                # альтернативный способ
+
+# Шаг 5: Очистка места
+# Логи
+sudo journalctl --vacuum-time=7d                       # оставить журналы за 7 дней
+sudo logrotate -f /etc/logrotate.conf                  # принудительная ротация логов
+
+# Temporary файлы
+sudo find /tmp -type f -atime +7 -delete               # удалить старые temp файлы
+sudo find /var/tmp -type f -atime +30 -delete          # удалить старые var/tmp файлы
+
+# Package cache
+sudo apt clean                                          # очистить кеш пакетов (Debian/Ubuntu)
+sudo yum clean all                                      # очистить кеш пакетов (RHEL/CentOS)
+
+# Docker
+docker system prune -a                                  # удалить неиспользуемые образы и контейнеры
+docker volume prune                                     # удалить неиспользуемые volumes
+
+# Автоматический скрипт очистки
+#!/bin/bash
+# /usr/local/bin/cleanup-disk.sh
+
+echo "Starting disk cleanup..."
+
+# Логи старше 30 дней
+find /var/log -name "*.log" -mtime +30 -delete
+find /var/log -name "*.gz" -mtime +30 -delete
+
+# Temporary файлы
+find /tmp -type f -atime +7 -delete
+find /var/tmp -type f -atime +30 -delete
+
+# Cores dumps
+find /var/crash -name "*.crash" -mtime +7 -delete
+
+# Журналы systemd старше недели
+journalctl --vacuum-time=7d
+
+# Package cache
+apt autoremove -y
+apt autoclean
+
+echo "Disk cleanup completed"
+df -h
+```
+
+### Сценарий 4: Проблемы с производительностью базы данных
+
+**Проблема:** PostgreSQL работает медленно.
+
+```bash
+# Шаг 1: Проверка состояния PostgreSQL
+systemctl status postgresql                             # статус сервиса
+sudo -u postgres psql -c "SELECT version();"           # версия PostgreSQL
+
+# Шаг 2: Анализ соединений
+sudo -u postgres psql -c "
+SELECT 
+    count(*) as total_connections,
+    sum(case when state = 'active' then 1 else 0 end) as active,
+    sum(case when state = 'idle' then 1 else 0 end) as idle
+FROM pg_stat_activity;"
+
+# Шаг 3: Поиск медленных запросов
+sudo -u postgres psql -c "
+SELECT 
+    pid,
+    now() - pg_stat_activity.query_start AS duration,
+    query 
+FROM pg_stat_activity 
+WHERE (now() - pg_stat_activity.query_start) > interval '5 minutes';"
+
+# Шаг 4: Анализ блокировок
+sudo -u postgres psql -c "
+SELECT 
+    blocked_locks.pid AS blocked_pid,
+    blocked_activity.usename AS blocked_user,
+    blocking_locks.pid AS blocking_pid,
+    blocking_activity.usename AS blocking_user,
+    blocked_activity.query AS blocked_statement,
+    blocking_activity.query AS blocking_statement
+FROM pg_catalog.pg_locks blocked_locks
+JOIN pg_catalog.pg_stat_activity blocked_activity ON blocked_activity.pid = blocked_locks.pid
+JOIN pg_catalog.pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype
+JOIN pg_catalog.pg_stat_activity blocking_activity ON blocking_activity.pid = blocking_locks.pid
+WHERE NOT blocked_locks.granted;"
+
+# Шаг 5: Статистика производительности
+sudo -u postgres psql -c "
+SELECT 
+    schemaname,
+    tablename,
+    seq_scan,
+    seq_tup_read,
+    idx_scan,
+    idx_tup_fetch,
+    n_tup_ins + n_tup_upd + n_tup_del as total_writes
+FROM pg_stat_user_tables 
+ORDER BY seq_scan DESC 
+LIMIT 10;"
+
+# Шаг 6: Cache hit ratio
+sudo -u postgres psql -c "
+SELECT 
+    'Buffer cache hit ratio' as metric,
+    round(sum(blks_hit) * 100.0 / nullif(sum(blks_hit) + sum(blks_read), 0), 2) as percentage
+FROM pg_stat_database;"
+
+# Шаг 7: Размеры таблиц и индексов
+sudo -u postgres psql -c "
+SELECT 
+    schemaname,
+    tablename,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as total_size,
+    pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) as table_size,
+    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename) - 
+                   pg_relation_size(schemaname||'.'||tablename)) as index_size
+FROM pg_tables 
+WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC 
+LIMIT 10;"
+
+# Шаг 8: Система мониторинга ресурсов
+iostat -x 1 5                                          # I/O статистика
+top -p $(pgrep postgres)                               # использование ресурсов процессами postgres
+```
+
+---
+
+## Заключение и следующие шаги
+
+Поздравляем! Вы прошли путь от основ Linux до экспертного уровня. Теперь у вас есть глубокие знания в:
+
+### 🔧 Основные навыки
+- **Командная строка** — автоматизация повседневных задач через bash скрипты
+- **Файловая система** — понимание структуры и эффективная работа с файлами
+- **Права доступа** — настройка безопасности на уровне файлов и пользователей
+- **Процессы** — мониторинг, управление и оптимизация системных ресурсов
+
+### 🌐 Сетевые технологии
+- **TCP/IP стек** — глубокое понимание сетевых протоколов
+- **DNS и маршрутизация** — настройка и диагностика сетевой инфраструктуры
+- **Файрволы** — защита сервера с помощью iptables и UFW
+- **Мониторинг трафика** — анализ сетевой активности и решение проблем
+
+### 🚀 Инфраструктура и DevOps
+- **Веб-серверы** — настройка и оптимизация Nginx для production
+- **Базы данных** — администрирование PostgreSQL и оптимизация производительности
+- **Контейнеризация** — Docker и Docker Compose для современного развертывания
+- **Автоматизация** — Ansible для управления конфигурацией множества серверов
+
+### 📊 Мониторинг и безопасность
+- **Prometheus + Grafana** — профессиональный мониторинг инфраструктуры
+- **ELK Stack** — централизованное логирование и анализ
+- **Hardening системы** — укрепление безопасности production серверов
+- **Fail2ban** — автоматическая защита от атак
+
+### ⚡ Performance tuning
+- **Системные параметры** — тюнинг ядра Linux для высоких нагрузок
+- **Анализ производительности** — профилирование CPU, памяти и I/O
+- **Оптимизация стека** — настройка веб-сервера и базы данных
+- **Диагностика проблем** — систематический подход к решению проблем
+
+---
+
+## Что дальше?
+
+Теперь, когда у вас есть прочная основа в Linux, рекомендуем развиваться в следующих направлениях:
+
+### 🔄 Оркестрация контейнеров
+**Kubernetes** — следующий естественный шаг после Docker:
+```bash
+# Изучите основы Kubernetes
+kubectl get nodes
+kubectl get pods
+kubectl apply -f deployment.yaml
+
+# Понимание концепций:
+# - Pods, Services, Deployments
+# - Ingress, ConfigMaps, Secrets  
+# - Helm для управления пакетами
+# - Мониторинг с Prometheus Operator
+```
+
+### ☁️ Облачные платформы
+Современная инфраструктура работает в облаке:
+```bash
+# AWS
+aws ec2 describe-instances
+aws s3 ls
+aws eks update-kubeconfig --cluster my-cluster
+
+# Google Cloud Platform  
+gcloud compute instances list
+gcloud container clusters get-credentials my-cluster
+
+# Azure
+az vm list
+az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+```
+
+### 🏗️ Infrastructure as Code
+Управление инфраструктурой через код:
+```hcl
+# Terraform example
+resource "aws_instance" "web" {
+  ami           = "ami-0c55b159cbfafe1d0"
+  instance_type = "t2.micro"
+  
+  tags = {
+    Name = "WebServer"
+  }
+}
+
+# Изучите также:
+# - Terraform для создания инфраструктуры
+# - Ansible для настройки серверов  
+# - Pulumi как современную альтернативу
+```
+
+### 🔐 Продвинутая безопасность
+Углубление в DevSecOps:
+```bash
+# Сканирование уязвимостей
+trivy image nginx:latest
+clair-scanner nginx:latest
+
+# Secrets management
+vault write secret/myapp/config db_password=secretpassword
+kubectl create secret generic mysecret --from-literal=password=secretpassword
+
+# Compliance as Code
+inspec exec compliance-profile
+```
+
+### 📈 SRE (Site Reliability Engineering)
+Обеспечение надежности больших систем:
+```yaml
+# SLI/SLO определения
+sli:
+  - name: "API availability"
+    description: "Percentage of successful API requests"
+    query: "rate(http_requests_total{status!~'5..'}[5m]) / rate(http_requests_total[5m])"
+    
+slo:
+  - name: "99.9% API availability"
+    target: 99.9
+    time_window: "30d"
+```
+
+### 🤖 GitOps и CI/CD
+Автоматизация всего жизненного цикла приложений:
+```yaml
+# GitHub Actions workflow
+name: Deploy to Production
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/app
+```
+
+---
+
+## Практические проекты для закрепления
+
+### 🎯 Проект 1: Полный веб-стек
+Создайте complete production-ready окружение:
+```
+Frontend (React) → Load Balancer (Nginx) → Backend (Python/Node.js) → Database (PostgreSQL) → Cache (Redis)
+                                ↓
+                           Мониторинг (Prometheus/Grafana)
+                                ↓
+                           Логирование (ELK Stack)
+                                ↓
+                           Backup и Recovery
+```
+
+### 🎯 Проект 2: Kubernetes кластер
+Разверните собственный Kubernetes кластер:
+```bash
+# Создание кластера
+kubeadm init --pod-network-cidr=10.244.0.0/16
+
+# Установка сетевого плагина
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+# Развертывание приложения с мониторингом
+helm install prometheus prometheus-community/kube-prometheus-stack
+```
+
+### 🎯 Проект 3: CI/CD pipeline
+Настройте полный конвейер разработки:
+```
+Git Push → Build (Docker) → Test → Security Scan → Deploy to Staging → Manual Approval → Deploy to Production
+    ↓           ↓            ↓         ↓                ↓                    ↓                ↓
+   GitHub    Docker Hub   Jest    Trivy/Snyk      Staging K8s         Slack        Production K8s
+```
+
+### 🎯 Проект 4: Multi-cloud инфраструктура
+Создайте отказоустойчивую инфраструктуру в нескольких облаках:
+```
+Primary Region (AWS)     Secondary Region (GCP)     Tertiary Region (Azure)
+      ↓                          ↓                          ↓
+   Web Servers              Web Servers              Web Servers
+      ↓                          ↓                          ↓
+   Database Master         Database Replica         Database Replica
+      ↓                          ↓                          ↓
+   Global Load Balancer (CloudFlare)
+```
+
+---
+
+## Ресурсы для продолжения обучения
+
+### 📚 Книги
+- **"Linux Bible"** by Christopher Negus — всеобъемлющий справочник
+- **"UNIX and Linux System Administration Handbook"** — практическое администрирование
+- **"Site Reliability Engineering"** by Google — SRE принципы и практики
+- **"Kubernetes: Up and Running"** — глубокое погружение в K8s
+- **"Terraform: Up & Running"** — Infrastructure as Code
+
+### 🌐 Онлайн ресурсы
+- **Linux Academy / A Cloud Guru** — курсы по Linux и облачным технологиям
+- **Kubernetes Documentation** — официальная документация K8s
+- **DigitalOcean Tutorials** — практические руководства
+- **Red Hat Learning** — сертификационные курсы
+- **Linux Foundation Training** — официальные курсы Linux
+
+### 🏆 Сертификации
+Подтвердите свои знания профессиональными сертификатами:
+
+**Linux сертификации:**
+- LPIC-1, LPIC-2, LPIC-3 (LPI)
+- RHCSA, RHCE (Red Hat)
+- CompTIA Linux+
+
+**Cloud сертификации:**
+- AWS Solutions Architect
+- Google Cloud Professional
+- Azure Solutions Architect
+
+**DevOps сертификации:**
+- Certified Kubernetes Administrator (CKA)
+- Certified Kubernetes Application Developer (CKAD)
+- Docker Certified Associate
+
+### 💼 Карьерные пути
+
+После освоения Linux открываются множество карьерных возможностей:
+
+**🔧 Systems Administrator**
+- Управление серверной инфраструктурой
+- Автоматизация рутинных задач
+- Мониторинг и обеспечение uptime
+
+**☁️ Cloud Engineer**
+- Проектирование облачной архитектуры
+- Миграция в облако
+- Управление облачными ресурсами
+
+**🚀 DevOps Engineer**
+- Построение CI/CD пайплайнов
+- Infrastructure as Code
+- Культура DevOps в команде
+
+**🛡️ Site Reliability Engineer (SRE)**
+- Обеспечение надежности систем
+- Автоматизация операций
+- Управление инцидентами
+
+**🔒 Security Engineer**
+- Hardening систем
+- Мониторинг безопасности
+- Compliance и аудит
+
+**📊 Platform Engineer**
+- Внутренние платформы для разработчиков
+- Kubernetes операторы
+- Developer Experience
+
+---
+
+## Финальные советы
+
+### 🎯 Практика — ключ к успеху
+- **Создавайте проекты** — теория без практики бесполезна
+- **Ломайте и чините** — лучший способ изучить диагностику
+- **Автоматизируйте всё** — если делаете что-то дважды, напишите скрипт
+- **Читайте логи** — они расскажут вам всю правду о системе
+
+### 🤝 Сообщество
+- **Участвуйте в open source** — вносите вклад в Linux проекты
+- **Задавайте вопросы** — Stack Overflow, Reddit, форумы
+- **Делитесь знаниями** — блог, выступления, менторство
+- **Следите за трендами** — Hacker News, /r/sysadmin, технические блоги
+
+### 📈 Непрерывное обучение
+- **Технологии меняются быстро** — будьте готовы учиться постоянно
+- **Изучайте смежные области** — сети, безопасность, разработка
+- **Экспериментируйте** — домашняя лаборатория или cloud playground
+- **Документируйте опыт** — создавайте личную базу знаний
