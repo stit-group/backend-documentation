@@ -1,159 +1,434 @@
-# Детальный план изучения System Design для Backend разработчика
+# План изучения System Design: От нуля до эксперта
 
-## **Фаза 1: Основы (4-6 недель)**
+## Общая информация о курсе
+- **Продолжительность**: 47 недель (около 11 месяцев)
+- **Философия**: Понимание принципов важнее знания инструментов
+- **Подход**: Пошаговое изучение с практическими примерами
+- **Цель**: Подготовка к системным интервью и архитектурной работе
 
-### **Неделя 1-2: Базовые концепции**
-- Что такое system design и зачем он нужен
-- Отличие от algorithm design
-- Масштабируемость vs производительность
-- Горизонтальное и вертикальное масштабирование
-- Метрики: latency, throughput, availability, consistency
+---
 
-### **Неделя 3-4: Архитектурные паттерны**
-- Монолитная архитектура: плюсы и минусы
-- Микросервисная архитектура: когда использовать
-- Service-oriented architecture (SOA)
-- Event-driven architecture
-- Serverless архитектура
+## ФАЗА 1: Основы (4-6 недель)
 
-### **Неделя 5-6: Сетевые основы**
-- TCP vs UDP: когда что использовать
-- HTTP/HTTPS, REST API принципы
-- gRPC и когда его применять
-- WebSockets для real-time коммуникации
-- Load balancing алгоритмы (round-robin, weighted, least connections)
+### Недели 1-2: Базовые концепции
+**Цели:**
+- Понять, что такое System Design
+- Изучить различия между алгоритмическим и системным дизайном
+- Освоить основные метрики производительности
 
-## **Фаза 2: Хранение данных (6-8 недель)**
+**Темы для изучения:**
+- [ ] Определение System Design
+- [ ] Масштабируемость vs Производительность
+- [ ] Типы масштабирования (вертикальное/горизонтальное)
+- [ ] Ключевые метрики: Latency, Throughput, Availability
+- [ ] Расчет доступности (99.9%, 99.99%)
 
-### **Неделя 7-9: Типы баз данных**
-- Реляционные БД: ACID свойства, нормализация
-- NoSQL: Document, Key-Value, Column-family, Graph
-- Когда использовать SQL vs NoSQL
-- CAP теорема и ее практическое применение
-- Eventual consistency vs strong consistency
+**Практические задания:**
+- [ ] Рассчитать время простоя для разных уровней availability
+- [ ] Сравнить вертикальное и горизонтальное масштабирование на примерах
+- [ ] Создать простые примеры кода для измерения latency и throughput
 
-### **Неделя 10-12: Масштабирование БД**
-- Database sharding стратегии
-- Read replicas и master-slave репликация
-- Database partitioning (horizontal/vertical)
-- Connection pooling
-- Database indexing стратегии для масштабирования
+### Недели 3-4: Архитектурные паттерны
+**Цели:**
+- Изучить основные архитектурные подходы
+- Понять когда использовать монолит vs микросервисы
+- Освоить Event-Driven Architecture
 
-### **Неделя 13-14: Специализированные хранилища**
-- In-memory databases (Redis, Memcached)
-- Time-series databases
-- Search engines (Elasticsearch)
-- Data warehouses vs data lakes
-- Object storage (S3-like системы)
+**Темы для изучения:**
+- [ ] Монолитная архитектура (плюсы/минусы)
+- [ ] Микросервисная архитектура
+- [ ] Декомпозиция монолита на микросервисы
+- [ ] Event-Driven Architecture
+- [ ] Паттерны взаимодействия сервисов
 
-## **Фаза 3: Распределенные системы (8-10 недель)**
+**Практические задания:**
+- [ ] Спроектировать декомпозицию e-commerce приложения
+- [ ] Реализовать простой event bus на Python
+- [ ] Сравнить производительность монолита и микросервисов
 
-### **Неделя 15-17: Основы распределенных систем**
-- Distributed system challenges
-- Consensus алгоритмы (Raft, Paxos концептуально)
-- Leader election
-- Distributed locking
-- Clock synchronization и logical clocks
+### Недели 5-6: Сетевые основы
+**Цели:**
+- Понять протоколы TCP/UDP
+- Изучить стратегии распределения нагрузки
+- Освоить основы сетевой инфраструктуры
 
-### **Неделя 18-20: Надежность и отказоустойчивость**
-- Fault tolerance паттерны
-- Circuit breaker pattern
-- Bulkhead pattern  
-- Timeout и retry стратегии
+**Темы для изучения:**
+- [ ] TCP vs UDP (когда что использовать)
+- [ ] Load Balancing алгоритмы
+- [ ] Типы load balancers (L4/L7)
+- [ ] Health checks
+- [ ] DNS и CDN основы
+
+**Практические задания:**
+- [ ] Реализовать простой load balancer на Python
+- [ ] Настроить Nginx как reverse proxy
+- [ ] Сравнить производительность TCP vs UDP
+
+---
+
+## ФАЗА 2: Хранение данных (6-8 недель)
+
+### Недели 7-9: Типы баз данных
+**Цели:**
+- Глубоко изучить ACID свойства
+- Понять различия SQL vs NoSQL
+- Освоить CAP теорему
+
+**Темы для изучения:**
+- [ ] ACID свойства с примерами
+- [ ] SQL базы данных (RDBMS)
+- [ ] NoSQL типы: Document, Key-Value, Column, Graph
+- [ ] CAP теорема и ее практическое применение
+- [ ] Eventual Consistency
+
+**Практические задания:**
+- [ ] Реализовать примеры нарушения ACID
+- [ ] Выбрать тип БД для разных сценариев
+- [ ] Создать схемы для SQL и NoSQL решений
+
+### Недели 10-12: Масштабирование БД
+**Цели:**
+- Изучить стратегии шардинга
+- Понять репликацию данных
+- Освоить партиционирование
+
+**Темы для изучения:**
+- [ ] Database Sharding стратегии
+- [ ] Master-Slave репликация
+- [ ] Master-Master репликация
+- [ ] Партиционирование (горизонтальное/вертикальное)
+- [ ] Distributed transactions
+
+**Практические задания:**
+- [ ] Реализовать простой шардинг на Python
+- [ ] Настроить MySQL репликацию
+- [ ] Спроектировать шардинг для социальной сети
+
+### Недели 13-14: Специализированные хранилища
+**Цели:**
+- Изучить in-memory базы
+- Понять search engines
+- Освоить time-series БД
+
+**Темы для изучения:**
+- [ ] Redis как кэш и БД
+- [ ] Elasticsearch для полнотекстового поиска
+- [ ] Time-series databases
+- [ ] Graph databases
+- [ ] Blob storage
+
+**Практические задания:**
+- [ ] Реализовать кэширование с Redis
+- [ ] Создать поисковый индекс в Elasticsearch
+- [ ] Спроектировать схему для метрик
+
+---
+
+## ФАЗА 3: Распределенные системы (8-10 недель)
+
+### Недели 15-17: Основы распределенных систем
+**Цели:**
+- Понять проблемы распределенных систем
+- Изучить алгоритмы консенсуса
+- Освоить логические часы
+
+**Темы для изучения:**
+- [ ] Сетевые разделения и частичные отказы
+- [ ] Raft алгоритм консенсуса
+- [ ] Lamport timestamps
+- [ ] Vector clocks
+- [ ] Byzantine fault tolerance
+
+**Практические задания:**
+- [ ] Реализовать Raft на упрощенном примере
+- [ ] Создать logical clock систему
+- [ ] Симулировать сетевые разделения
+
+### Недели 18-20: Надежность и отказоустойчивость
+**Цели:**
+- Изучить Circuit Breaker паттерн
+- Освоить стратегии retry
+- Понять health checking
+
+**Темы для изучения:**
+- [ ] Circuit Breaker паттерн
+- [ ] Retry стратегии (exponential backoff)
+- [ ] Bulkhead паттерн
+- [ ] Health checks и graceful degradation
+- [ ] Timeout управление
+
+**Практические задания:**
+- [ ] Реализовать Circuit Breaker
+- [ ] Создать retry механизм с backoff
+- [ ] Настроить health checks для микросервисов
+
+### Недели 21-23: Консистентность данных
+**Цели:**
+- Изучить Saga паттерн
+- Понять Event Sourcing
+- Освоить CQRS
+
+**Темы для изучения:**
+- [ ] Saga паттерн для распределенных транзакций
+- [ ] Event Sourcing
+- [ ] CQRS (Command Query Responsibility Segregation)
+- [ ] Eventual consistency паттерны
+- [ ] Conflict resolution
+
+**Практические задания:**
+- [ ] Реализовать Saga для заказа
+- [ ] Создать Event Store
+- [ ] Спроектировать CQRS систему
+
+### Недели 24-25: Асинхронная обработка
+**Цели:**
+- Изучить Message Queues
+- Понять Pub/Sub паттерн
+- Освоить обработку ошибок
+
+**Темы для изучения:**
+- [ ] Message Queues (RabbitMQ, Apache Kafka)
+- [ ] Pub/Sub паттерн
+- [ ] Dead Letter Queues
+- [ ] Message ordering и delivery guarantees
+- [ ] Backpressure handling
+
+**Практические задания:**
+- [ ] Настроить RabbitMQ или Kafka
+- [ ] Реализовать Pub/Sub систему
+- [ ] Создать обработку Dead Letter Queue
+
+---
+
+## ФАЗА 4: Производительность и масштабирование (6-8 недель)
+
+### Недели 26-28: Кэширование
+**Цели:**
+- Изучить уровни кэширования
+- Освоить паттерны кэширования
+- Понять cache invalidation
+
+**Темы для изучения:**
+- [ ] Многоуровневое кэширование
+- [ ] Cache-Aside, Write-Through, Write-Behind
+- [ ] Cache invalidation стратегии
+- [ ] CDN кэширование
+- [ ] Application-level кэширование
+
+**Практические задания:**
+- [ ] Реализовать разные паттерны кэширования
+- [ ] Настроить Redis кэш
+- [ ] Создать систему cache invalidation
+
+### Недели 29-31: Оптимизация производительности
+**Цели:**
+- Изучить оптимизацию БД
+- Понять batching
+- Освоить rate limiting
+
+**Темы для изучения:**
+- [ ] Database query optimization
+- [ ] Connection pooling
+- [ ] Batching операций
+- [ ] Rate limiting алгоритмы
+- [ ] Performance profiling
+
+**Практические задания:**
+- [ ] Оптимизировать медленные SQL запросы
+- [ ] Реализовать connection pool
+- [ ] Создать rate limiter
+
+### Недели 32-33: Мониторинг и наблюдаемость
+**Цели:**
+- Изучить метрики, логи, трейсы
+- Понять SLI/SLO/SLA
+- Освоить error budgets
+
+**Темы для изучения:**
+- [ ] Три столпа наблюдаемости
+- [ ] Metrics сбор и анализ
+- [ ] Distributed tracing
+- [ ] SLI/SLO/SLA определения
+- [ ] Error budgets и alerting
+
+**Практические задания:**
+- [ ] Настроить сбор метрик
+- [ ] Реализовать distributed tracing
+- [ ] Создать SLO dashboard
+
+---
+
+## ФАЗА 5: Продвинутые темы (6-8 недель)
+
+### Недели 34-36: Безопасность
+**Цели:**
+- Изучить аутентификацию и авторизацию
+- Понять JWT токены
+- Освоить API security
+
+**Темы для изучения:**
+- [ ] Authentication vs Authorization
+- [ ] JWT tokens
+- [ ] OAuth 2.0 / OpenID Connect
+- [ ] API security best practices
+- [ ] Encryption (at rest, in transit)
+
+**Практические задания:**
+- [ ] Реализовать JWT аутентификацию
+- [ ] Настроить OAuth flow
+- [ ] Создать secure API
+
+### Недели 37-39: Развертывание и операции
+**Цели:**
+- Изучить deployment стратегии
+- Понять feature flags
+- Освоить infrastructure as code
+
+**Темы для изучения:**
+- [ ] Blue-Green deployments
+- [ ] Canary releases
+- [ ] Feature flags
+- [ ] Infrastructure as Code
+- [ ] Container orchestration
+
+**Практические задания:**
+- [ ] Настроить Blue-Green deployment
+- [ ] Реализовать feature flag систему
+- [ ] Создать Kubernetes deployment
+
+### Недели 40-41: Специализированные системы
+**Цели:**
+- Изучить real-time системы
+- Понять stream processing
+- Освоить batch processing
+
+**Темы для изучения:**
+- [ ] WebSocket и Server-Sent Events
+- [ ] Stream processing (Apache Kafka Streams)
+- [ ] Batch processing (ETL пайплайны)
+- [ ] Real-time analytics
+- [ ] Message streaming architectures
+
+**Практические задания:**
+- [ ] Создать real-time чат
+- [ ] Реализовать stream processing
+- [ ] Построить ETL пайплайн
+
+---
+
+## ФАЗА 6: Практическое применение (4-6 недель)
+
+### Недели 42-44: Системные интервью
+**Цели:**
+- Освоить подход к системным интервью
+- Изучить trade-offs анализ
+- Практиковаться на реальных задачах
+
+**Темы для изучения:**
+- [ ] Структура системного интервью
+- [ ] Requirements clarification
+- [ ] Capacity estimation
+- [ ] Trade-offs analysis
+- [ ] System design presentation
+
+**Практические задания:**
+- [ ] Решить 10+ системных задач
+- [ ] Провести mock интервью
+- [ ] Создать portfolio решений
+
+### Недели 45-47: Изучение реальных систем
+**Цели:**
+- Анализировать архитектуры реальных систем
+- Понимать эволюцию архитектур
+- Изучать best practices
+
+**Темы для изучения:**
+- [ ] Netflix architecture
+- [ ] Uber architecture  
+- [ ] WhatsApp architecture
+- [ ] Amazon architecture
+- [ ] Google architecture
+
+**Практические задания:**
+- [ ] Проанализировать 5 реальных архитектур
+- [ ] Написать case study
+- [ ] Создать собственную архитектуру
+
+---
+
+## Ключевые принципы для запоминания
+
+### 1. Масштабируемость
+- Думайте о росте с первого дня
+- Horizontal scaling > Vertical scaling
+- Stateless services проще масштабировать
+
+### 2. Надежность
+- Assume failures will happen
 - Graceful degradation
-- Health checks и monitoring
+- Circuit breakers everywhere
 
-### **Неделя 21-23: Консистентность данных**
-- ACID vs BASE
-- Two-phase commit
-- Saga pattern для distributed transactions
-- Event sourcing
-- CQRS (Command Query Responsibility Segregation)
+### 3. Простота
+- Start simple, add complexity when needed
+- Microservices - не silver bullet
+- Монолит может быть правильным выбором
 
-### **Неделя 24-25: Асинхронная обработка**
-- Message queues vs message brokers
-- Pub/Sub паттерны
-- Event streaming platforms
-- Dead letter queues
-- Message ordering гарантии
+### 4. Trade-offs
+- Нет идеальных решений
+- Каждое решение имеет цену
+- Понимайте свои ограничения
 
-## **Фаза 4: Производительность и масштабирование (6-8 недель)**
+### 5. Измеряйте
+- You can't improve what you don't measure
+- SLIs/SLOs/SLAs
+- Real User Monitoring
 
-### **Неделя 26-28: Кэширование**
-- Кэширование на разных уровнях
-- Cache invalidation стратегии
-- Cache-aside, write-through, write-behind паттерны
-- Distributed caching
-- CDN для статического контента
+---
 
-### **Неделя 29-31: Оптимизация производительности**
-- Database query optimization
-- Connection management
-- Resource pooling
-- Batching стратегии
-- Compression techniques
-- Rate limiting и throttling
+## Ресурсы для изучения
 
-### **Неделя 32-33: Мониторинг и наблюдаемость**
-- Metrics, logs, traces
-- SLI/SLO/SLA концепции
-- Distributed tracing
-- Application performance monitoring
-- Capacity planning
+### Книги
+- [ ] "Designing Data-Intensive Applications" - Martin Kleppmann
+- [ ] "System Design Interview" - Alex Xu
+- [ ] "Building Microservices" - Sam Newman
 
-## **Фаза 5: Продвинутые темы (6-8 недель)**
+### Блоги и сайты
+- [ ] High Scalability blog
+- [ ] AWS Architecture Center
+- [ ] Google Cloud Architecture Framework
+- [ ] Microsoft Azure Architecture
 
-### **Неделя 34-36: Безопасность**
-- Authentication vs authorization
-- OAuth 2.0 / JWT
-- API security best practices
-- Data encryption (at rest/in transit)
-- Network security в distributed systems
+### Практика
+- [ ] LeetCode System Design
+- [ ] Pramp System Design
+- [ ] InterviewBit System Design
 
-### **Неделя 37-39: Развертывание и операции**
-- Blue-green deployments
-- Canary releases
-- Feature flags
-- Container orchestration концепции
-- Service mesh архитектура
+---
 
-### **Неделя 40-41: Специализированные системы**
-- Real-time systems design
-- Batch processing systems
-- Stream processing архитектуры
-- Machine learning systems integration
+## Чек-лист прогресса
 
-## **Фаза 6: Практическое применение (4-6 недель)**
+### Базовый уровень (после Фазы 1-2)
+- [ ] Понимаю различия между монолитом и микросервисами
+- [ ] Могу выбрать подходящую базу данных для задачи
+- [ ] Знаю основные паттерны масштабирования
 
-### **Неделя 42-44: Системные интервью**
-- Подход к решению system design задач
-- Estimation techniques
-- Trade-offs анализ
-- Компоненты диаграмм и их взаимодействие
+### Средний уровень (после Фазы 3-4)
+- [ ] Понимаю проблемы распределенных систем
+- [ ] Могу спроектировать отказоустойчивую систему
+- [ ] Знаю как оптимизировать производительность
 
-### **Неделя 45-47: Изучение реальных систем**
-- Анализ архитектур крупных компаний
-- Case studies: Netflix, Uber, WhatsApp масштабирование
-- Lessons learned из production incidents
-- Industry best practices
+### Продвинутый уровень (после Фазы 5-6)
+- [ ] Могу провести системное интервью
+- [ ] Понимаю trade-offs в реальных архитектурах
+- [ ] Готов к работе системным архитектором
 
-## **Рекомендации по изучению**
+---
 
-### **Еженедельная структура**
-- **Понедельник-среда**: Изучение теории
-- **Четверг-пятница**: Практические схемы и диаграммы
-- **Выходные**: Повторение и углубление
+## Интеграция с другими планами
 
-### **Ресурсы для изучения**
-- Технические блоги крупных компаний
-- System design книги и курсы
-- Архитектурные диаграммы реальных систем
-- Документация облачных провайдеров
+Этот план System Design можно интегрировать с планами изучения:
+- **Linux**: Для понимания инфраструктуры и развертывания
+- **Git**: Для версионирования и CI/CD процессов  
+- **Мониторинг**: Для наблюдаемости и операционного управления
 
-### **Контроль прогресса**
-- Еженедельные самопроверки
-- Создание архитектурных схем
-- Решение system design задач
-- Анализ trade-offs в различных подходах
-
-**Общая длительность**: 10-12 месяцев при изучении 10-15 часов в неделю
+Общий план может включать параллельное изучение тем или последовательное прохождение курсов с акцентом на практическую интеграцию знаний.
