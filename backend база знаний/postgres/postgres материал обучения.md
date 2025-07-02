@@ -1,5 +1,5 @@
 # PostgreSQL: Полное руководство для Backend разработчика
-*От основ до экспертного уровня за 16 недель*
+*Структурированный курс от основ до экспертного уровня*
 
 ## Введение: Зачем PostgreSQL backend разработчику?
 
@@ -13,9 +13,9 @@
 
 ---
 
-# ФАЗА 1: ОСНОВЫ SQL И POSTGRESQL (Недели 1-3)
+# БЛОК 1: ОСНОВЫ SQL И POSTGRESQL
 
-## Неделя 1: Фундаментальные концепции
+## Глава 1: Фундаментальные концепции
 
 ### Понимание реляционных баз данных
 
@@ -209,7 +209,7 @@ CREATE TABLE products (
 
 ---
 
-## Неделя 2: Основные SQL операции
+## Глава 2: Основные SQL операции
 
 ### DML (Data Manipulation Language)
 
@@ -466,7 +466,7 @@ WHERE user_id = 1;
 
 ---
 
-## Неделя 3: Расширенные SELECT запросы
+## Глава 3: Расширенные SELECT запросы
 
 ### Сортировка и ограничения
 
@@ -720,9 +720,9 @@ ORDER BY last_login DESC NULLS LAST;  -- NULL в конце
 
 ---
 
-# ФАЗА 2: ПРОДВИНУТЫЙ SQL (Недели 4-7)
+# БЛОК 2: ПРОДВИНУТЫЙ SQL
 
-## Недели 4-5: Объединения таблиц (JOINs)
+## Глава 4: Объединения таблиц (JOINs)
 
 ### Концепция JOIN операций
 
@@ -1045,7 +1045,7 @@ WHERE ranked_employees.rank <= 3;  -- Топ-3 по зарплате
 
 ---
 
-## Неделя 6: Функции окна (Window Functions)
+## Глава 5: Функции окна (Window Functions)
 
 ### Концепция оконных функций
 
@@ -1313,7 +1313,7 @@ ORDER BY product_category, sale_date;
 
 ---
 
-## Неделя 7: Общие табличные выражения (CTE)
+## Глава 6: Общие табличные выражения (CTE)
 
 ### Концепция CTE
 
@@ -1665,9 +1665,9 @@ ORDER BY us.lifetime_value DESC;
 
 ---
 
-# ФАЗА 3: POSTGRESQL-СПЕЦИФИЧНЫЕ ВОЗМОЖНОСТИ (Недели 8-10)
+# БЛОК 3: POSTGRESQL-СПЕЦИФИЧНЫЕ ВОЗМОЖНОСТИ
 
-## Неделя 8: Индексы и производительность
+## Глава 7: Индексы и производительность
 
 ### Концепция индексов
 
@@ -1743,3 +1743,1426 @@ ALTER TABLE users ADD COLUMN tags TEXT[];
 CREATE INDEX idx_users_tags ON users USING gin(tags);
 
 -- Поиск в массивах
+SELECT * FROM users WHERE tags @> ARRAY['premium'];
+SELECT * FROM users WHERE tags && ARRAY['vip', 'premium'];
+
+-- GIN для JSONB
+CREATE INDEX idx_user_profiles_preferences ON user_profiles USING gin(preferences);
+
+-- Поиск в JSONB
+SELECT * FROM user_profiles WHERE preferences @> '{"theme": "dark"}';
+SELECT * FROM user_profiles WHERE preferences ? 'notifications';
+```
+
+#### GiST индексы (геометрические и полнотекстовые)
+```sql
+-- GiST для геометрических данных
+CREATE TABLE locations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    coordinates POINT
+);
+
+CREATE INDEX idx_locations_coordinates ON locations USING gist(coordinates);
+
+-- Поиск по расстоянию
+SELECT name FROM locations 
+WHERE coordinates <-> point(37.7749, -122.4194) < 10;
+
+-- GiST для полнотекстового поиска (альтернатива GIN)
+CREATE INDEX idx_products_search_gist ON products USING gist(to_tsvector('english', name));
+```
+
+#### Частичные индексы
+```sql
+-- Индекс только для активных пользователей
+CREATE INDEX idx_users_active_email ON users(email) 
+WHERE status = 'active';
+
+-- Индекс только для больших заказов
+CREATE INDEX idx_orders_large_total ON orders(created_at, user_id) 
+WHERE total > 1000;
+
+-- Индекс исключающий NULL
+CREATE INDEX idx_users_last_login_not_null ON users(last_login) 
+WHERE last_login IS NOT NULL;
+```
+
+### Анализ производительности запросов
+
+#### EXPLAIN и EXPLAIN ANALYZE
+```sql
+-- Показать план выполнения
+EXPLAIN SELECT * FROM users WHERE email = 'test@example.com';
+
+-- План с реальным временем выполнения
+EXPLAIN ANALYZE SELECT * FROM users WHERE email = 'test@example.com';
+
+-- Подробный анализ
+EXPLAIN (ANALYZE, BUFFERS, VERBOSE) 
+SELECT u.name, COUNT(o.id) 
+FROM users u 
+LEFT JOIN orders o ON u.id = o.user_id 
+GROUP BY u.id, u.name 
+HAVING COUNT(o.id) > 5;
+
+-- Форматы вывода
+EXPLAIN (FORMAT JSON) SELECT * FROM users WHERE age > 25;
+EXPLAIN (FORMAT YAML) SELECT * FROM users WHERE age > 25;
+EXPLAIN (FORMAT XML) SELECT * FROM users WHERE age > 25;
+```
+
+#### Интерпретация планов выполнения
+```sql
+-- Пример плохого плана (Seq Scan)
+EXPLAIN ANALYZE 
+SELECT * FROM orders WHERE user_id = 123;
+/*
+Seq Scan on orders  (cost=0.00..2125.00 rows=100 width=32) (actual time=0.123..24.567 rows=5 loops=1)
+  Filter: (user_id = 123)
+  Rows Removed by Filter: 99995
+Planning Time: 0.234 ms
+Execution Time: 24.789 ms
+*/
+
+-- Создаем индекс
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+
+-- Хороший план (Index Scan)
+EXPLAIN ANALYZE 
+SELECT * FROM orders WHERE user_id = 123;
+/*
+Index Scan using idx_orders_user_id on orders  (cost=0.29..8.31 rows=1 width=32) (actual time=0.015..0.017 rows=5 loops=1)
+  Index Cond: (user_id = 123)
+Planning Time: 0.123 ms
+Execution Time: 0.045 ms
+*/
+```
+
+#### Статистика таблиц
+```sql
+-- Обновление статистики
+ANALYZE users;
+ANALYZE orders;
+
+-- Автоматическое обновление (настройка)
+-- В postgresql.conf:
+-- autovacuum = on
+-- autovacuum_analyze_scale_factor = 0.1
+
+-- Просмотр статистики
+SELECT 
+    schemaname,
+    tablename,
+    n_live_tup as live_rows,
+    n_dead_tup as dead_rows,
+    last_vacuum,
+    last_autovacuum,
+    last_analyze,
+    last_autoanalyze
+FROM pg_stat_user_tables
+ORDER BY n_live_tup DESC;
+```
+
+### Оптимизация запросов
+
+#### Избегание проблемных паттернов
+```sql
+-- ❌ Плохо: функция в WHERE (индекс не используется)
+SELECT * FROM users WHERE UPPER(email) = 'TEST@EXAMPLE.COM';
+
+-- ✅ Хорошо: функциональный индекс
+CREATE INDEX idx_users_email_upper ON users(UPPER(email));
+SELECT * FROM users WHERE UPPER(email) = 'TEST@EXAMPLE.COM';
+
+-- ❌ Плохо: LIKE с ведущим %
+SELECT * FROM products WHERE name LIKE '%laptop%';
+
+-- ✅ Хорошо: полнотекстовый поиск
+CREATE INDEX idx_products_search ON products USING gin(to_tsvector('english', name));
+SELECT * FROM products WHERE to_tsvector('english', name) @@ to_tsquery('laptop');
+
+-- ❌ Плохо: OR условия
+SELECT * FROM users WHERE status = 'active' OR status = 'pending';
+
+-- ✅ Хорошо: IN список
+SELECT * FROM users WHERE status IN ('active', 'pending');
+
+-- ❌ Плохо: подзапрос в SELECT (выполняется для каждой строки)
+SELECT 
+    u.name,
+    (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) as order_count
+FROM users u;
+
+-- ✅ Хорошо: JOIN с агрегацией
+SELECT 
+    u.name,
+    COALESCE(o.order_count, 0) as order_count
+FROM users u
+LEFT JOIN (
+    SELECT user_id, COUNT(*) as order_count 
+    FROM orders 
+    GROUP BY user_id
+) o ON u.id = o.user_id;
+```
+
+#### Оптимизация JOIN операций
+```sql
+-- Правильный порядок JOIN (меньшие таблицы первыми)
+SELECT u.name, p.name, oi.quantity
+FROM order_items oi              -- Самая большая таблица
+JOIN products p ON oi.product_id = p.id    -- Средняя таблица
+JOIN orders o ON oi.order_id = o.id        -- Меньшая таблица
+JOIN users u ON o.user_id = u.id           -- Самая маленькая таблица
+WHERE o.created_at > '2024-01-01';
+
+-- Использование EXISTS вместо IN для больших наборов
+-- ❌ Медленно для больших результатов подзапроса
+SELECT * FROM users 
+WHERE id IN (SELECT user_id FROM orders WHERE total > 1000);
+
+-- ✅ Быстрее
+SELECT * FROM users u
+WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id AND o.total > 1000);
+```
+
+### Управление индексами
+
+#### Мониторинг использования индексов
+```sql
+-- Статистика использования индексов
+SELECT 
+    schemaname,
+    tablename,
+    indexname,
+    idx_scan as scans,
+    idx_tup_read as tuples_read,
+    idx_tup_fetch as tuples_fetched
+FROM pg_stat_user_indexes
+ORDER BY idx_scan DESC;
+
+-- Неиспользуемые индексы
+SELECT 
+    schemaname,
+    tablename,
+    indexname,
+    pg_size_pretty(pg_relation_size(indexrelid)) as size
+FROM pg_stat_user_indexes
+WHERE idx_scan = 0
+ORDER BY pg_relation_size(indexrelid) DESC;
+
+-- Размеры индексов
+SELECT 
+    tablename,
+    indexname,
+    pg_size_pretty(pg_relation_size(indexrelid)) as size
+FROM pg_stat_user_indexes
+ORDER BY pg_relation_size(indexrelid) DESC;
+```
+
+#### Обслуживание индексов
+```sql
+-- Пересборка индекса
+REINDEX INDEX idx_users_email;
+
+-- Пересборка всех индексов таблицы
+REINDEX TABLE users;
+
+-- Конкурентная пересборка (не блокирует таблицу)
+CREATE INDEX CONCURRENTLY idx_users_email_new ON users(email);
+DROP INDEX idx_users_email;
+ALTER INDEX idx_users_email_new RENAME TO idx_users_email;
+
+-- Удаление неиспользуемых индексов
+DROP INDEX IF EXISTS idx_unused_index;
+```
+
+---
+
+## Глава 8: Транзакции и параллелизм
+
+### Основы транзакций
+
+#### ACID свойства
+```sql
+-- Atomicity (Атомарность) - все или ничего
+BEGIN;
+    INSERT INTO accounts (name, balance) VALUES ('Alice', 1000);
+    INSERT INTO accounts (name, balance) VALUES ('Bob', 500);
+    -- Если одна команда упадет, откатятся обе
+COMMIT;
+
+-- Consistency (Согласованность) - данные остаются валидными
+BEGIN;
+    UPDATE accounts SET balance = balance - 100 WHERE name = 'Alice';
+    UPDATE accounts SET balance = balance + 100 WHERE name = 'Bob';
+    -- Общая сумма остается неизменной
+COMMIT;
+
+-- Isolation (Изолированность) - транзакции не видят промежуточных состояний
+-- Durability (Долговечность) - сохраненные данные не теряются
+```
+
+#### Базовый синтаксис транзакций
+```sql
+-- Простая транзакция
+BEGIN;
+    INSERT INTO orders (user_id, total) VALUES (1, 100.00);
+    INSERT INTO order_items (order_id, product_id, quantity) VALUES (LASTVAL(), 1, 2);
+COMMIT;
+
+-- Транзакция с откатом
+BEGIN;
+    UPDATE products SET stock = stock - 5 WHERE id = 1;
+    -- Проверяем результат
+    SELECT stock FROM products WHERE id = 1;
+    -- Если что-то не так, откатываем
+ROLLBACK;
+
+-- Точки сохранения (Savepoints)
+BEGIN;
+    INSERT INTO users (email, name) VALUES ('user1@example.com', 'User 1');
+    
+    SAVEPOINT sp1;
+    INSERT INTO users (email, name) VALUES ('user2@example.com', 'User 2');
+    INSERT INTO users (email, name) VALUES ('invalid', 'Invalid User');  -- Может упасть
+    
+    ROLLBACK TO sp1;  -- Откатываемся только до savepoint
+    INSERT INTO users (email, name) VALUES ('user3@example.com', 'User 3');
+COMMIT;
+```
+
+#### Автоматические транзакции
+```sql
+-- PostgreSQL автоматически оборачивает каждую команду в транзакцию
+INSERT INTO users (email, name) VALUES ('auto@example.com', 'Auto User');
+-- Эквивалентно:
+-- BEGIN;
+-- INSERT INTO users (email, name) VALUES ('auto@example.com', 'Auto User');
+-- COMMIT;
+
+-- Отключение автокоммита (в psql)
+\set AUTOCOMMIT off
+INSERT INTO users (email, name) VALUES ('manual@example.com', 'Manual User');
+-- Нужен явный COMMIT
+
+-- Включение обратно
+\set AUTOCOMMIT on
+```
+
+### Уровни изоляции
+
+#### READ UNCOMMITTED
+```sql
+-- Самый низкий уровень изоляции
+-- Может читать незакоммиченные данные (dirty reads)
+BEGIN ISOLATION LEVEL READ UNCOMMITTED;
+    SELECT balance FROM accounts WHERE name = 'Alice';
+    -- Может увидеть изменения из других незавершенных транзакций
+COMMIT;
+```
+
+#### READ COMMITTED (по умолчанию)
+```sql
+-- Читает только закоммиченные данные
+-- Но может видеть разные значения при повторном чтении
+BEGIN ISOLATION LEVEL READ COMMITTED;
+    SELECT balance FROM accounts WHERE name = 'Alice';  -- 1000
+    -- Другая транзакция изменила и закоммитила
+    SELECT balance FROM accounts WHERE name = 'Alice';  -- 900 (non-repeatable read)
+COMMIT;
+```
+
+#### REPEATABLE READ
+```sql
+-- Гарантирует постоянство данных в рамках транзакции
+BEGIN ISOLATION LEVEL REPEATABLE READ;
+    SELECT balance FROM accounts WHERE name = 'Alice';  -- 1000
+    -- Другая транзакция изменила и закоммитила
+    SELECT balance FROM accounts WHERE name = 'Alice';  -- Все еще 1000
+    -- Но может увидеть новые строки (phantom reads)
+COMMIT;
+```
+
+#### SERIALIZABLE
+```sql
+-- Самый высокий уровень изоляции
+-- Эмулирует последовательное выполнение транзакций
+BEGIN ISOLATION LEVEL SERIALIZABLE;
+    SELECT SUM(balance) FROM accounts;
+    INSERT INTO accounts (name, balance) VALUES ('Charlie', 200);
+    -- Если другая транзакция тоже работает с accounts,
+    -- одна из них может быть отменена с ошибкой serialization
+COMMIT;
+```
+
+### Блокировки
+
+#### Типы блокировок
+```sql
+-- Явная блокировка строк
+BEGIN;
+    SELECT * FROM accounts WHERE name = 'Alice' FOR UPDATE;
+    -- Строка заблокирована до конца транзакции
+    UPDATE accounts SET balance = balance - 100 WHERE name = 'Alice';
+COMMIT;
+
+-- Блокировка для чтения
+BEGIN;
+    SELECT * FROM accounts WHERE name = 'Alice' FOR SHARE;
+    -- Другие могут читать, но не могут изменять
+COMMIT;
+
+-- Неблокирующая блокировка
+BEGIN;
+    SELECT * FROM accounts WHERE name = 'Alice' FOR UPDATE NOWAIT;
+    -- Если строка заблокирована, сразу ошибка
+COMMIT;
+
+-- Пропуск заблокированных строк
+BEGIN;
+    SELECT * FROM accounts FOR UPDATE SKIP LOCKED;
+    -- Возвращает только незаблокированные строки
+COMMIT;
+```
+
+#### Блокировки таблиц
+```sql
+-- Различные уровни блокировки таблиц
+BEGIN;
+    LOCK TABLE accounts IN ACCESS EXCLUSIVE MODE;
+    -- Никто не может читать или писать
+    TRUNCATE accounts;
+COMMIT;
+
+BEGIN;
+    LOCK TABLE accounts IN SHARE MODE;
+    -- Разрешает чтение, запрещает изменения
+    SELECT COUNT(*) FROM accounts;
+COMMIT;
+
+-- Неблокирующая блокировка таблицы
+BEGIN;
+    LOCK TABLE accounts IN ACCESS SHARE MODE NOWAIT;
+COMMIT;
+```
+
+### Deadlocks и их предотвращение
+
+#### Пример deadlock
+```sql
+-- Транзакция 1:
+BEGIN;
+    UPDATE accounts SET balance = balance - 100 WHERE name = 'Alice';
+    -- Ждет блокировку Bob (заблокирован транзакцией 2)
+    UPDATE accounts SET balance = balance + 100 WHERE name = 'Bob';
+COMMIT;
+
+-- Транзакция 2 (выполняется одновременно):
+BEGIN;
+    UPDATE accounts SET balance = balance - 50 WHERE name = 'Bob';
+    -- Ждет блокировку Alice (заблокирован транзакцией 1)
+    UPDATE accounts SET balance = balance + 50 WHERE name = 'Alice';
+COMMIT;
+-- PostgreSQL автоматически обнаружит deadlock и откатит одну транзакцию
+```
+
+#### Стратегии предотвращения deadlocks
+```sql
+-- 1. Согласованный порядок блокировок
+-- ✅ Всегда блокируем accounts в порядке ID
+BEGIN;
+    UPDATE accounts SET balance = balance - 100 WHERE id = 1;  -- Alice (меньший ID)
+    UPDATE accounts SET balance = balance + 100 WHERE id = 2;  -- Bob (больший ID)
+COMMIT;
+
+-- 2. Использование SELECT FOR UPDATE
+BEGIN;
+    SELECT * FROM accounts WHERE name IN ('Alice', 'Bob') 
+    ORDER BY id FOR UPDATE;  -- Блокируем в определенном порядке
+    
+    UPDATE accounts SET balance = balance - 100 WHERE name = 'Alice';
+    UPDATE accounts SET balance = balance + 100 WHERE name = 'Bob';
+COMMIT;
+
+-- 3. Короткие транзакции
+-- ❌ Длинная транзакция
+BEGIN;
+    SELECT * FROM accounts WHERE name = 'Alice' FOR UPDATE;
+    -- Много сложной логики...
+    UPDATE accounts SET balance = balance - 100 WHERE name = 'Alice';
+COMMIT;
+
+-- ✅ Короткая транзакция
+-- Делаем вычисления вне транзакции
+BEGIN;
+    UPDATE accounts SET balance = balance - 100 WHERE name = 'Alice';
+COMMIT;
+```
+
+### Мониторинг блокировок
+
+#### Просмотр активных блокировок
+```sql
+-- Активные блокировки
+SELECT 
+    l.locktype,
+    l.database,
+    l.relation::regclass as table_name,
+    l.page,
+    l.tuple,
+    l.mode,
+    l.granted,
+    a.query,
+    a.pid,
+    a.usename
+FROM pg_locks l
+JOIN pg_stat_activity a ON l.pid = a.pid
+WHERE NOT l.granted
+ORDER BY l.relation, l.page, l.tuple;
+
+-- Блокирующие и заблокированные запросы
+SELECT 
+    blocked_locks.pid AS blocked_pid,
+    blocked_activity.usename AS blocked_user,
+    blocking_locks.pid AS blocking_pid,
+    blocking_activity.usename AS blocking_user,
+    blocked_activity.query AS blocked_statement,
+    blocking_activity.query AS blocking_statement
+FROM pg_catalog.pg_locks blocked_locks
+JOIN pg_catalog.pg_stat_activity blocked_activity ON blocked_activity.pid = blocked_locks.pid
+JOIN pg_catalog.pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype
+    AND blocking_locks.database IS NOT DISTINCT FROM blocked_locks.database
+    AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation
+    AND blocking_locks.page IS NOT DISTINCT FROM blocked_locks.page
+    AND blocking_locks.tuple IS NOT DISTINCT FROM blocked_locks.tuple
+    AND blocking_locks.virtualxid IS NOT DISTINCT FROM blocked_locks.virtualxid
+    AND blocking_locks.transactionid IS NOT DISTINCT FROM blocked_locks.transactionid
+    AND blocking_locks.classid IS NOT DISTINCT FROM blocked_locks.classid
+    AND blocking_locks.objid IS NOT DISTINCT FROM blocked_locks.objid
+    AND blocking_locks.objsubid IS NOT DISTINCT FROM blocked_locks.objsubid
+    AND blocking_locks.pid != blocked_locks.pid
+JOIN pg_catalog.pg_stat_activity blocking_activity ON blocking_activity.pid = blocking_locks.pid
+WHERE NOT blocked_locks.granted;
+```
+
+#### Завершение блокирующих процессов
+```sql
+-- Мягкое завершение
+SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE pid = 12345;
+
+-- Принудительное завершение
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid = 12345;
+
+-- Завершение всех неактивных соединений
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE state = 'idle in transaction'
+AND state_change < NOW() - INTERVAL '10 minutes';
+```
+
+---
+
+## Глава 9: Расширенные типы данных PostgreSQL
+
+### Массивы
+
+#### Создание и работа с массивами
+```sql
+-- Создание таблицы с массивами
+CREATE TABLE articles (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255),
+    tags TEXT[],
+    ratings INTEGER[],
+    metadata JSONB
+);
+
+-- Вставка данных с массивами
+INSERT INTO articles (title, tags, ratings) VALUES 
+    ('PostgreSQL Tutorial', ARRAY['database', 'sql', 'tutorial'], ARRAY[5, 4, 5, 4]),
+    ('Advanced PostgreSQL', ARRAY['database', 'advanced'], ARRAY[5, 5, 4]),
+    ('JSON in PostgreSQL', ARRAY['database', 'json', 'nosql'], ARRAY[4, 5, 5]);
+
+-- Альтернативный синтаксис
+INSERT INTO articles (title, tags, ratings) VALUES 
+    ('Array Operations', '{"arrays", "postgresql"}', '{3, 4, 5, 4}');
+```
+
+#### Операции с массивами
+```sql
+-- Доступ к элементам (индексы начинаются с 1)
+SELECT 
+    title,
+    tags[1] as first_tag,
+    tags[2] as second_tag,
+    array_length(tags, 1) as tag_count
+FROM articles;
+
+-- Изменение элементов
+UPDATE articles 
+SET tags[1] = 'databases'
+WHERE id = 1;
+
+-- Добавление элементов
+UPDATE articles 
+SET tags = array_append(tags, 'beginner')
+WHERE title = 'PostgreSQL Tutorial';
+
+-- Удаление элементов
+UPDATE articles 
+SET tags = array_remove(tags, 'nosql')
+WHERE id = 3;
+
+-- Конкатенация массивов
+UPDATE articles 
+SET tags = tags || ARRAY['popular']
+WHERE array_length(ratings, 1) > 3;
+```
+
+#### Поиск в массивах
+```sql
+-- Поиск по содержанию элемента
+SELECT title, tags
+FROM articles
+WHERE 'database' = ANY(tags);
+
+-- Поиск пересечения массивов
+SELECT title, tags
+FROM articles
+WHERE tags && ARRAY['database', 'advanced'];
+
+-- Поиск включения массива
+SELECT title, tags
+FROM articles
+WHERE tags @> ARRAY['database', 'sql'];
+
+-- Поиск по позиции элемента
+SELECT title, tags
+FROM articles
+WHERE array_position(tags, 'database') = 1;
+
+-- Агрегация массивов
+SELECT 
+    array_agg(DISTINCT unnest) as all_unique_tags
+FROM (
+    SELECT unnest(tags) FROM articles
+) t;
+```
+
+### JSONB и расширенные JSON операции
+
+#### Создание и индексирование JSONB
+```sql
+-- Таблица с JSONB данными
+CREATE TABLE products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    details JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Индексы для JSONB
+CREATE INDEX idx_products_details_gin ON products USING gin(details);
+CREATE INDEX idx_products_brand ON products USING btree((details->>'brand'));
+CREATE INDEX idx_products_price ON products USING btree(((details->>'price')::numeric));
+
+-- Вставка JSONB данных
+INSERT INTO products (name, details) VALUES 
+    ('Laptop Pro', '{"brand": "TechCorp", "price": 1299.99, "specs": {"cpu": "Intel i7", "ram": 16, "storage": "512GB SSD"}, "tags": ["laptop", "professional"]}'),
+    ('Gaming Mouse', '{"brand": "GamerCorp", "price": 79.99, "specs": {"dpi": 12000, "buttons": 8}, "tags": ["mouse", "gaming"]}'),
+    ('Monitor 4K', '{"brand": "DisplayCorp", "price": 549.99, "specs": {"size": 27, "resolution": "4K", "panel": "IPS"}, "tags": ["monitor", "4k"]}');
+```
+
+#### Расширенные JSONB операции
+```sql
+-- Извлечение данных разными способами
+SELECT 
+    name,
+    details->>'brand' as brand,
+    (details->>'price')::numeric as price,
+    details->'specs'->>'cpu' as cpu,
+    details->'tags' as tags_json,
+    jsonb_array_elements_text(details->'tags') as individual_tags
+FROM products;
+
+-- Фильтрация по JSONB
+SELECT name, details->>'price' as price
+FROM products
+WHERE (details->>'price')::numeric > 100;
+
+SELECT name, details->>'brand' as brand
+FROM products
+WHERE details @> '{"brand": "TechCorp"}';
+
+-- Поиск в массивах внутри JSONB
+SELECT name, details->'tags' as tags
+FROM products
+WHERE details->'tags' ? 'gaming';
+
+-- Проверка существования путей
+SELECT name, details
+FROM products
+WHERE details ? 'specs' AND details->'specs' ? 'cpu';
+```
+
+#### Модификация JSONB
+```sql
+-- Добавление/обновление полей
+UPDATE products 
+SET details = details || '{"warranty": "2 years"}'
+WHERE id = 1;
+
+-- Обновление вложенных полей
+UPDATE products 
+SET details = jsonb_set(details, '{specs, ram}', '32')
+WHERE name = 'Laptop Pro';
+
+-- Удаление полей
+UPDATE products 
+SET details = details - 'warranty'
+WHERE id = 1;
+
+-- Удаление вложенных полей
+UPDATE products 
+SET details = details #- '{specs, storage}'
+WHERE name = 'Laptop Pro';
+
+-- Добавление элементов в массив
+UPDATE products 
+SET details = jsonb_set(
+    details, 
+    '{tags}', 
+    (details->'tags') || '"premium"'::jsonb
+)
+WHERE (details->>'price')::numeric > 1000;
+```
+
+#### Агрегация и аналитика JSONB
+```sql
+-- Статистика по брендам
+SELECT 
+    details->>'brand' as brand,
+    COUNT(*) as product_count,
+    AVG((details->>'price')::numeric) as avg_price,
+    MIN((details->>'price')::numeric) as min_price,
+    MAX((details->>'price')::numeric) as max_price
+FROM products
+GROUP BY details->>'brand'
+ORDER BY avg_price DESC;
+
+-- Популярные теги
+SELECT 
+    tag,
+    COUNT(*) as frequency
+FROM products,
+     jsonb_array_elements_text(details->'tags') as tag
+GROUP BY tag
+ORDER BY frequency DESC;
+
+-- Агрегация объектов
+SELECT jsonb_agg(
+    jsonb_build_object(
+        'name', name,
+        'brand', details->>'brand',
+        'price', details->>'price'
+    )
+) as products_summary
+FROM products
+WHERE (details->>'price')::numeric < 500;
+```
+
+### Пользовательские типы данных
+
+#### Создание составных типов
+```sql
+-- Определение составного типа
+CREATE TYPE address_type AS (
+    street VARCHAR(255),
+    city VARCHAR(100),
+    state VARCHAR(50),
+    zip_code VARCHAR(20),
+    country VARCHAR(50)
+);
+
+CREATE TYPE contact_info AS (
+    email VARCHAR(255),
+    phone VARCHAR(20),
+    address address_type
+);
+
+-- Использование составных типов
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    contact contact_info,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Вставка данных
+INSERT INTO customers (name, contact) VALUES 
+    ('John Doe', ROW('john@example.com', '+1-555-0123', ROW('123 Main St', 'New York', 'NY', '10001', 'USA')));
+
+-- Доступ к полям составного типа
+SELECT 
+    name,
+    (contact).email,
+    (contact.address).city,
+    (contact.address).country
+FROM customers;
+```
+
+#### Создание перечислений (ENUM)
+```sql
+-- Создание ENUM типа
+CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
+CREATE TYPE priority_level AS ENUM ('low', 'medium', 'high', 'critical');
+
+-- Использование ENUM
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER,
+    status order_status DEFAULT 'pending',
+    priority priority_level DEFAULT 'medium',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Вставка и запросы
+INSERT INTO orders (customer_id, status, priority) VALUES 
+    (1, 'pending', 'high'),
+    (2, 'processing', 'medium'),
+    (3, 'shipped', 'low');
+
+-- Сравнение ENUM значений (учитывает порядок)
+SELECT * FROM orders WHERE status > 'pending';  -- processing, shipped, delivered
+SELECT * FROM orders WHERE priority >= 'medium';  -- medium, high, critical
+
+-- Изменение ENUM (добавление значений)
+ALTER TYPE order_status ADD VALUE 'returned' AFTER 'delivered';
+```
+
+#### Создание доменов
+```sql
+-- Домены - типы с ограничениями
+CREATE DOMAIN email_type AS VARCHAR(255)
+    CHECK (VALUE ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,});
+
+CREATE DOMAIN positive_price AS NUMERIC(10,2)
+    CHECK (VALUE > 0);
+
+CREATE DOMAIN phone_type AS VARCHAR(20)
+    CHECK (VALUE ~ '^\+?[\d\s\-\(\)]+);
+
+-- Использование доменов
+CREATE TABLE validated_customers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email email_type NOT NULL,
+    phone phone_type,
+    credit_limit positive_price
+);
+
+-- Попытка вставить невалидные данные вызовет ошибку
+INSERT INTO validated_customers (name, email, phone, credit_limit) VALUES 
+    ('Valid User', 'user@example.com', '+1-555-0123', 5000.00);
+
+-- Это вызовет ошибку
+-- INSERT INTO validated_customers (name, email, credit_limit) VALUES 
+--     ('Invalid User', 'not-an-email', -100.00);
+```
+
+### Полнотекстовый поиск
+
+#### Основы полнотекстового поиска
+```sql
+-- Создание таблицы для поиска
+CREATE TABLE documents (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255),
+    content TEXT,
+    search_vector tsvector
+);
+
+-- Создание индекса для поиска
+CREATE INDEX idx_documents_search ON documents USING gin(search_vector);
+
+-- Вставка данных с автоматическим созданием поискового вектора
+INSERT INTO documents (title, content, search_vector) VALUES 
+    ('PostgreSQL Tutorial', 'Learn PostgreSQL database management system', 
+     to_tsvector('english', 'PostgreSQL Tutorial Learn PostgreSQL database management system')),
+    ('Advanced SQL Queries', 'Complex JOIN operations and window functions in SQL',
+     to_tsvector('english', 'Advanced SQL Queries Complex JOIN operations and window functions in SQL')),
+    ('Database Design Principles', 'Normalization, indexing, and performance optimization',
+     to_tsvector('english', 'Database Design Principles Normalization, indexing, and performance optimization'));
+
+-- Автоматическое обновление поискового вектора
+CREATE OR REPLACE FUNCTION update_search_vector() RETURNS TRIGGER AS $
+BEGIN
+    NEW.search_vector := to_tsvector('english', COALESCE(NEW.title, '') || ' ' || COALESCE(NEW.content, ''));
+    RETURN NEW;
+END;
+$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_search_vector
+    BEFORE INSERT OR UPDATE ON documents
+    FOR EACH ROW EXECUTE FUNCTION update_search_vector();
+```
+
+#### Поисковые запросы
+```sql
+-- Простой поиск
+SELECT title, content
+FROM documents
+WHERE search_vector @@ to_tsquery('english', 'PostgreSQL');
+
+-- Поиск с несколькими словами (AND)
+SELECT title, content
+FROM documents
+WHERE search_vector @@ to_tsquery('english', 'PostgreSQL & database');
+
+-- Поиск с альтернативами (OR)
+SELECT title, content
+FROM documents
+WHERE search_vector @@ to_tsquery('english', 'PostgreSQL | MySQL');
+
+-- Исключение слов (NOT)
+SELECT title, content
+FROM documents
+WHERE search_vector @@ to_tsquery('english', 'database & !PostgreSQL');
+
+-- Поиск фраз
+SELECT title, content
+FROM documents
+WHERE search_vector @@ phraseto_tsquery('english', 'database management system');
+
+-- Нечеткий поиск
+SELECT title, content
+FROM documents
+WHERE search_vector @@ websearch_to_tsquery('english', 'PostgreSQL tutorial');
+```
+
+#### Ранжирование результатов поиска
+```sql
+-- Поиск с ранжированием
+SELECT 
+    title,
+    content,
+    ts_rank(search_vector, to_tsquery('english', 'PostgreSQL & database')) as rank
+FROM documents
+WHERE search_vector @@ to_tsquery('english', 'PostgreSQL & database')
+ORDER BY rank DESC;
+
+-- Weighted ranking (разные веса для заголовка и содержимого)
+SELECT 
+    title,
+    content,
+    ts_rank_cd(
+        setweight(to_tsvector('english', title), 'A') ||
+        setweight(to_tsvector('english', content), 'B'),
+        to_tsquery('english', 'PostgreSQL')
+    ) as rank
+FROM documents
+WHERE to_tsvector('english', title || ' ' || content) @@ to_tsquery('english', 'PostgreSQL')
+ORDER BY rank DESC;
+
+-- Выделение найденных слов
+SELECT 
+    title,
+    ts_headline(
+        'english',
+        content,
+        to_tsquery('english', 'PostgreSQL & database'),
+        'StartSel = <mark>, StopSel = </mark>'
+    ) as highlighted_content
+FROM documents
+WHERE search_vector @@ to_tsquery('english', 'PostgreSQL & database');
+```
+
+---
+
+## Глава 10: Функции, процедуры и триггеры
+
+### Пользовательские функции
+
+#### Создание простых функций
+```sql
+-- Простая функция на SQL
+CREATE OR REPLACE FUNCTION calculate_age(birth_date DATE)
+RETURNS INTEGER AS $
+    SELECT EXTRACT(YEAR FROM AGE(birth_date))::INTEGER;
+$ LANGUAGE sql;
+
+-- Использование функции
+SELECT name, calculate_age(birth_date) as age
+FROM customers
+WHERE birth_date IS NOT NULL;
+
+-- Функция с несколькими параметрами
+CREATE OR REPLACE FUNCTION format_name(first_name VARCHAR, last_name VARCHAR)
+RETURNS VARCHAR AS $
+    SELECT CASE 
+        WHEN first_name IS NOT NULL AND last_name IS NOT NULL THEN
+            first_name || ' ' || last_name
+        WHEN first_name IS NOT NULL THEN
+            first_name
+        WHEN last_name IS NOT NULL THEN
+            last_name
+        ELSE
+            'Unknown'
+    END;
+$ LANGUAGE sql;
+```
+
+#### Функции на PL/pgSQL
+```sql
+-- Функция с условной логикой
+CREATE OR REPLACE FUNCTION get_customer_tier(customer_id INTEGER)
+RETURNS VARCHAR AS $
+DECLARE
+    total_orders INTEGER;
+    total_spent DECIMAL;
+    tier VARCHAR;
+BEGIN
+    -- Получаем статистику клиента
+    SELECT 
+        COUNT(*),
+        COALESCE(SUM(total), 0)
+    INTO total_orders, total_spent
+    FROM orders
+    WHERE user_id = customer_id;
+    
+    -- Определяем tier
+    IF total_spent > 10000 OR total_orders > 50 THEN
+        tier := 'VIP';
+    ELSIF total_spent > 5000 OR total_orders > 20 THEN
+        tier := 'Gold';
+    ELSIF total_spent > 1000 OR total_orders > 5 THEN
+        tier := 'Silver';
+    ELSE
+        tier := 'Bronze';
+    END IF;
+    
+    RETURN tier;
+END;
+$ LANGUAGE plpgsql;
+
+-- Функция с циклом
+CREATE OR REPLACE FUNCTION generate_fibonacci(n INTEGER)
+RETURNS INTEGER[] AS $
+DECLARE
+    result INTEGER[] := ARRAY[0, 1];
+    i INTEGER;
+BEGIN
+    IF n <= 0 THEN
+        RETURN ARRAY[]::INTEGER[];
+    ELSIF n = 1 THEN
+        RETURN ARRAY[0];
+    ELSIF n = 2 THEN
+        RETURN result;
+    END IF;
+    
+    FOR i IN 3..n LOOP
+        result := array_append(result, result[i-1] + result[i-2]);
+    END LOOP;
+    
+    RETURN result;
+END;
+$ LANGUAGE plpgsql;
+```
+
+#### Функции, возвращающие таблицы
+```sql
+-- Функция, возвращающая набор строк
+CREATE OR REPLACE FUNCTION get_top_customers(limit_count INTEGER DEFAULT 10)
+RETURNS TABLE(
+    customer_id INTEGER,
+    customer_name VARCHAR,
+    total_orders BIGINT,
+    total_spent DECIMAL,
+    tier VARCHAR
+) AS $
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.id,
+        u.name,
+        COUNT(o.id),
+        COALESCE(SUM(o.total), 0),
+        get_customer_tier(u.id)
+    FROM users u
+    LEFT JOIN orders o ON u.id = o.user_id
+    GROUP BY u.id, u.name
+    ORDER BY COALESCE(SUM(o.total), 0) DESC
+    LIMIT limit_count;
+END;
+$ LANGUAGE plpgsql;
+
+-- Использование табличной функции
+SELECT * FROM get_top_customers(5);
+
+-- Функция с динамическим SQL
+CREATE OR REPLACE FUNCTION get_table_stats(table_name TEXT)
+RETURNS TABLE(
+    column_name TEXT,
+    data_type TEXT,
+    is_nullable TEXT,
+    column_default TEXT
+) AS $
+BEGIN
+    RETURN QUERY EXECUTE format('
+        SELECT 
+            column_name::TEXT,
+            data_type::TEXT,
+            is_nullable::TEXT,
+            column_default::TEXT
+        FROM information_schema.columns 
+        WHERE table_name = %L
+        ORDER BY ordinal_position',
+        table_name
+    );
+END;
+$ LANGUAGE plpgsql;
+```
+
+### Хранимые процедуры
+
+#### Создание процедур
+```sql
+-- Процедура для обновления статистики клиентов
+CREATE OR REPLACE PROCEDURE update_customer_statistics()
+LANGUAGE plpgsql AS $
+DECLARE
+    customer_record RECORD;
+    stats_updated INTEGER := 0;
+BEGIN
+    -- Создаем временную таблицу для статистики
+    CREATE TEMP TABLE IF NOT EXISTS temp_customer_stats (
+        customer_id INTEGER,
+        total_orders INTEGER,
+        total_spent DECIMAL,
+        avg_order_value DECIMAL,
+        last_order_date DATE
+    );
+    
+    -- Очищаем временную таблицу
+    TRUNCATE temp_customer_stats;
+    
+    -- Вычисляем статистику для каждого клиента
+    FOR customer_record IN 
+        SELECT DISTINCT user_id FROM orders
+    LOOP
+        INSERT INTO temp_customer_stats
+        SELECT 
+            customer_record.user_id,
+            COUNT(*),
+            SUM(total),
+            AVG(total),
+            MAX(created_at::DATE)
+        FROM orders
+        WHERE user_id = customer_record.user_id;
+        
+        stats_updated := stats_updated + 1;
+    END LOOP;
+    
+    -- Выводим результат
+    RAISE NOTICE 'Updated statistics for % customers', stats_updated;
+    
+    -- Можем обновить основную таблицу
+    -- UPDATE customers SET ... FROM temp_customer_stats WHERE ...
+END;
+$;
+
+-- Вызов процедуры
+CALL update_customer_statistics();
+```
+
+#### Процедуры с параметрами
+```sql
+-- Процедура для создания отчета
+CREATE OR REPLACE PROCEDURE generate_sales_report(
+    start_date DATE,
+    end_date DATE,
+    OUT total_revenue DECIMAL,
+    OUT total_orders INTEGER,
+    OUT avg_order_value DECIMAL
+)
+LANGUAGE plpgsql AS $
+BEGIN
+    SELECT 
+        COALESCE(SUM(total), 0),
+        COUNT(*),
+        COALESCE(AVG(total), 0)
+    INTO total_revenue, total_orders, avg_order_value
+    FROM orders
+    WHERE created_at::DATE BETWEEN start_date AND end_date;
+    
+    RAISE NOTICE 'Report generated for period % to %', start_date, end_date;
+    RAISE NOTICE 'Total Revenue: %, Orders: %, Avg Order: %', 
+                 total_revenue, total_orders, avg_order_value;
+END;
+$;
+
+-- Вызов процедуры с OUTPUT параметрами
+DO $
+DECLARE
+    revenue DECIMAL;
+    orders INTEGER;
+    avg_value DECIMAL;
+BEGIN
+    CALL generate_sales_report('2024-01-01', '2024-01-31', revenue, orders, avg_value);
+    RAISE NOTICE 'Results: Revenue=%, Orders=%, Average=%', revenue, orders, avg_value;
+END;
+$;
+```
+
+### Триггеры
+
+#### Триггеры для аудита
+```sql
+-- Создаем таблицу аудита
+CREATE TABLE audit_log (
+    id SERIAL PRIMARY KEY,
+    table_name VARCHAR(50),
+    operation VARCHAR(10),
+    old_data JSONB,
+    new_data JSONB,
+    changed_by VARCHAR(100),
+    changed_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Функция для аудита
+CREATE OR REPLACE FUNCTION audit_trigger_function()
+RETURNS TRIGGER AS $
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        INSERT INTO audit_log (table_name, operation, old_data, changed_by)
+        VALUES (TG_TABLE_NAME, TG_OP, row_to_json(OLD), user);
+        RETURN OLD;
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO audit_log (table_name, operation, old_data, new_data, changed_by)
+        VALUES (TG_TABLE_NAME, TG_OP, row_to_json(OLD), row_to_json(NEW), user);
+        RETURN NEW;
+    ELSIF TG_OP = 'INSERT' THEN
+        INSERT INTO audit_log (table_name, operation, new_data, changed_by)
+        VALUES (TG_TABLE_NAME, TG_OP, row_to_json(NEW), user);
+        RETURN NEW;
+    END IF;
+    RETURN NULL;
+END;
+$ LANGUAGE plpgsql;
+
+-- Создаем триггеры для разных таблиц
+CREATE TRIGGER users_audit_trigger
+    AFTER INSERT OR UPDATE OR DELETE ON users
+    FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+
+CREATE TRIGGER orders_audit_trigger
+    AFTER INSERT OR UPDATE OR DELETE ON orders
+    FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+```
+
+#### Триггеры для валидации данных
+```sql
+-- Функция для валидации заказов
+CREATE OR REPLACE FUNCTION validate_order()
+RETURNS TRIGGER AS $
+BEGIN
+    -- Проверяем, что сумма заказа положительная
+    IF NEW.total <= 0 THEN
+        RAISE EXCEPTION 'Order total must be positive, got %', NEW.total;
+    END IF;
+    
+    -- Проверяем, что пользователь существует и активен
+    IF NOT EXISTS (
+        SELECT 1 FROM users 
+        WHERE id = NEW.user_id AND status = 'active'
+    ) THEN
+        RAISE EXCEPTION 'User % is not active or does not exist', NEW.user_id;
+    END IF;
+    
+    -- Автоматически устанавливаем дату создания
+    IF NEW.created_at IS NULL THEN
+        NEW.created_at := NOW();
+    END IF;
+    
+    RETURN NEW;
+END;
+$ LANGUAGE plpgsql;
+
+-- Создаем триггер валидации
+CREATE TRIGGER validate_order_trigger
+    BEFORE INSERT OR UPDATE ON orders
+    FOR EACH ROW EXECUTE FUNCTION validate_order();
+```
+
+#### Триггеры для автоматического обновления
+```sql
+-- Функция для обновления счетчиков
+CREATE OR REPLACE FUNCTION update_user_stats()
+RETURNS TRIGGER AS $
+DECLARE
+    user_id_to_update INTEGER;
+BEGIN
+    -- Определяем, какого пользователя обновлять
+    IF TG_OP = 'DELETE' THEN
+        user_id_to_update := OLD.user_id;
+    ELSE
+        user_id_to_update := NEW.user_id;
+    END IF;
+    
+    -- Обновляем статистику пользователя
+    UPDATE users 
+    SET 
+        total_orders = (
+            SELECT COUNT(*) FROM orders WHERE user_id = user_id_to_update
+        ),
+        total_spent = (
+            SELECT COALESCE(SUM(total), 0) FROM orders WHERE user_id = user_id_to_update
+        ),
+        updated_at = NOW()
+    WHERE id = user_id_to_update;
+    
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$ LANGUAGE plpgsql;
+
+-- Создаем триггер для автоматического обновления статистики
+CREATE TRIGGER update_user_stats_trigger
+    AFTER INSERT OR UPDATE OR DELETE ON orders
+    FOR EACH ROW EXECUTE FUNCTION update_user_stats();
+
+-- Триггер для автоматического обновления поля updated_at
+CREATE OR REPLACE FUNCTION update_modified_time()
+RETURNS TRIGGER AS $
+BEGIN
+    NEW.updated_at := NOW();
+    RETURN NEW;
+END;
+$ LANGUAGE plpgsql;
+
+-- Применяем к разным таблицам
+CREATE TRIGGER update_users_modified_time
+    BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_modified_time();
+
+CREATE TRIGGER update_products_modified_time
+    BEFORE UPDATE ON products
+    FOR EACH ROW EXECUTE FUNCTION update_modified_time();
+```
+
+#### Управление триггерами
+```sql
+-- Просмотр всех триггеров
+SELECT 
+    t.trigger_name,
+    t.event_manipulation,
+    t.event_object_table,
+    t.action_timing,
+    t.action_statement
+FROM information_schema.triggers t
+WHERE t.trigger_schema = 'public'
+ORDER BY t.event_object_table, t.trigger_name;
+
+-- Отключение триггера
+ALTER TABLE orders DISABLE TRIGGER validate_order_trigger;
+
+-- Включение триггера
+ALTER TABLE orders ENABLE TRIGGER validate_order_trigger;
+
+-- Отключение всех триггеров на таблице
+ALTER TABLE orders DISABLE TRIGGER ALL;
+
+-- Удаление триггера
+DROP TRIGGER IF EXISTS validate_order_trigger ON orders;
+
+-- Удаление функции триггера
+DROP FUNCTION IF EXISTS validate_order();
+```
+
+### Обработка ошибок и исключений
+
+#### Базовая обработка ошибок
+```sql
+CREATE OR REPLACE FUNCTION safe_divide(a NUMERIC, b NUMERIC)
+RETURNS NUMERIC AS $
+BEGIN
+    IF b = 0 THEN
+        RAISE EXCEPTION 'Division by zero is not allowed';
+    END IF;
+    
+    RETURN a / b;
+EXCEPTION
+    WHEN division_by_zero THEN
+        RAISE NOTICE 'Attempted division by zero, returning NULL';
+        RETURN NULL;
+    WHEN OTHERS THEN
+        RAISE NOTICE 'Unexpected error: %', SQLERRM;
+        RETURN NULL;
+END;
+$ LANGUAGE plpgsql;
+```
+
+#### Продвинутая обработка ошибок
+```sql
+CREATE OR REPLACE FUNCTION process_order_safely(
+    p_user_id INTEGER,
+    p_total DECIMAL,
+    p_items JSONB
+)
+RETURNS INTEGER AS $
+DECLARE
+    new_order_id INTEGER;
+    item JSONB;
+    error_msg TEXT;
+BEGIN
+    -- Начинаем транзакцию внутри функции
+    BEGIN
+        -- Создаем заказ
+        INSERT INTO orders (user_id, total, status)
+        VALUES (p_user_id, p_total, 'pending')
+        RETURNING id INTO new_order_id;
+        
+        -- Добавляем товары в заказ
+        FOR item IN SELECT * FROM jsonb_array_elements(p_items)
+        LOOP
+            INSERT INTO order_items (order_id, product_id, quantity, price)
+            VALUES (
+                new_order_id,
+                (item->>'product_id')::INTEGER,
+                (item->>'quantity')::INTEGER,
+                (item->>'price')::DECIMAL
+            );
+        END LOOP;
+        
+        -- Проверяем целостность заказа
+        IF NOT EXISTS (SELECT 1 FROM order_items WHERE order_id = new_order_id) THEN
+            RAISE EXCEPTION 'Order must contain at least one item';
+        END IF;
+        
+        RETURN new_order_id;
+        
+    EXCEPTION
+        WHEN foreign_key_violation THEN
+            error_msg := 'Invalid user_id or product_id: ' || SQLERRM;
+            RAISE NOTICE '%', error_msg;
+            RETURN -1;
+        WHEN check_violation THEN
+            error_msg := 'Data validation failed: ' || SQLERRM;
+            RAISE NOTICE '%', error_msg;
+            RETURN -2;
+        WHEN OTHERS THEN
+            error_msg := 'Unexpected error processing order: ' || SQLERRM;
+            RAISE NOTICE '%', error_msg;
+            RETURN -3;
+    END;
+END;
+$ LANGUAGE plpgsql;
+```
+
+---
+
+Это завершает структурированное руководство по PostgreSQL. Материал теперь организован в 3 блока и 10 глав с непрерывной нумерацией, охватывая путь от основ SQL до продвинутых возможностей PostgreSQL для backend разработчиков.

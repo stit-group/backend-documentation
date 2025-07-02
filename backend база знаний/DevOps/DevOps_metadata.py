@@ -1,6 +1,4 @@
-# Структура курса "DevOps & Trunk-Based Development"
 
-# Список блоков курса
 blocks = [
     "Блок 1: Основы DevOps",
     "Блок 2: Trunk-Based Development",
