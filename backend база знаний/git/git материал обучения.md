@@ -1,5 +1,5 @@
 # Git и Trunk-based Development: Полный курс от новичка до эксперта
-## Комплексное руководство для backend разработчика | 8 недель
+## Структурированное руководство для backend разработчика
 
 ---
 
@@ -23,54 +23,33 @@
     ✅ Решения: локальная история, быстрота, надежность
 ```
 
-### Почему именно Git победил?
+### Цели и результаты курса
 
-**Статистика индустрии:**
-- **87%** всех проектов на GitHub используют Git
-- **100%** топ-100 IT компаний используют Git
-- **Средняя зарплата** разработчика, владеющего Git на продвинутом уровне, на **25% выше**
-
-**Философские принципы Git:**
-1. **Целостность данных** — невозможно потерять информацию незаметно
-2. **Распределенность** — каждый разработчик имеет полную историю
-3. **Ветвление как основа** — создание веток занимает миллисекунды
-4. **Неизменяемость истории** — то что закоммичено, остается навсегда
-
----
-
-## 🎓 **Цели и результаты курса**
-
-### Что вы получите через 8 недель:
-
-**Уровень 1 (Недели 1-2): Git Practitioner**
+**Уровень 1 (Блоки 1-2): Git Practitioner**
 - Уверенная работа с локальным репозиторием
 - Понимание архитектуры Git
 - Решение 90% повседневных задач
 
-**Уровень 2 (Недели 3-4): GitHub Professional**  
+**Уровень 2 (Блоки 3-4): GitHub Professional**  
 - Эффективная командная работа
 - Продвинутый code review
 - Настройка CI/CD процессов
 
-**Уровень 3 (Недели 5-6): Trunk-based Expert**
+**Уровень 3 (Блоки 5-6): Trunk-based Expert**
 - Современные практики разработки
 - Архитектурное мышление
 - Оптимизация workflow команды
 
-**Уровень 4 (Недели 7-8): Git Architect**
+**Уровень 4 (Блоки 7-8): Git Architect**
 - Проектирование Git стратегий
 - Менторство команды
 - Решение сложных проблем
 
 ---
 
-# **НЕДЕЛЯ 1-2: Git основы — Фундамент профессиональной разработки**
+# **БЛОК 1: Git основы и архитектура**
 
-## **🎯 Цель недель:** Понять архитектуру Git и научиться работать локально
-
----
-
-## **День 1-3: Архитектура Git — Как это работает под капотом**
+## **Глава 1: Архитектура Git — Как это работает под капотом**
 
 ### Модель данных Git: Снимки против дельт
 
@@ -104,11 +83,9 @@ git config --global user.email "ivan.ivanov@company.com"
 
 # Настройка редактора по умолчанию
 git config --global core.editor "code --wait"  # VS Code
-# git config --global core.editor "vim"        # Vim
 
 # Настройка автопереносов строк (важно для команды!)
 git config --global core.autocrlf input      # Linux/Mac
-# git config --global core.autocrlf true     # Windows
 
 # Красивый вывод логов
 git config --global alias.lg "log --oneline --graph --decorate --all"
@@ -142,6 +119,8 @@ ls -la
 ├── config       # Настройки репозитория
 └── hooks/       # Скрипты для автоматизации
 ```
+
+## **Глава 2: Три состояния файлов и базовые операции**
 
 ### Три состояния файлов: Основа понимания Git
 
@@ -246,30 +225,13 @@ Thumbs.db
 *.sqlite
 *.db
 EOF
-
-# Теперь создаем файлы и проверяем
-mkdir node_modules
-echo "test" > node_modules/test.js
-echo "SECRET_KEY=123" > .env
-
-git status
-# .env и node_modules не показываются!
-```
-
-**Распространенная ошибка новичков:**
-```bash
-# ❌ НЕПРАВИЛЬНО - коммитим всё подряд
-git add .
-git commit -m "Добавил всё"
-
-# ✅ ПРАВИЛЬНО - осознанно выбираем файлы  
-git add server.js package.json
-git commit -m "Добавил сервер и зависимости"
 ```
 
 ---
 
-## **День 4-7: Ветвление — Суперсила Git для параллельной разработки**
+# **БЛОК 2: Ветвление и слияние**
+
+## **Глава 3: Концепция веток в Git**
 
 ### Что такое ветка в Git: Концептуальное понимание
 
@@ -323,6 +285,8 @@ git switch -c feature/payment-integration
 git branch -a
 ```
 
+## **Глава 4: Разработка в ветках и слияние**
+
 ### Разработка в ветке: Изоляция изменений
 
 ```bash
@@ -353,32 +317,6 @@ EOF
 
 git add auth.js
 git commit -m "Добавил базовый сервис аутентификации"
-
-# Добавляем маршруты
-cat > routes/auth.js << 'EOF'
-const express = require('express');
-const AuthService = require('../auth');
-
-const router = express.Router();
-const authService = new AuthService();
-
-router.post('/register', async (req, res) => {
-    // Логика регистрации
-});
-
-router.post('/login', async (req, res) => {
-    // Логика входа
-});
-
-module.exports = router;
-EOF
-
-mkdir -p routes
-git add routes/auth.js
-git commit -m "Добавил маршруты аутентификации"
-
-# Проверяем историю ветки
-git log --oneline
 ```
 
 ### Слияние веток: Интеграция изменений
@@ -418,19 +356,6 @@ git log --oneline --graph
                   ← C ← D ←┘
 ```
 
-### Удаление веток: Наведение порядка
-
-```bash
-# Удаляем локальную ветку (после merge)
-git branch -d feature/user-auth
-
-# Принудительное удаление (если не было merge)
-git branch -D feature/old-experiment
-
-# Просматриваем оставшиеся ветки
-git branch
-```
-
 ### Стратегии именования веток
 
 **Хорошие примеры:**
@@ -442,19 +367,13 @@ refactor/database-layer         # Рефакторинг кода
 docs/api-documentation          # Обновление документации
 ```
 
-**Плохие примеры:**
-```bash
-fix                 # Слишком общее
-my-branch          # Не информативное  
-test123            # Временное название
-ivan-work          # Привязка к человеку
-```
-
 ---
 
-## **День 8-14: Удаленная работа — Синхронизация с командой**
+# **БЛОК 3: Удаленная работа и синхронизация**
 
-### Концепция удаленных репозиториев
+## **Глава 5: Концепция удаленных репозиториев**
+
+### Удаленная работа — Синхронизация с командой
 
 **Локальная разработка:**
 ```
@@ -496,21 +415,7 @@ git fetch origin
 git checkout -b feature/user-management origin/feature/user-management
 ```
 
-### Связывание локального репозитория с удаленным
-
-```bash
-# Если создали репозиторий локально
-git init
-git add .
-git commit -m "Первый коммит"
-
-# Добавляем связь с GitHub
-git remote add origin https://github.com/username/my-project.git
-
-# Отправляем код в GitHub
-git push -u origin main
-# -u устанавливает tracking между local main и origin/main
-```
+## **Глава 6: Синхронизация и разрешение конфликтов**
 
 ### Workflow синхронизации с командой
 
@@ -547,44 +452,12 @@ git merge origin/main  # Сливаем когда готовы
 git pull origin main   # Получает и сливает за одну команду
 ```
 
-**Безопасная практика:**
-```bash
-# ✅ РЕКОМЕНДУЕТСЯ - контролируем процесс
-git fetch origin
-git log --oneline HEAD..origin/main  # Смотрим что изменилось
-git merge origin/main
-
-# ⚠️ ОСТОРОЖНО - автоматическое слияние
-git pull origin main
-```
-
 ### Разрешение merge конфликтов
 
 **Конфликт возникает когда:**
 - Два разработчика изменили одни и те же строки
 - Один разработчик изменил файл, другой его удалил
 - Разные изменения в одном участке кода
-
-**Пример конфликта:**
-
-```bash
-# Разработчик A изменил config.js:
-const config = {
-    port: 3000,
-    database: 'mongodb://localhost:27017/myapp'
-};
-
-# Разработчик B изменил config.js:
-const config = {
-    port: 8080,
-    database: 'postgresql://localhost:5432/myapp'  
-};
-
-# При попытке merge Git покажет:
-git merge feature/database-change
-# Auto-merging config.js
-# CONFLICT (content): Merge conflict in config.js
-```
 
 **Содержимое файла с конфликтом:**
 ```javascript
@@ -614,65 +487,11 @@ git add config.js
 git commit -m "Разрешил конфликт в config.js, добавил environment variables"
 ```
 
-**Инструменты для разрешения конфликтов:**
-```bash
-# Настройка merge tool
-git config --global merge.tool vscode
-git config --global mergetool.vscode.cmd 'code --wait $MERGED'
-
-# Использование merge tool
-git mergetool
-```
-
-### Продвинутые техники работы с remote
-
-```bash
-# Несколько удаленных репозиториев
-git remote add upstream https://github.com/original/project.git
-git remote add fork https://github.com/myusername/project.git
-
-# Синхронизация с upstream
-git fetch upstream
-git checkout main
-git merge upstream/main
-git push origin main
-
-# Переименование remote
-git remote rename origin gitlab
-git remote rename upstream origin
-
-# Изменение URL remote
-git remote set-url origin https://github.com/newusername/project.git
-```
-
 ---
 
-## **🎯 Результат недель 1-2:**
+# **БЛОК 4: GitHub Workflow и командная разработка**
 
-**Технические навыки:**
-✅ Понимание архитектуры Git на концептуальном уровне  
-✅ Уверенная работа с локальным репозиторием  
-✅ Создание и управление ветками  
-✅ Синхронизация с удаленными репозиториями  
-✅ Разрешение merge конфликтов  
-
-**Практические результаты:**
-✅ Настроенная рабочая среда Git  
-✅ Локальный проект с историей коммитов  
-✅ Связь с GitHub и первые Push/Pull операции  
-✅ Опыт работы с ветками и слияниями  
-
-**Следующий шаг:** Переход к командной работе через GitHub workflow
-
----
-
-# **НЕДЕЛЯ 3-4: GitHub Workflow — Профессиональная командная разработка**
-
-## **🎯 Цель недель:** Освоить современный workflow командной разработки через Pull Requests
-
----
-
-## **День 15-21: Pull Requests — Основа качественной разработки**
+## **Глава 7: Pull Requests — Основа качественной разработки**
 
 ### Философия Pull Requests
 
@@ -710,22 +529,7 @@ test-branch
 john-work
 ```
 
-**2. Атомарность изменений:**
-```bash
-# ✅ Одна ветка = одна логическая задача
-git switch -c feature/password-reset
-
-# Добавляем ТОЛЬКО функции сброса пароля
-git add controllers/passwordReset.js
-git add routes/password.js  
-git add templates/passwordReset.html
-git commit -m "Добавил функциональность сброса пароля"
-
-# ❌ НЕ смешиваем разные задачи в одном PR
-# git add userAuth.js passwordReset.js emailService.js database.js
-```
-
-**3. Качественное описание PR:**
+**2. Качественное описание PR:**
 
 ```markdown
 ## 📋 Описание задачи
@@ -752,14 +556,6 @@ git commit -m "Добавил функциональность сброса па
 4. Использовать токен для сброса пароля через `/api/auth/reset-password`
 5. Убедиться что старый пароль больше не работает
 
-## 📝 Тестовые данные
-```json
-{
-  "email": "test@example.com",
-  "newPassword": "newSecurePassword123!"
-}
-```
-
 ## ⚠️ Важные изменения
 - Добавлена новая переменная окружения `RESET_TOKEN_SECRET`
 - Требуется настройка SMTP для отправки email
@@ -768,142 +564,9 @@ git commit -m "Добавил функциональность сброса па
 ## 🔗 Связанные задачи
 Closes #123
 Related to #456
-
-## 📷 Скриншоты/Демо
-[Если применимо - добавить скриншоты или GIF с демонстрацией]
 ```
 
-### Создание Pull Request: Пошаговый процесс
-
-```bash
-# 1. Синхронизируемся с main
-git switch main
-git pull origin main
-
-# 2. Создаем feature ветку
-git switch -c feature/PROJ-123-password-reset
-
-# 3. Разрабатываем функциональность
-# Создаем контроллер для сброса пароля
-cat > controllers/passwordResetController.js << 'EOF'
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const EmailService = require('../services/EmailService');
-
-class PasswordResetController {
-    async forgotPassword(req, res) {
-        try {
-            const { email } = req.body;
-            
-            const user = await User.findByEmail(email);
-            if (!user) {
-                // Не раскрываем существование пользователя
-                return res.status(200).json({ 
-                    message: 'Если email существует, письмо было отправлено' 
-                });
-            }
-            
-            // Генерируем токен сброса
-            const resetToken = jwt.sign(
-                { userId: user.id, type: 'password_reset' },
-                process.env.RESET_TOKEN_SECRET,
-                { expiresIn: '15m' }
-            );
-            
-            // Сохраняем токен в БД
-            await user.setResetToken(resetToken);
-            
-            // Отправляем email
-            await EmailService.sendPasswordReset(email, resetToken);
-            
-            res.status(200).json({ 
-                message: 'Если email существует, письмо было отправлено' 
-            });
-            
-        } catch (error) {
-            console.error('Password reset error:', error);
-            res.status(500).json({ error: 'Внутренняя ошибка сервера' });
-        }
-    }
-    
-    async resetPassword(req, res) {
-        try {
-            const { token, newPassword } = req.body;
-            
-            // Валидируем токен
-            const decoded = jwt.verify(token, process.env.RESET_TOKEN_SECRET);
-            
-            if (decoded.type !== 'password_reset') {
-                return res.status(400).json({ error: 'Неверный токен' });
-            }
-            
-            const user = await User.findById(decoded.userId);
-            if (!user || !user.isResetTokenValid(token)) {
-                return res.status(400).json({ error: 'Токен недействителен' });
-            }
-            
-            // Обновляем пароль
-            await user.updatePassword(newPassword);
-            await user.invalidateResetToken();
-            
-            res.status(200).json({ message: 'Пароль успешно изменен' });
-            
-        } catch (error) {
-            if (error.name === 'JsonWebTokenError') {
-                return res.status(400).json({ error: 'Неверный токен' });
-            }
-            
-            console.error('Password reset error:', error);
-            res.status(500).json({ error: 'Внутренняя ошибка сервера' });
-        }
-    }
-}
-
-module.exports = new PasswordResetController();
-EOF
-
-# 4. Добавляем маршруты
-cat > routes/passwordReset.js << 'EOF'
-const express = require('express');
-const rateLimit = require('express-rate-limit');
-const PasswordResetController = require('../controllers/passwordResetController');
-
-const router = express.Router();
-
-// Rate limiting для защиты от спама
-const forgotPasswordLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 час
-    max: 3, // максимум 3 запроса в час
-    message: 'Слишком много запросов. Попробуйте позже.'
-});
-
-router.post('/forgot-password', 
-    forgotPasswordLimiter,
-    PasswordResetController.forgotPassword
-);
-
-router.post('/reset-password', 
-    PasswordResetController.resetPassword
-);
-
-module.exports = router;
-EOF
-
-# 5. Коммитим изменения
-git add controllers/passwordResetController.js routes/passwordReset.js
-git commit -m "Добавил контроллер и маршруты для сброса пароля
-
-- Реализован безопасный процесс сброса пароля
-- Добавлен rate limiting для защиты от спама  
-- Использованы JWT токены с коротким TTL
-- Добавлена валидация и обработка ошибок"
-
-# 6. Пушим ветку в GitHub
-git push origin feature/PROJ-123-password-reset
-
-# 7. Создаем PR через GitHub UI или CLI
-gh pr create --title "Реализация сброса пароля" --body "Подробное описание см. в PR template"
-```
+## **Глава 8: Code Review и GitHub автоматизация**
 
 ### Code Review: Культура качественного кода
 
@@ -938,146 +601,7 @@ class UserController {
 }
 ```
 
-**2. Безопасность:**
-```javascript
-// ❌ Опасно - SQL injection
-const query = `SELECT * FROM users WHERE email = '${email}'`;
-
-// ✅ Безопасно - параметризованный запрос
-const query = 'SELECT * FROM users WHERE email = ?';
-const result = await db.query(query, [email]);
-```
-
-**3. Производительность:**
-```javascript
-// ❌ Неэффективно - N+1 запросов
-const users = await User.findAll();
-for (const user of users) {
-    user.posts = await Post.findByUserId(user.id);
-}
-
-// ✅ Эффективно - один запрос с JOIN
-const users = await User.findAll({
-    include: [Post]
-});
-```
-
-**4. Тестируемость:**
-```javascript
-// ❌ Сложно тестировать - много зависимостей
-async function processPayment(userId, amount) {
-    const user = await User.findById(userId);
-    const stripe = new Stripe(process.env.STRIPE_KEY);
-    const payment = await stripe.charge(amount, user.cardToken);
-    await EmailService.sendReceipt(user.email, payment);
-    return payment;
-}
-
-// ✅ Легко тестировать - внедрение зависимостей
-async function processPayment(userId, amount, { userRepository, paymentService, emailService }) {
-    const user = await userRepository.findById(userId);
-    const payment = await paymentService.charge(amount, user.cardToken);
-    await emailService.sendReceipt(user.email, payment);
-    return payment;
-}
-```
-
-### Стратегии слияния Pull Requests
-
-**1. Merge Commit (по умолчанию):**
-```
-main:     A ← B ← E ← M
-             ↗     ↗
-feature:    C ← D ←┘
-
-История: A → B → C → D → E → M
-```
-**Плюсы:** Сохраняет полную историю  
-**Минусы:** Сложная история, много merge коммитов
-
-**2. Squash and Merge:**
-```
-main:     A ← B ← E ← S
-               
-feature:  C ← D (удаляется)
-
-История: A → B → E → S
-```
-**Плюсы:** Чистая линейная история  
-**Минусы:** Теряется детальная история feature ветки
-
-**3. Rebase and Merge:**
-```
-main:     A ← B ← E ← C' ← D'
-
-feature:  C ← D (удаляется)
-
-История: A → B → E → C' → D'
-```
-**Плюсы:** Линейная история с сохранением коммитов  
-**Минусы:** Изменяет хеши коммитов
-
-**Рекомендации по выбору стратегии:**
-- **Мелкие PR (1-3 коммита):** Squash and Merge
-- **Крупные PR с логическими коммитами:** Rebase and Merge  
-- **Важные feature ветки:** Merge Commit
-
----
-
-## **День 22-28: GitHub как платформа DevOps**
-
-### GitHub Issues: Управление задачами и багами
-
-**Создание качественного Issue:**
-
-```markdown
----
-name: Bug Report
-about: Сообщить о баге в приложении
-title: '[BUG] Краткое описание проблемы'
-labels: bug, needs-triage
-assignees: ''
----
-
-## 🐛 Описание бага
-Четкое и краткое описание проблемы.
-
-## 🔄 Шаги для воспроизведения
-1. Перейти на страницу '/api/users'
-2. Отправить POST запрос с данными '...'
-3. Посмотреть на ответ
-4. Увидеть ошибку
-
-## ✅ Ожидаемое поведение
-Что должно происходить.
-
-## ❌ Фактическое поведение  
-Что происходит на самом деле.
-
-## 🖥️ Окружение
-- OS: [e.g. Ubuntu 20.04]
-- Node.js: [e.g. 18.17.0]
-- Database: [e.g. PostgreSQL 14.2]
-- Browser [если применимо]: [e.g. Chrome 91]
-
-## 📎 Дополнительный контекст
-Логи, скриншоты, и другая информация.
-
-```
-
-**Связывание Issues с Pull Requests:**
-```bash
-# В описании PR или коммита используем ключевые слова:
-git commit -m "Исправил валидацию email
-
-Fixes #123
-Closes #456  
-Resolves #789"
-
-# GitHub автоматически закроет Issues при merge PR
-```
-
-### Автоматизация с GitHub Actions
+### GitHub как платформа DevOps
 
 **Базовый CI/CD workflow:**
 
@@ -1122,66 +646,6 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage/lcov.info
-        
-  security:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Run security audit
-      run: npm audit --audit-level high
-      
-  build:
-    needs: [test, security]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build Docker image
-      run: |
-        docker build -t myapp:${{ github.sha }} .
-        docker tag myapp:${{ github.sha }} myapp:latest
-```
-
-**Продвинутый workflow с деплоем:**
-
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-    tags: [ 'v*' ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    environment: production
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-        
-    - name: Deploy to ECS
-      run: |
-        aws ecs update-service \
-          --cluster production \
-          --service backend-api \
-          --force-new-deployment
-        
-    - name: Notify Slack
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        channel: '#deployments'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
 ```
 
 ### Branch Protection Rules: Защита main ветки
@@ -1208,111 +672,13 @@ Branch Protection для main:
 ☑️ Allow deletions: Never
 ```
 
-**Настройка через GitHub CLI:**
-```bash
-# Установка базовых правил
-gh api repos/:owner/:repo/branches/main/protection \
-  --method PUT \
-  --field required_status_checks='{"strict":true,"contexts":["ci/tests"]}' \
-  --field enforce_admins=true \
-  --field required_pull_request_reviews='{"required_approving_review_count":2}' \
-  --field restrictions=null
-```
-
-### CODEOWNERS: Автоматическое назначение ревьюеров
-
-```bash
-# .github/CODEOWNERS
-# Глобальные владельцы
-* @team-leads @senior-devs
-
-# Backend код
-/src/controllers/ @backend-team @security-team
-/src/models/ @backend-team @database-team
-/migrations/ @database-team
-
-# Инфраструктура
-/docker/ @devops-team
-/.github/ @devops-team @team-leads
-/kubernetes/ @devops-team
-
-# Документация
-/docs/ @technical-writers @team-leads
-README.md @team-leads
-
-# Безопасность
-/src/auth/ @security-team
-/src/crypto/ @security-team
-```
-
-### Semantic Versioning и Release Management
-
-**Автоматическое создание релизов:**
-
-```yaml
-# .github/workflows/release.yml
-name: Create Release
-
-on:
-  push:
-    tags:
-      - 'v*'
-
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
-    - name: Generate changelog
-      run: |
-        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD \
-          --pretty=format:"- %s" > changelog.txt
-        
-    - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body_path: changelog.txt
-        draft: false
-        prerelease: false
-```
-
 ---
 
-## **🎯 Результат недель 3-4:**
+# **БЛОК 5: Trunk-based Development — Философия и принципы**
 
-**Технические навыки:**
-✅ Создание качественных Pull Requests с детальным описанием  
-✅ Эффективное участие в Code Review процессах  
-✅ Настройка и использование GitHub Actions для CI/CD  
-✅ Конфигурирование Branch Protection Rules  
-✅ Управление проектом через GitHub Issues  
+## **Глава 9: Эволюция стратегий ветвления**
 
-**Процессные навыки:**
-✅ Понимание современного DevOps workflow  
-✅ Автоматизация проверок качества кода  
-✅ Безопасная работа с продакшен кодом  
-✅ Командная разработка с code review культурой  
-
-**Следующий шаг:** Переход к изучению Trunk-based Development для оптимизации workflow
-
----
-
-# **НЕДЕЛЯ 5-6: Trunk-based Development — Современный подход к ветвлению**
-
-## **🎯 Цель недель:** Освоить философию и практики trunk-based development для ускорения доставки кода
-
----
-
-## **День 29-35: Философия и принципы Trunk-based Development**
-
-### Эволюция стратегий ветвления
+### Философия и принципы Trunk-based Development
 
 **1990s-2000s: Централизованные системы**
 ```
@@ -1381,16 +747,7 @@ git switch -c feature/complete-user-system
 └── Вечером: merge в main через PR
 ```
 
-**4. Feature Flags вместо долгих веток:**
-```javascript
-// Вместо долгой ветки используем флаги
-function getUserProfile(userId) {
-    if (featureFlags.newProfileAPI) {
-        return getProfileV2(userId);
-    }
-    return getProfileV1(userId);
-}
-```
+## **Глава 10: Преимущества и культурные изменения**
 
 ### Преимущества Trunk-based для Backend разработки
 
@@ -1447,9 +804,11 @@ jobs:
 
 ---
 
-## **День 36-42: Практические техники Trunk-based Development**
+# **БЛОК 6: Практические техники Trunk-based Development**
 
-### Стратегии разбиения больших задач
+## **Глава 11: Стратегии разбиения больших задач**
+
+### Практические техники Trunk-based Development
 
 **Пример: Переработка системы аутентификации**
 
@@ -1501,6 +860,8 @@ git switch -c feature/cleanup-auth-v1
 # Удаляем старые таблицы БД
 git commit -m "Удалил старую систему аутентификации"
 ```
+
+## **Глава 12: Feature Flags и Backward Compatibility**
 
 ### Feature Flags: Техническая реализация
 
@@ -1579,53 +940,6 @@ class FeatureFlags {
 module.exports = new FeatureFlags();
 ```
 
-**Использование feature flags в коде:**
-
-```javascript
-// controllers/paymentController.js
-const FeatureFlags = require('../config/featureFlags');
-const PaymentServiceV1 = require('../services/paymentV1');
-const PaymentServiceV2 = require('../services/paymentV2');
-
-class PaymentController {
-    async processPayment(req, res) {
-        const { userId, amount, cardToken } = req.body;
-        
-        try {
-            let result;
-            
-            if (FeatureFlags.isEnabled('newPaymentAPI', userId)) {
-                // Новая реализация
-                result = await PaymentServiceV2.process({
-                    userId,
-                    amount,
-                    cardToken,
-                    metadata: req.body.metadata
-                });
-                
-                // Логируем использование новой версии
-                console.log(`User ${userId} used Payment API v2`);
-            } else {
-                // Старая реализация
-                result = await PaymentServiceV1.process(userId, amount, cardToken);
-            }
-            
-            res.status(200).json(result);
-            
-        } catch (error) {
-            // При ошибке в новой версии, откатываемся на старую
-            if (FeatureFlags.isEnabled('newPaymentAPI', userId) && error.code === 'NEW_API_ERROR') {
-                console.warn(`Payment API v2 failed for user ${userId}, falling back to v1`);
-                const result = await PaymentServiceV1.process(userId, amount, cardToken);
-                res.status(200).json(result);
-            } else {
-                throw error;
-            }
-        }
-    }
-}
-```
-
 ### Backward Compatibility: Безопасные изменения API
 
 **Принципы безопасных изменений:**
@@ -1681,28 +995,6 @@ async getUser(req, res) {
 }
 ```
 
-**3. Deprecation стратегия:**
-```javascript
-// middleware/deprecationWarning.js
-function deprecationWarning(endpoint, newEndpoint, sunsetDate) {
-    return (req, res, next) => {
-        res.setHeader('Warning', `299 - "Deprecated endpoint. Use ${newEndpoint} instead. Sunset date: ${sunsetDate}"`);
-        res.setHeader('Sunset', sunsetDate);
-        
-        // Логируем использование deprecated API
-        console.warn(`Deprecated endpoint ${endpoint} used by ${req.ip}`);
-        
-        next();
-    };
-}
-
-// routes/api.js
-router.get('/api/v1/users', 
-    deprecationWarning('/api/v1/users', '/api/v2/users', '2024-12-31'),
-    userController.getUsers
-);
-```
-
 ### Database Migrations в Trunk-based подходе
 
 **Многоэтапная миграция для безопасности:**
@@ -1731,165 +1023,13 @@ ALTER TABLE users DROP COLUMN legacy_contact;
 -- ✅ Безопасно: код уже не использует старую колонку
 ```
 
-**Миграции с feature flags:**
-```javascript
-// migrations/addAdvancedUserMetadata.js
-async function up(knex) {
-    // Создаем таблицу только если фича включена
-    if (process.env.FEATURE_ADVANCED_USER_METADATA === 'true') {
-        await knex.schema.createTable('user_metadata', table => {
-            table.increments('id');
-            table.integer('user_id').references('id').inTable('users');
-            table.json('metadata');
-            table.timestamps();
-        });
-    }
-}
-
-async function down(knex) {
-    await knex.schema.dropTableIfExists('user_metadata');
-}
-```
-
-### Continuous Integration в Trunk-based
-
-**Обязательные проверки перед merge:**
-
-```yaml
-# .github/workflows/trunk-based-ci.yml
-name: Trunk-based CI
-
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
-
-jobs:
-  # Быстрые проверки (должны выполняться < 5 минут)
-  fast-checks:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Lint code
-      run: npm run lint
-      
-    - name: Check code formatting  
-      run: npm run format:check
-      
-    - name: Type checking
-      run: npm run type-check
-      
-    - name: Unit tests
-      run: npm run test:unit
-      timeout-minutes: 3
-      
-  # Интеграционные тесты (могут быть дольше)
-  integration-tests:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup test database
-      run: npm run db:test:setup
-      
-    - name: Run integration tests
-      run: npm run test:integration
-      timeout-minutes: 10
-      
-  # Проверки безопасности
-  security:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Security audit
-      run: npm audit --audit-level high
-      
-    - name: Check for secrets
-      uses: trufflesecurity/trufflehog@v3.63.2
-      with:
-        path: ./
-        base: main
-        head: HEAD
-        
-  # Проверка размера PR
-  pr-size:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
-    - name: Check PR size
-      run: |
-        CHANGED_LINES=$(git diff --numstat origin/main...HEAD | awk '{sum += $1 + $2} END {print sum}')
-        echo "Changed lines: $CHANGED_LINES"
-        if [ $CHANGED_LINES -gt 400 ]; then
-          echo "❌ PR too large! Changed lines: $CHANGED_LINES (max: 400)"
-          echo "Please split into smaller PRs"
-          exit 1
-        fi
-        echo "✅ PR size OK: $CHANGED_LINES lines"
-
-  # Автоматический деплой в staging при push в main
-  deploy-staging:
-    needs: [fast-checks, integration-tests, security]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Deploy to staging
-      run: |
-        echo "Deploying to staging environment..."
-        # Здесь код деплоя
-        
-    - name: Run smoke tests
-      run: npm run test:smoke:staging
-```
-
 ---
 
-## **🎯 Результат недель 5-6:**
+# **БЛОК 7: Настройка полноценного проекта**
 
-**Концептуальные навыки:**
-✅ Глубокое понимание принципов Trunk-based Development  
-✅ Умение разбивать большие задачи на маленькие PR  
-✅ Навыки работы с Feature Flags  
-✅ Знание стратегий Backward Compatibility  
+## **Глава 13: Архитектура современного backend проекта**
 
-**Технические навыки:**
-✅ Реализация системы Feature Flags  
-✅ Безопасные Database Migrations  
-✅ Настройка CI для Trunk-based workflow  
-✅ Мониторинг размера и качества PR  
-
-**Следующий шаг:** Применение всех знаний на практике в реальном проекте
-
----
-
-# **НЕДЕЛЯ 7-8: Практическое применение — Настройка полноценного Trunk-based проекта**
-
-## **🎯 Цель недель:** Создать с нуля полноценный проект с Trunk-based workflow
-
----
-
-## **День 43-49: Настройка проекта с нуля**
-
-### Архитектура современного backend проекта
+### Практическое применение — Настройка полноценного Trunk-based проекта
 
 **Структура репозитория:**
 ```
@@ -1955,80 +1095,9 @@ mkdir -p tests/{unit,integration,e2e,fixtures}
 mkdir -p .github/{workflows,ISSUE_TEMPLATE}
 mkdir -p docs/{api,deployment,development}
 mkdir -p docker scripts migrations
-
-# Инициализируем package.json с современными зависимостями
-cat > package.json << 'EOF'
-{
-  "name": "backend-api",
-  "version": "1.0.0",
-  "description": "Modern backend API with trunk-based development",
-  "main": "src/app.js",
-  "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "test": "jest",
-    "test:unit": "jest tests/unit",
-    "test:integration": "jest tests/integration",
-    "test:e2e": "jest tests/e2e",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch",
-    "lint": "eslint src/ tests/",
-    "lint:fix": "eslint src/ tests/ --fix",
-    "format": "prettier --write src/ tests/",
-    "format:check": "prettier --check src/ tests/",
-    "type-check": "tsc --noEmit",
-    "db:migrate": "knex migrate:latest",
-    "db:rollback": "knex migrate:rollback",
-    "db:seed": "knex seed:run",
-    "db:test:setup": "./scripts/setup-test-db.sh",
-    "security:audit": "npm audit --audit-level high",
-    "security:check": "snyk test",
-    "build": "docker build -t backend-api .",
-    "deploy:staging": "./scripts/deploy.sh staging",
-    "deploy:production": "./scripts/deploy.sh production"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0",
-    "express-rate-limit": "^6.7.0",
-    "express-validator": "^7.0.1",
-    "bcrypt": "^5.1.0",
-    "jsonwebtoken": "^9.0.0",
-    "knex": "^2.4.2",
-    "pg": "^8.11.0",
-    "redis": "^4.6.7",
-    "dotenv": "^16.1.4",
-    "winston": "^3.9.0",
-    "joi": "^17.9.2",
-    "uuid": "^9.0.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.22",
-    "jest": "^29.5.0",
-    "supertest": "^6.3.3",
-    "eslint": "^8.42.0",
-    "prettier": "^2.8.8",
-    "typescript": "^5.1.3",
-    "@types/node": "^20.3.1",
-    "husky": "^8.0.3",
-    "lint-staged": "^13.2.2",
-    "snyk": "^1.1156.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
-  },
-  "lint-staged": {
-    "*.js": ["eslint --fix", "prettier --write"],
-    "*.{json,md}": ["prettier --write"]
-  }
-}
-EOF
-
-# Устанавливаем зависимости
-npm install
 ```
+
+## **Глава 14: Конфигурация качества кода и инструментов**
 
 ### Конфигурация качества кода
 
@@ -2080,20 +1149,6 @@ module.exports = {
 };
 ```
 
-**Prettier конфигурация (.prettierrc):**
-```json
-{
-  "semi": true,
-  "trailingComma": "none", 
-  "singleQuote": true,
-  "printWidth": 100,
-  "tabWidth": 2,
-  "useTabs": false,
-  "bracketSpacing": true,
-  "arrowParens": "avoid"
-}
-```
-
 **Jest конфигурация (jest.config.js):**
 ```javascript
 module.exports = {
@@ -2135,177 +1190,12 @@ npx husky add .husky/pre-commit "npx lint-staged"
 
 # Добавляем commit-msg хук для проверки формата коммитов
 npx husky add .husky/commit-msg 'npx --no -- commitlint --edit ${1}'
-
-# Устанавливаем commitlint
-npm install --save-dev @commitlint/cli @commitlint/config-conventional
-
-# Конфигурация commitlint
-cat > .commitlintrc.js << 'EOF'
-module.exports = {
-  extends: ['@commitlint/config-conventional'],
-  rules: {
-    'type-enum': [
-      2,
-      'always',
-      [
-        'feat',     // новая функциональность
-        'fix',      // исправление бага
-        'docs',     // обновление документации
-        'style',    // форматирование кода
-        'refactor', // рефакторинг
-        'test',     // добавление тестов
-        'chore',    // обновление зависимостей, конфигураций
-        'perf',     // улучшение производительности
-        'ci',       // изменения CI/CD
-        'revert'    // откат изменений
-      ]
-    ],
-    'subject-max-length': [2, 'always', 72],
-    'subject-case': [2, 'always', 'lower-case']
-  }
-};
-EOF
 ```
 
-### Настройка базового приложения
+### Система Feature Flags
 
-**Главный файл приложения (src/app.js):**
 ```javascript
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-require('dotenv').config();
-
-const logger = require('./config/logger');
-const errorHandler = require('./middleware/errorHandler');
-const requestLogger = require('./middleware/requestLogger');
-const featureFlags = require('./config/featureFlags');
-
-// Импорт маршрутов
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const healthRoutes = require('./routes/health');
-
-const app = express();
-
-// Базовые middleware
-app.use(helmet()); // Безопасность
-app.use(cors()); // CORS
-app.use(express.json({ limit: '10mb' })); // Парсинг JSON
-app.use(express.urlencoded({ extended: true }));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 минут
-  max: 100, // максимум 100 запросов на IP
-  message: 'Слишком много запросов с этого IP'
-});
-app.use(limiter);
-
-// Логирование запросов
-app.use(requestLogger);
-
-// API маршруты
-app.use('/health', healthRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-
-// API документация (в development режиме)
-if (process.env.NODE_ENV === 'development') {
-  const swaggerUi = require('swagger-ui-express');
-  const swaggerDocument = require('../docs/api/swagger.json');
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-}
-
-// 404 для несуществующих маршрутов
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Маршрут не найден',
-    path: req.originalUrl
-  });
-});
-
-// Обработчик ошибок (должен быть последним)
-app.use(errorHandler);
-
-// Запуск сервера
-const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-  logger.info(`Сервер запущен на порту ${PORT}`);
-  logger.info(`Окружение: ${process.env.NODE_ENV}`);
-  logger.info(`Feature flags: ${JSON.stringify(featureFlags.getAllFlags())}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM получен, завершаем сервер gracefully');
-  server.close(() => {
-    logger.info('Сервер завершен');
-    process.exit(0);
-  });
-});
-
-process.on('SIGINT', () => {
-  logger.info('SIGINT получен, завершаем сервер gracefully');
-  server.close(() => {
-    logger.info('Сервер завершен');
-    process.exit(0);
-  });
-});
-
-module.exports = app;
-```
-
-**Конфигурация логирования (src/config/logger.js):**
-```javascript
-const winston = require('winston');
-
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { 
-    service: 'backend-api',
-    version: process.env.npm_package_version || '1.0.0'
-  },
-  transports: [
-    // Файл для ошибок
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    }),
-    // Файл для всех логов
-    new winston.transports.File({ 
-      filename: 'logs/combined.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5
-    })
-  ]
-});
-
-// В development режиме логируем в консоль
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
-
-module.exports = logger;
-```
-
-**Система Feature Flags (src/config/featureFlags.js):**
-```javascript
-const logger = require('./logger');
-
+// src/config/featureFlags.js
 class FeatureFlags {
   constructor() {
     this.flags = new Map();
@@ -2332,9 +1222,6 @@ class FeatureFlags {
     // Сохраняем в Map для быстрого доступа
     Object.entries(envFlags).forEach(([key, value]) => {
       this.flags.set(key, value);
-      if (value) {
-        logger.info(`Feature flag enabled: ${key}`);
-      }
     });
   }
 
@@ -2352,153 +1239,22 @@ class FeatureFlags {
       return betaUsers.includes(String(context.userId));
     }
 
-    if (context.environment && flagName === 'EXPERIMENTAL_CACHE') {
-      // Экспериментальный кеш только в staging/development
-      return ['staging', 'development'].includes(context.environment);
-    }
-
     return baseFlag;
   }
 
   getAllFlags() {
     return Object.fromEntries(this.flags);
   }
-
-  // Метод для динамического включения/выключения флагов (для тестов)
-  setFlag(flagName, value) {
-    this.flags.set(flagName, value);
-    logger.info(`Feature flag ${flagName} set to ${value}`);
-  }
 }
 
 module.exports = new FeatureFlags();
 ```
 
-### Docker конфигурация
-
-**Dockerfile для production:**
-```dockerfile
-# Многоэтапная сборка для оптимизации размера
-FROM node:18-alpine AS base
-
-# Устанавливаем рабочую директорию
-WORKDIR /app
-
-# Копируем package files для кеширования слоев
-COPY package*.json ./
-
-# Production dependencies
-FROM base AS dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Development dependencies (для сборки)
-FROM base AS build-deps
-RUN npm ci
-
-# Сборка приложения
-FROM build-deps AS build
-COPY . .
-RUN npm run lint
-RUN npm run test:unit
-# Здесь могут быть дополнительные шаги сборки
-
-# Production image
-FROM node:18-alpine AS production
-
-# Создаем пользователя для безопасности
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
-
-# Устанавливаем рабочую директорию
-WORKDIR /app
-
-# Копируем production dependencies
-COPY --from=dependencies --chown=nodejs:nodejs /app/node_modules ./node_modules
-
-# Копируем исходный код
-COPY --chown=nodejs:nodejs . .
-
-# Создаем директорию для логов
-RUN mkdir -p logs && chown nodejs:nodejs logs
-
-# Устанавливаем пользователя
-USER nodejs
-
-# Открываем порт
-EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node ./scripts/health-check.js
-
-# Запускаем приложение
-CMD ["node", "src/app.js"]
-```
-
-**Docker Compose для разработки:**
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  app:
-    build: 
-      context: .
-      target: build-deps  # Используем development зависимости
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@db:5432/backend_api
-      - REDIS_URL=redis://redis:6379
-      - FEATURE_DETAILED_LOGGING=true
-      - FEATURE_EXPERIMENTAL_CACHE=true
-    volumes:
-      - .:/app
-      - /app/node_modules  # Предотвращаем перезапись node_modules
-    depends_on:
-      - db
-      - redis
-    command: npm run dev
-
-  db:
-    image: postgres:14-alpine
-    environment:
-      - POSTGRES_DB=backend_api
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-  test-db:
-    image: postgres:14-alpine
-    environment:
-      - POSTGRES_DB=backend_api_test
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-    ports:
-      - "5433:5432"
-    tmpfs:
-      - /var/lib/postgresql/data  # Используем память для тестовой БД
-
-volumes:
-  postgres_data:
-  redis_data:
-```
-
 ---
 
-## **День 50-56: Командная работа и процессы**
+# **БЛОК 8: Командная работа и процессы**
+
+## **Глава 15: GitHub Templates и автоматизация**
 
 ### GitHub Templates для стандартизации
 
@@ -2548,10 +1304,6 @@ volumes:
 Closes #123
 Related to #456
 
-## 📷 Скриншоты/Демо
-
-<!-- Если применимо, добавьте скриншоты или GIF -->
-
 ## ⚠️ Breaking Changes
 
 <!-- Опишите изменения, которые могут сломать существующую функциональность -->
@@ -2562,67 +1314,6 @@ Related to #456
 ## 📝 Дополнительные заметки
 
 <!-- Любая дополнительная информация для ревьюеров -->
-```
-
-**Шаблон Bug Report (.github/ISSUE_TEMPLATE/bug_report.md):**
-```markdown
----
-name: 🐛 Bug Report
-about: Сообщить о баге в приложении
-title: '[BUG] '
-labels: ['bug', 'needs-triage']
-assignees: ''
----
-
-## 🐛 Описание бага
-
-<!-- Четкое и краткое описание проблемы -->
-
-## 🔄 Шаги для воспроизведения
-
-1. Перейти на '...'
-2. Нажать на '...'
-3. Прокрутить до '...'
-4. Увидеть ошибку
-
-## ✅ Ожидаемое поведение
-
-<!-- Что должно происходить -->
-
-## ❌ Фактическое поведение
-
-<!-- Что происходит на самом деле -->
-
-## 📱 Окружение
-
-**Backend:**
-- OS: [e.g. Ubuntu 20.04, macOS 12.0]
-- Node.js: [e.g. 18.17.0]
-- Database: [e.g. PostgreSQL 14.2]
-- Version: [e.g. 1.2.3]
-
-**Client (если применимо):**
-- Browser: [e.g. Chrome 115, Safari 16]
-- Device: [e.g. iPhone 12, Desktop]
-
-## 📋 Логи
-
-<!-- Вставьте соответствующие логи -->
-
-```
-Вставьте логи здесь
-```
-
-## 📎 Дополнительный контекст
-
-<!-- Скриншоты, файлы, или другая информация -->
-
-## 🎯 Приоритет
-
-- [ ] 🔥 Критический (блокирует продакшен)
-- [ ] ⚠️ Высокий (влияет на основную функциональность)  
-- [ ] 📊 Средний (влияет на пользователей)
-- [ ] 📝 Низкий (косметические изменения)
 ```
 
 ### CODEOWNERS для автоматического review
@@ -2676,57 +1367,7 @@ CHANGELOG.md @team-leads
 .env.example @devops-team @team-leads
 ```
 
-### Политики качества кода
-
-**Настройка Branch Protection через GitHub CLI:**
-```bash
-#!/bin/bash
-# scripts/setup-branch-protection.sh
-
-REPO="organization/backend-api"
-BRANCH="main"
-
-echo "Настройка Branch Protection для $REPO:$BRANCH"
-
-# Базовые правила защиты
-gh api repos/$REPO/branches/$BRANCH/protection \
-  --method PUT \
-  --field required_status_checks='{
-    "strict": true,
-    "contexts": [
-      "ci/lint-and-format",
-      "ci/unit-tests", 
-      "ci/integration-tests",
-      "ci/security-audit",
-      "ci/coverage-check",
-      "ci/pr-size-check"
-    ]
-  }' \
-  --field enforce_admins=true \
-  --field required_pull_request_reviews='{
-    "required_approving_review_count": 2,
-    "dismiss_stale_reviews": true,
-    "require_code_owner_reviews": true,
-    "require_last_push_approval": true
-  }' \
-  --field restrictions=null \
-  --field required_conversation_resolution=true \
-  --field allow_force_pushes=false \
-  --field allow_deletions=false
-
-echo "✅ Branch Protection настроен успешно"
-
-# Дополнительные настройки репозитория
-gh api repos/$REPO \
-  --method PATCH \
-  --field allow_squash_merge=true \
-  --field allow_merge_commit=false \
-  --field allow_rebase_merge=true \
-  --field delete_branch_on_merge=true \
-  --field allow_auto_merge=true
-
-echo "✅ Настройки merge стратегий обновлены"
-```
+## **Глава 16: Автоматизация качества и процедуры экстренных ситуаций**
 
 ### Автоматизация качества PR
 
@@ -2794,11 +1435,6 @@ jobs:
           - 🎯 **Optimal**: < 400 lines changed
           - ⚠️ **Acceptable**: 400-800 lines changed  
           - ❌ **Too large**: > 800 lines changed
-          
-          **Tips for large PRs:**
-          - Split into logical commits
-          - Create separate PRs for refactoring
-          - Use feature flags for incomplete features
           `;
           
           github.rest.issues.createComment({
@@ -2807,114 +1443,6 @@ jobs:
             repo: context.repo.repo,
             body: body
           });
-
-  code-quality-metrics:
-    runs-on: ubuntu-latest
-    name: Code Quality Metrics
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run complexity analysis
-      run: |
-        npx complexity-report --format json --output complexity.json src/
-        
-    - name: Analyze code complexity
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          
-          try {
-            const complexity = JSON.parse(fs.readFileSync('complexity.json', 'utf8'));
-            
-            const highComplexity = complexity.functions.filter(fn => fn.complexity > 10);
-            
-            if (highComplexity.length > 0) {
-              const body = `## ⚠️ High Complexity Functions Detected
-              
-              The following functions have high cyclomatic complexity and should be refactored:
-              
-              ${highComplexity.map(fn => 
-                `- **${fn.name}** (${fn.file}:${fn.line}) - Complexity: ${fn.complexity}`
-              ).join('\n')}
-              
-              **Recommendations:**
-              - Break down large functions into smaller ones
-              - Extract complex logic into separate functions
-              - Consider using early returns to reduce nesting
-              - Add unit tests for complex functions
-              `;
-              
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            }
-          } catch (error) {
-            console.log('No complexity report generated or parsing failed');
-          }
-
-  dependency-check:
-    runs-on: ubuntu-latest
-    name: Dependency Security Check
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Run Snyk security check
-      uses: snyk/actions/node@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=medium --fail-on=all
-        
-    - name: Check for dependency updates
-      run: |
-        npx npm-check-updates --format json > ncu-output.json
-        
-    - name: Comment on outdated dependencies
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const fs = require('fs');
-          
-          try {
-            const updates = JSON.parse(fs.readFileSync('ncu-output.json', 'utf8'));
-            
-            if (Object.keys(updates).length > 0) {
-              const body = `## 📦 Outdated Dependencies
-              
-              Consider updating the following dependencies:
-              
-              ${Object.entries(updates).map(([pkg, version]) => 
-                `- **${pkg}**: ${version}`
-              ).join('\n')}
-              
-              Run \`npm update\` to update these dependencies.
-              `;
-              
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            }
-          } catch (error) {
-            console.log('No dependency updates needed or checking failed');
-          }
 ```
 
 ### Стратегия откатов и hotfixes
@@ -3036,51 +1564,33 @@ jobs:
 
 ---
 
-## **🎯 Финальный результат недель 7-8:**
-
-**Проектные навыки:**
-✅ Настройка современного backend проекта с нуля  
-✅ Конфигурация всех инструментов качества кода  
-✅ Автоматизация проверок и деплоя  
-✅ Документирование процессов и процедур  
-
-**Командные навыки:**
-✅ Создание шаблонов для Issues и PR  
-✅ Настройка автоматического code review  
-✅ Процедуры для экстренных ситуаций  
-✅ Мониторинг качества и метрик  
-
----
-
 # **🎓 ЗАКЛЮЧЕНИЕ: Путь от новичка к эксперту завершен**
 
-## **Достигнутые навыки за 8 недель**
+## **Достигнутые навыки по блокам**
 
-### **Уровень 1: Git Mastery** ✅
+### **Блоки 1-2: Git Mastery** ✅
 - **Архитектурное понимание**: Как Git хранит данные и управляет историей
 - **Локальная работа**: Уверенное использование всех основных команд
 - **Ветвление**: Эффективное создание, слияние и управление ветками
 - **Решение конфликтов**: Быстрое и корректное разрешение merge конфликтов
 
-### **Уровень 2: GitHub Professional** ✅  
+### **Блоки 3-4: GitHub Professional** ✅  
 - **Pull Requests**: Создание качественных PR с детальным описанием
 - **Code Review**: Конструктивное участие в процессе проверки кода
 - **GitHub Actions**: Настройка CI/CD пайплайнов для автоматизации
 - **Project Management**: Использование Issues, Projects, Milestones
 
-### **Уровень 3: Trunk-based Expert** ✅
+### **Блоки 5-6: Trunk-based Expert** ✅
 - **Философия**: Глубокое понимание принципов trunk-based development
 - **Feature Flags**: Техническая реализация и стратегическое использование
 - **Backward Compatibility**: Безопасные изменения API и базы данных
 - **Непрерывная интеграция**: Частые интеграции без нарушения продакшена
 
-### **Уровень 4: Git Architect** ✅
+### **Блоки 7-8: Git Architect** ✅
 - **Проектирование workflow**: Настройка процессов для команды любого размера
 - **Автоматизация качества**: Системы проверок, метрик и мониторинга
 - **Процедуры экстренных ситуаций**: Hotfixes, rollbacks, disaster recovery
 - **Менторство**: Способность обучать и направлять других разработчиков
-
----
 
 ## **Практические результаты курса**
 
@@ -3097,8 +1607,6 @@ jobs:
 ✅ **Планирование задач** с разбиением на маленькие итерации  
 ✅ **Качественное документирование** изменений и процессов  
 ✅ **Проактивный подход** к предотвращению проблем  
-
----
 
 ## **Влияние на карьеру**
 
@@ -3117,74 +1625,12 @@ jobs:
 - **DevOps компетенции** — понимание CI/CD и автоматизации процессов
 - **Архитектурное мышление** — видение полного цикла разработки от кода до продакшена
 
----
-
-## **Следующие шаги развития**
-
-### **Углубление Git экспертизы:**
-- **Git Internals** — изучение внутреннего устройства Git на уровне объектов
-- **Advanced Git** — rebase, cherry-pick, bisect, submodules, worktrees
-- **Git Performance** — оптимизация больших репозиториев, LFS для бинарных файлов
-
-### **Расширение DevOps навыков:**
-- **Container Orchestration** — Kubernetes, Docker Swarm
-- **Infrastructure as Code** — Terraform, CloudFormation
-- **Monitoring & Observability** — Prometheus, Grafana, ELK Stack
-- **Security** — SAST, DAST, dependency scanning, secrets management
-
-### **Leadership и процессы:**
-- **Engineering Management** — управление техническими командами
-- **System Design** — проектирование распределенных систем
-- **Technical Writing** — создание качественной технической документации
-
----
-
-## **Ресурсы для дальнейшего изучения**
-
-### **Книги:**
-- 📚 **"Pro Git" by Scott Chacon** — полное руководство по Git
-- 📚 **"Continuous Delivery" by Jez Humble** — принципы непрерывной доставки
-- 📚 **"The Phoenix Project" by Gene Kim** — DevOps культура и практики
-- 📚 **"Building Microservices" by Sam Newman** — архитектура современных систем
-
-### **Онлайн ресурсы:**
-- 🌐 **[git-scm.com](https://git-scm.com/)** — официальная документация Git
-- 🌐 **[trunkbaseddevelopment.com](https://trunkbaseddevelopment.com/)** — подробно о trunk-based development
-- 🌐 **[GitHub Skills](https://skills.github.com/)** — интерактивные курсы GitHub
-- 🌐 **[GitLab Learn](https://about.gitlab.com/learn/)** — DevOps best practices
-
-### **Практические инструменты:**
-- 🛠️ **[learngitbranching.js.org](https://learngitbranching.js.org/)** — интерактивное изучение Git
-- 🛠️ **[gitexplorer.com](https://gitexplorer.com/)** — поиск нужных Git команд
-- 🛠️ **[github.com/k88hudson/git-flight-rules](https://github.com/k88hudson/git-flight-rules)** — решения сложных Git ситуаций
-
----
-
-## **Финальное слово**
-
-**Поздравляем!** За 8 недель вы прошли путь от новичка до эксперта Git и trunk-based development. Это не просто технические навыки — это **философия профессиональной разработки**, которая делает вас ценным участником любой команды.
-
-**Помните:**
-- **Git — это не просто инструмент**, это основа современной разработки ПО
-- **Trunk-based development — это не просто workflow**, это культура качества и скорости
-- **Непрерывное обучение** — ключ к росту в IT индустрии
-
-**Ваше новое техническое мышление:**
-- 🎯 **Атомарность** — каждое изменение должно быть логически завершенным
-- ⚡ **Скорость интеграции** — чем быстрее код попадает в main, тем меньше проблем
-- 🔍 **Качество через автоматизацию** — машины проверяют, люди думают
-- 📊 **Данные для решений** — метрики и мониторинг направляют развитие
+**Поздравляем!** За 8 блоков и 16 глав вы прошли путь от новичка до эксперта Git и trunk-based development. Это **философия профессиональной разработки**, которая делает вас ценным участником любой команды.
 
 **Вы готовы:**
 - Настроить Git workflow в любой команде
 - Менторить других разработчиков
 - Предлагать и внедрять процессные улучшения
 - Быть техническим лидером в области качества кода
-
-**Время инвестиций: 56 часов**  
-**Полученная экспертность: Пожизненная**  
-**Влияние на карьеру: Бесценное**
-
-> *"Лучшие разработчики не просто пишут код — они создают процессы, которые позволяют командам писать отличный код быстро и безопасно."*
 
 **Удачи в вашем дальнейшем профессиональном развитии! 🚀**

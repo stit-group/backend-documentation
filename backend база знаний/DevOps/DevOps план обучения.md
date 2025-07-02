@@ -1,618 +1,869 @@
-# План курса: DevOps & Trunk-Based Development
-*Трансформация от backend-разработчика до DevOps-эксперта за 24 недели*
+# План обучения DevOps & Trunk-Based Development
 
-## 🎯 Общая информация
+## **Этап 1: Основы DevOps культуры и Git mastery (Главы 1-2)**
 
-**Продолжительность:** 24 недели (6 месяцев)  
-**Формат:** Еженедельные модули с практическими заданиями  
-**Результат:** Production-ready навыки DevOps с expertise в Trunk-Based Development  
+### **🎯 Цели этапа:**
+- Понять философию и культуру DevOps
+- Освоить базовые и продвинутые практики Git
+- Научиться измерять эффективность команды через DORA метрики
+- Внедрить качественные процессы работы с кодом
 
-## 📊 Ключевые метрики успеха (DORA)
-- **Deployment Frequency:** Ежедневно
-- **Lead Time:** < 1 часа  
-- **MTTR:** < 30 минут
-- **Change Failure Rate:** < 15%
+### **📋 Итоговый результат:**
+- Настроенный Git workflow с защищенными ветками
+- Dashboard для отслеживания DORA метрик
+- Внедренные pre-commit hooks и конвенции коммитов
+- Анализ текущего состояния команды и план улучшений
 
----
+### **📚 Теоретическая часть:**
 
-## 🗓️ Детальный план по неделям
+#### **Глава 1: DevOps культура и философия**
+- **DevOps принципы:** Культура сотрудничества Dev и Ops команд
+- **DORA метрики:** 4 ключевых показателя элитных команд
+  - Deployment Frequency (частота деплоев)
+  - Lead Time (время от коммита до продакшена)
+  - MTTR (время восстановления)
+  - Change Failure Rate (процент неудачных изменений)
+- **Целевые показатели:** Несколько деплоев в день, MTTR < 1 часа
+- **Культурная трансформация:** От "Dev vs Ops" к "Dev + Ops"
 
-### **ФАЗА 1: DevOps Фундаменты (Недели 1-3)**
+#### **Глава 2: Git mastery и продвинутые практики**
+- **Semantic Versioning:** Правила версионирования (MAJOR.MINOR.PATCH)
+- **Conventional Commits:** Структурированные сообщения коммитов
+- **Git Hooks:** Автоматизация проверок перед коммитом
+- **Branch Protection:** Защита основных веток
+- **Code Review:** Процессы и лучшие практики
 
-#### **Неделя 1: DevOps Культура**
-**Цель:** Понимание философии DevOps и базовых принципов
+### **🛠 Практическая часть:**
 
-**Теоретический блок:**
-- [ ] Что такое DevOps: культура vs инструменты
-- [ ] Проблемы традиционной модели (Dev → QA → Ops)
-- [ ] DORA метрики как компас развития
-- [ ] Принципы быстрой доставки ПО
+#### **Неделя 1: DevOps культура**
+1. **Измерение базовых метрик:**
+   - Подсчет частоты деплоев за последний месяц
+   - Анализ времени от коммита до продакшена
+   - Определение среднего времени восстановления
+   - Расчет процента неудачных деплоев
 
-**Практические задания:**
-- [ ] Анализ текущих метрик команды (baseline measurement)
-- [ ] Расчет частоты деплоев и времени восстановления
-- [ ] Создание dashboard для отслеживания DORA метрик
+2. **Создание DORA dashboard:**
+   - Выбор инструмента (Grafana, Google Sheets, Notion)
+   - Настройка автоматического сбора метрик
+   - Создание визуализации трендов
 
-**Инструменты:** Git log analysis, базовая аналитика
+3. **Анализ текущего состояния команды:**
+   - Опрос команды о болевых точках
+   - Mapping текущего процесса разработки
+   - Определение приоритетных зон улучшения
 
----
+#### **Неделя 2: Git Excellence**
+1. **Настройка Git workflow:**
+   - Внедрение branch protection rules
+   - Настройка обязательного code review
+   - Конфигурация merge/squash стратегий
 
-#### **Неделя 2: Git Mastery (Основы)**
-**Цель:** Продвинутые практики работы с Git
+2. **Conventional Commits:**
+   - Обучение команды конвенциям
+   - Настройка commitizen или аналогичных инструментов
+   - Создание шаблонов commit messages
 
-**Теоретический блок:**
-- [ ] Semantic Versioning стратегия
-- [ ] Conventional Commits стандарт
-- [ ] Git hooks для автоматизации
-- [ ] Branch protection strategies
+3. **Git Hooks implementation:**
+   - Настройка pre-commit hooks для линтинга
+   - Добавление автоматического запуска тестов
+   - Проверка соответствия commit conventions
 
-**Практические задания:**
-- [ ] Настройка pre-commit hooks
-- [ ] Реализация conventional commits
-- [ ] Конфигурация branch protection rules
-- [ ] Автоматизация версионирования
+4. **Создание Git Excellence чек-листа:**
+   - Документирование процессов
+   - Создание onboarding guide для новых разработчиков
+   - Настройка автоматических проверок качества
 
-**Инструменты:** Git, pre-commit, semantic-release
-
----
-
-#### **Неделя 3: Git Excellence**
-**Цель:** Мастерство Git для DevOps workflow
-
-**Теоретический блок:**
-- [ ] Git workflow оптимизация
-- [ ] Automated code quality checks
-- [ ] Code review best practices
-- [ ] Git security practices
-
-**Практические задания:**
-- [ ] Настройка automated quality gates
-- [ ] Создание эффективного code review процесса
-- [ ] Интеграция security scanning в Git workflow
-- [ ] Оптимизация Git performance
-
-**Чек-лист Git Excellence:**
-- [ ] Branch protection настроен
-- [ ] Pre-commit hooks работают
-- [ ] Conventional commits применяются
-- [ ] Code review обязателен
-
----
-
-### **ФАЗА 2: Trunk-Based Development (Недели 4-5)**
-
-#### **Неделя 4: TBD Философия**
-**Цель:** Освоение принципов Trunk-Based Development
-
-**Теоретический блок:**
-- [ ] TBD vs Git Flow сравнение
-- [ ] Принципы коротких веток
-- [ ] Feature flags стратегия
-- [ ] Быстрая интеграция кода
-
-**Практические задания:**
-- [ ] Переход на TBD workflow
-- [ ] Реализация базовых feature flags
-- [ ] Настройка автоматического merge в main
-- [ ] Создание TBD guidelines для команды
-
-**Workflow TBD:**
-1. Pull latest main
-2. Создать мини-фичу (2-4 часа)
-3. Написать тесты
-4. Commit + Push + PR
-5. Code review + Merge
-6. Повторить
+#### **Практические задания:**
+- [ ] Создать DORA метрики dashboard
+- [ ] Настроить branch protection для основной ветки
+- [ ] Внедрить conventional commits в команде
+- [ ] Настроить pre-commit hooks
+- [ ] Провести аудит качества Git практик
+- [ ] Создать документацию Git workflow
 
 ---
 
-#### **Неделя 5: Качество в TBD**
-**Цель:** Обеспечение качества при быстрой интеграции
+## **Этап 2: Trunk-Based Development (Главы 3-4)**
 
-**Теоретический блок:**
-- [ ] Автоматизация quality gates
-- [ ] Pre-commit pipeline design
-- [ ] Code review для TBD
-- [ ] Definition of Done в TBD
+### **🎯 Цели этапа:**
+- Освоить философию и принципы Trunk-Based Development
+- Внедрить короткие циклы разработки
+- Научиться работать с feature flags
+- Обеспечить качество через автоматизацию в TBD
 
-**Практические задания:**
-- [ ] Настройка comprehensive pre-commit pipeline
-- [ ] Оптимизация code review процесса (15 мин rule)
-- [ ] Создание automated quality metrics
-- [ ] Реализация backward compatibility checks
+### **📋 Итоговый результат:**
+- Переход команды на TBD workflow
+- Внедренная система feature flags
+- Оптимизированный процесс code review для коротких PR
+- Автоматизированные проверки качества
 
-**Definition of Done чек-лист:**
-- [ ] Тесты проходят
-- [ ] Code coverage не упал
-- [ ] Static analysis passed
-- [ ] Feature flag готов
-- [ ] Backward compatibility
+### **📚 Теоретическая часть:**
 
----
+#### **Глава 3: TBD философия и принципы**
+- **Концепция TBD:** Все работают с одной главной веткой
+- **Сравнение подходов:** TBD vs Git Flow vs GitHub Flow
+- **Ключевые принципы:**
+  - Короткие ветки (< 24 часов)
+  - Маленькие коммиты (1-2 файла)
+  - Feature flags для управления функциональностью
+  - Быстрая интеграция (merge минимум раз в день)
+- **Feature Flags архитектура и паттерны использования**
 
-### **ФАЗА 3: Continuous Integration (Недели 6-8)**
+#### **Глава 4: Качество в TBD**
+- **Обеспечение качества через автоматизацию**
+- **Pre-commit pipeline настройка**
+- **Code Review для TBD:** PR за 15 минут
+- **Definition of Done для TBD команд**
+- **Backward compatibility принципы**
 
-#### **Неделя 6: CI Основы**
-**Цель:** Создание эффективного CI pipeline
+### **🛠 Практическая часть:**
 
-**Теоретический блок:**
-- [ ] CI принципы и benefits
-- [ ] Test pyramid стратегия
-- [ ] CI optimization techniques
-- [ ] Fail-fast principles
+#### **Неделя 3: TBD Implementation**
+1. **Анализ текущего workflow:**
+   - Аудит времени жизни веток
+   - Анализ размера PR
+   - Оценка частоты merge в main
 
-**Практические задания:**
-- [ ] Создание базового CI pipeline
-- [ ] Реализация test pyramid
-- [ ] Настройка параллельного выполнения тестов
-- [ ] Оптимизация CI performance (< 10 мин)
+2. **Внедрение TBD принципов:**
+   - Обучение команды принципам TBD
+   - Установка лимитов на время жизни веток
+   - Настройка автоматических напоминаний о merge
 
-**CI Best Practices чек-лист:**
-- [ ] Тесты < 10 минут
-- [ ] Fail fast при ошибках
-- [ ] Параллельное выполнение
-- [ ] Кеширование dependencies
-- [ ] Coverage reporting
+3. **Feature Flags система:**
+   - Выбор и настройка feature flag сервиса
+   - Создание wrapper для управления флагами
+   - Интеграция в существующий код
 
----
+#### **Неделя 4: Quality Automation**
+1. **Pre-commit automation:**
+   - Расширение pre-commit hooks
+   - Настройка автоматического форматирования
+   - Добавление static analysis
 
-#### **Неделя 7: Advanced CI**
-**Цель:** Продвинутые техники CI
+2. **Code Review оптимизация:**
+   - Создание template для PR
+   - Настройка автоматических assignees
+   - Обучение команды fast review техникам
 
-**Теоретический блок:**
-- [ ] Test containers для integration tests
-- [ ] CI optimization strategies
-- [ ] Monorepo CI patterns
-- [ ] Advanced testing techniques
+3. **Definition of Done automation:**
+   - Автоматические проверки coverage
+   - Интеграция с feature flags
+   - Проверки backward compatibility
 
-**Практические задания:**
-- [ ] Реализация test containers
-- [ ] Настройка matrix builds
-- [ ] Создание monorepo CI strategy
-- [ ] Advanced caching implementation
-
-**Инструменты:** TestContainers, Docker, CI/CD platforms
-
----
-
-#### **Неделя 8: CI + TBD Integration**
-**Цель:** Интеграция CI с TBD workflow
-
-**Теоретический блок:**
-- [ ] Fast feedback loops в TBD
-- [ ] Smart CI для коротких веток
-- [ ] Automated rollback strategies
-- [ ] CI metrics для TBD
-
-**Практические задания:**
-- [ ] Создание tiered CI pipeline (quick + full)
-- [ ] Реализация automated rollback
-- [ ] Настройка TBD-specific metrics
-- [ ] Оптимизация feedback time
-
-**TBD CI чек-лист:**
-- [ ] PR checks < 5 минут
-- [ ] Main branch deployable
-- [ ] Auto-rollback настроен
-- [ ] Feature flags в CI
+#### **Практические задания:**
+- [ ] Провести workshop по TBD для команды
+- [ ] Настроить feature flags систему
+- [ ] Оптимизировать pre-commit pipeline
+- [ ] Создать TBD metrics dashboard
+- [ ] Внедрить automated Definition of Done
+- [ ] Настроить быстрые code review процессы
 
 ---
 
-### **ФАЗА 4: Continuous Delivery (Недели 9-12)**
+## **Этап 3: Continuous Integration (Главы 5-7)**
 
-#### **Неделя 9: CD Основы**
-**Цель:** Понимание Continuous Delivery принципов
+### **🎯 Цели этапа:**
+- Построить эффективный CI pipeline
+- Освоить продвинутые техники тестирования
+- Интегрировать CI с TBD практиками
+- Достичь быстрой feedback loop (< 5 минут)
 
-**Теоретический блок:**
-- [ ] CD vs Continuous Deployment
-- [ ] Environment promotion strategies
-- [ ] Deployment patterns (Blue-Green, Canary)
-- [ ] Infrastructure as Code basics
+### **📋 Итоговый результат:**
+- Production-ready CI pipeline
+- Автоматизированная Test Pyramid
+- Интеграция с TBD workflow
+- Оптимизированное время выполнения CI
 
-**Практические задания:**
-- [ ] Создание multi-environment pipeline
-- [ ] Реализация Blue-Green deployment
-- [ ] Настройка environment promotion
-- [ ] Basic IaC implementation
+### **📚 Теоретическая часть:**
 
----
+#### **Глава 5: CI основы и архитектура**
+- **Continuous Integration концепция**
+- **CI Pipeline компоненты**
+- **Test Pyramid стратегия**
+- **Feedback loop оптимизация**
 
-#### **Неделя 10: Advanced Deployment**
-**Цель:** Продвинутые техники deployment
+#### **Глава 6: Advanced CI техники**
+- **Test Containers для integration тестов**
+- **Параллелизация и оптимизация**
+- **Caching стратегии**
+- **Matrix builds и cross-platform testing**
 
-**Теоретический блок:**
-- [ ] Database migrations в CD
-- [ ] Secrets management
-- [ ] Health checks стратегии
-- [ ] Zero-downtime deployments
+#### **Глава 7: CI + TBD интеграция**
+- **Smart CI для TBD**
+- **Branch-based CI стратегии**
+- **Feature flags в CI**
+- **Автоматический rollback**
 
-**Практические задания:**
-- [ ] Реализация backward-compatible migrations
-- [ ] Настройка secrets management system
-- [ ] Создание comprehensive health checks
-- [ ] Automated deployment validation
+### **🛠 Практическая часть:**
 
----
+#### **Неделя 5: CI Foundation**
+1. **Базовый CI setup:**
+   - Настройка GitHub Actions/GitLab CI
+   - Создание основного pipeline
+   - Интеграция с тестами
 
-#### **Неделя 11: Canary Deployments**
-**Цель:** Освоение canary deployment patterns
+2. **Test Strategy implementation:**
+   - Настройка unit тестов в CI
+   - Добавление integration тестов
+   - Базовые e2e тесты
 
-**Теоретический блок:**
-- [ ] Canary deployment strategies
-- [ ] Traffic splitting techniques
-- [ ] Automated canary analysis
-- [ ] Rollback automation
+#### **Неделя 6: Advanced CI**
+1. **Test Containers integration:**
+   - Настройка изолированной среды для тестов
+   - Database testing automation
+   - Service integration testing
 
-**Практические задания:**
-- [ ] Реализация canary deployment pipeline
-- [ ] Настройка automated traffic splitting
-- [ ] Создание canary metrics analysis
-- [ ] Automated rollback triggers
+2. **CI Optimization:**
+   - Параллелизация jobs
+   - Настройка caching
+   - Optimization времени выполнения
 
----
+#### **Неделя 7: TBD + CI Integration**
+1. **Smart CI pipeline:**
+   - Fast feedback для PR
+   - Full pipeline для main branch
+   - Feature flags integration
 
-#### **Неделя 12: CD для TBD**
-**Цель:** Интеграция CD с TBD practices
+2. **Quality Gates:**
+   - Автоматические проверки качества
+   - Coverage requirements
+   - Performance benchmarks
 
-**Теоретический блок:**
-- [ ] Feature flags в production
-- [ ] A/B testing integration
-- [ ] Production monitoring для TBD
-- [ ] Градуальный rollout strategies
-
-**Практические задания:**
-- [ ] Реализация production feature flags
-- [ ] Настройка A/B testing framework
-- [ ] Создание automated rollout pipeline
-- [ ] Production monitoring dashboard
-
-**TBD + CD чек-лист:**
-- [ ] Auto-deploy to prod
-- [ ] Feature flags контролируют exposure
-- [ ] Metrics monitoring
-- [ ] Gradual rollout capability
-
----
-
-### **ФАЗА 5: Infrastructure & Operations (Недели 13-15)**
-
-#### **Неделя 13: Контейнеризация**
-**Цель:** Мастерство Docker и контейнеризации
-
-**Теоретический блок:**
-- [ ] Docker best practices
-- [ ] Multi-stage builds
-- [ ] Container security
-- [ ] Docker Compose для development
-
-**Практические задания:**
-- [ ] Оптимизация Dockerfile (multi-stage)
-- [ ] Реализация container security practices
-- [ ] Создание development environment с Docker Compose
-- [ ] Container registry setup
-
-**Container Best Practices:**
-- [ ] Images < 100MB
-- [ ] Non-root user
-- [ ] Health checks
-- [ ] No secrets in images
-- [ ] Multi-stage builds
+#### **Практические задания:**
+- [ ] Построить полный CI pipeline
+- [ ] Настроить Test Containers
+- [ ] Оптимизировать время выполнения CI
+- [ ] Интегрировать feature flags в CI
+- [ ] Создать automated quality gates
+- [ ] Настроить smart CI для TBD
 
 ---
 
-#### **Неделя 14: Kubernetes Orchestration**
-**Цель:** Освоение Kubernetes для production
+## **Этап 4: Continuous Delivery (Главы 8-10)**
 
-**Теоретический блок:**
-- [ ] Kubernetes architecture
-- [ ] Deployments и Services
-- [ ] Health checks в K8s
-- [ ] Auto-scaling strategies
+### **🎯 Цели этапа:**
+- Построить автоматизированный CD pipeline
+- Освоить deployment стратегии
+- Интегрировать CD с TBD и feature flags
+- Достичь безопасных автоматических деплоев
 
-**Практические задания:**
-- [ ] Создание production-ready deployments
-- [ ] Настройка health checks
-- [ ] Реализация HPA (Horizontal Pod Autoscaler)
-- [ ] Service mesh basics
+### **📋 Итоговый результат:**
+- Production-ready CD pipeline
+- Automated deployment стратегии
+- Database migration automation
+- Feature flags в production
 
-**K8s чек-лист:**
-- [ ] Liveness probes настроены
-- [ ] Readiness probes настроены
-- [ ] Resource limits установлены
-- [ ] Auto-scaling работает
+### **📚 Теоретическая часть:**
 
----
+#### **Глава 8: CD основы и Deployment Strategies**
+- **Continuous Delivery vs Continuous Deployment**
+- **Environment Promotion стратегии**
+- **Blue-Green Deployment**
+- **Canary Deployment**
+- **Rolling Updates**
 
-#### **Неделя 15: Infrastructure as Code**
-**Цель:** Управление инфраструктурой как код
+#### **Глава 9: Advanced Deployment Practices**
+- **Database Migrations в CD**
+- **Secrets Management**
+- **Health Checks и Readiness Probes**
+- **Zero-downtime deployments**
 
-**Теоретический блок:**
-- [ ] IaC principles и benefits
-- [ ] Terraform fundamentals
-- [ ] GitOps workflow
-- [ ] State management
+#### **Глава 10: CD для TBD**
+- **Feature Flags в Production**
+- **A/B Testing integration**
+- **Gradual rollouts**
+- **TBD + CD workflow**
 
-**Практические задания:**
-- [ ] Создание Terraform modules
-- [ ] Настройка GitOps с ArgoCD
-- [ ] Реализация remote state management
-- [ ] Infrastructure testing
+### **🛠 Практическая часть:**
 
-**IaC Best Practices:**
-- [ ] Remote state backend
-- [ ] Environment variables
-- [ ] Modular structure
-- [ ] Plan before apply
-- [ ] Drift detection
+#### **Неделя 8: CD Foundation**
+1. **Basic CD Pipeline:**
+   - Environment setup (dev/staging/prod)
+   - Automated deployment scripts
+   - Environment promotion strategy
 
----
+2. **Deployment Strategies:**
+   - Blue-Green deployment setup
+   - Canary deployment implementation
+   - Rolling updates configuration
 
-### **ФАЗА 6: Monitoring & Observability (Недели 16-17)**
+#### **Неделя 9: Production Readiness**
+1. **Database Migrations:**
+   - Automated migration pipeline
+   - Backward compatibility checks
+   - Rollback strategies
 
-#### **Неделя 16: Metrics & Logging**
-**Цель:** Создание comprehensive monitoring
+2. **Secrets и Security:**
+   - Secrets management setup
+   - Security scanning integration
+   - Compliance automation
 
-**Теоретический блок:**
-- [ ] 4 Golden Signals monitoring
-- [ ] Prometheus и Grafana
-- [ ] Structured logging
-- [ ] Alerting strategies
+#### **Неделя 10: TBD + CD Integration**
+1. **Feature Flags в Production:**
+   - Production feature flag management
+   - A/B testing framework
+   - Gradual rollout automation
 
-**Практические задания:**
-- [ ] Настройка Prometheus metrics
-- [ ] Создание Grafana dashboards
-- [ ] Реализация structured logging
-- [ ] Настройка alerting rules
+2. **Complete TBD + CD Workflow:**
+   - End-to-end automation
+   - Monitoring integration
+   - Automated rollback triggers
 
-**Key Metrics Dashboard:**
-- [ ] Response time
-- [ ] Error rate  
-- [ ] Throughput
-- [ ] Resource utilization
-
----
-
-#### **Неделя 17: Distributed Tracing**
-**Цель:** Observability для микросервисов
-
-**Теоретический блок:**
-- [ ] Distributed tracing concepts
-- [ ] OpenTelemetry integration
-- [ ] Trace analysis
-- [ ] Performance bottleneck identification
-
-**Практические задания:**
-- [ ] Настройка OpenTelemetry
-- [ ] Создание trace visualization
-- [ ] Performance analysis workflow
-- [ ] Automated performance alerts
-
-**Observability чек-лист:**
-- [ ] 4 Golden Signals мониторятся
-- [ ] Distributed tracing настроен
-- [ ] SLI alerts настроены
-- [ ] Dashboards для всех сервисов
-- [ ] Runbooks для alerts
+#### **Практические задания:**
+- [ ] Построить CD pipeline для всех environments
+- [ ] Настроить Blue-Green deployment
+- [ ] Автоматизировать database migrations
+- [ ] Интегрировать secrets management
+- [ ] Настроить feature flags в production
+- [ ] Создать A/B testing framework
 
 ---
 
-### **ФАЗА 7: Security (DevSecOps) (Недели 18-19)**
+## **Общие рекомендации по изучению:**
 
-#### **Неделя 18: Security в Pipeline**
-**Цель:** Shift-left security practices
+### **📅 Временные рамки:**
+- **Каждый этап:** 2-3 недели
+- **Общая продолжительность:** 2-3 месяца
+- **Еженедельное время:** 15-20 часов
 
-**Теоретический блок:**
-- [ ] DevSecOps principles
-- [ ] Security scanning в CI/CD
-- [ ] Secrets management
-- [ ] Container security
+### **🎯 Метрики успеха:**
+- **DORA метрики:** Улучшение на 50% к концу курса
+- **TBD метрики:** Средняя жизнь ветки < 24 часа
+- **CI/CD метрики:** Build time < 10 минут, успешность > 95%
 
-**Практические задания:**
-- [ ] Интеграция security scanning в pipeline
-- [ ] Настройка secrets management
-- [ ] Container security hardening
-- [ ] Automated vulnerability assessment
+### **📝 Документация:**
+- Ведите learning journal
+- Документируйте все изменения в процессах
+- Создавайте runbooks для новых практик
 
-**Security Pipeline чек-лист:**
-- [ ] Secret scanning
-- [ ] Dependency checking
-- [ ] SAST scanning
-- [ ] Container scanning
-
----
-
-#### **Неделя 19: Production Security**
-**Цель:** Security в production environment
-
-**Теоретический блок:**
-- [ ] Network security policies
-- [ ] Runtime security
-- [ ] Security monitoring
-- [ ] Incident response
-
-**Практические задания:**
-- [ ] Настройка network policies
-- [ ] Реализация runtime security
-- [ ] Security monitoring dashboard
-- [ ] Incident response playbook
-
-**Production Security чек-лист:**
-- [ ] Network policies настроены
-- [ ] HTTPS everywhere
-- [ ] Security headers
-- [ ] Runtime protection
-- [ ] Security monitoring
+### **👥 Командная работа:**
+- Еженедельные ретроспективы
+- Peer review новых процессов
+- Knowledge sharing sessions
 
 ---
 
-### **ФАЗА 8: Performance & Scaling (Недели 20-21)**
+## **Этап 5: Infrastructure & Operations (Главы 11-13)**
 
-#### **Неделя 20: Performance Testing**
-**Цель:** Performance engineering practices
+### **🎯 Цели этапа:**
+- Освоить контейнеризацию и Docker best practices
+- Изучить Kubernetes для production workloads
+- Внедрить Infrastructure as Code
+- Настроить GitOps workflow
 
-**Теоретический блок:**
-- [ ] Performance testing strategies
-- [ ] Load testing в CI/CD
-- [ ] APM integration
-- [ ] Caching strategies
+### **📋 Итоговый результат:**
+- Контейнеризованное приложение с оптимизированными образами
+- Production-ready Kubernetes cluster
+- Infrastructure as Code с Terraform
+- Полностью автоматизированный GitOps workflow
 
-**Практические задания:**
-- [ ] Реализация load testing в CI
-- [ ] Настройка APM monitoring
-- [ ] Multi-level caching implementation
-- [ ] Performance regression detection
+### **📚 Теоретическая часть:**
 
-**Performance чек-лист:**
-- [ ] Load tests в CI
-- [ ] Performance monitoring
-- [ ] Caching strategy
-- [ ] Regression detection
+#### **Глава 11: Контейнеризация и Docker**
+- **Container архитектура и принципы**
+- **Multi-stage builds для оптимизации**
+- **Security best practices для containers**
+- **Docker Compose для local development**
+- **Container registries и artifact management**
 
----
+#### **Глава 12: Kubernetes Orchestration**
+- **Kubernetes архитектура и компоненты**
+- **Deployments, Services, ConfigMaps, Secrets**
+- **Health checks и readiness probes**
+- **Auto-scaling (HPA, VPA, Cluster Autoscaler)**
+- **Resource management и limits**
 
-#### **Неделя 21: Auto-scaling**
-**Цель:** Elastic infrastructure management
+#### **Глава 13: Infrastructure as Code**
+- **IaC принципы и преимущества**
+- **Terraform для cloud infrastructure**
+- **GitOps концепция и ArgoCD**
+- **Environment management стратегии**
+- **State management и drift detection**
 
-**Теоретический блок:**
-- [ ] Auto-scaling patterns
-- [ ] Circuit breaker pattern
-- [ ] Cost optimization
-- [ ] Capacity planning
+### **🛠 Практическая часть:**
 
-**Практические задания:**
-- [ ] Настройка comprehensive auto-scaling
-- [ ] Реализация circuit breakers
-- [ ] Cost optimization analysis
-- [ ] Capacity planning automation
+#### **Неделя 11: Контейнеризация**
+1. **Docker Optimization:**
+   - Анализ существующих Dockerfile
+   - Реализация multi-stage builds
+   - Оптимизация размера образов
+   - Security scanning настройка
 
----
+2. **Local Development Environment:**
+   - Docker Compose для полного стека
+   - Development vs Production конфигурации
+   - Hot reload и debugging setup
 
-### **ФАЗА 9: Advanced Practices (Недели 22-23)**
+3. **Container Registry Setup:**
+   - Настройка private registry
+   - Automated image building
+   - Vulnerability scanning integration
 
-#### **Неделя 22: Enterprise TBD**
-**Цель:** Scaling TBD для больших команд
+#### **Неделя 12: Kubernetes Foundation**
+1. **Cluster Setup:**
+   - Local cluster (minikube/kind)
+   - Cloud cluster provisioning
+   - kubectl configuration
 
-**Теоретический блок:**
-- [ ] Микросервисы + TBD
-- [ ] Cross-team coordination
-- [ ] Dependency management
-- [ ] TBD metrics для teams
+2. **Application Deployment:**
+   - Kubernetes manifests создание
+   - ConfigMaps и Secrets management
+   - Service discovery настройка
 
-**Практические задания:**
-- [ ] Monorepo strategy для микросервисов
-- [ ] Cross-team workflow optimization
-- [ ] Dependency management automation
-- [ ] Team metrics dashboard
+3. **Health и Monitoring:**
+   - Liveness/readiness probes
+   - Resource requests/limits
+   - Basic monitoring setup
 
----
+#### **Неделя 13: Infrastructure Automation**
+1. **Terraform Implementation:**
+   - Infrastructure planning
+   - Module development
+   - State management setup
 
-#### **Неделя 23: Continuous Improvement**
-**Цель:** Culture of continuous improvement
+2. **GitOps с ArgoCD:**
+   - ArgoCD installation и configuration
+   - Git repository структура
+   - Automated sync setup
 
-**Теоретический блок:**
-- [ ] SPACE framework
-- [ ] Chaos engineering
-- [ ] Value stream mapping
-- [ ] Maturity assessment
+3. **Environment Management:**
+   - Multi-environment strategy
+   - Configuration management
+   - Promotion workflows
 
-**Практические задания:**
-- [ ] Chaos engineering implementation
-- [ ] Value stream analysis
-- [ ] Maturity assessment
-- [ ] Improvement roadmap
-
-**DevOps Maturity Levels:**
-- [ ] Level 1: Initial (Manual)
-- [ ] Level 2: Managed (Basic CI/CD)
-- [ ] Level 3: Defined (Advanced CI/CD)
-- [ ] Level 4: Quantitatively Managed
-- [ ] Level 5: Optimizing (Elite)
-
----
-
-### **ФАЗА 10: Capstone Project (Неделя 24)**
-
-#### **Неделя 24: Финальный проект**
-**Цель:** Production-ready платформа с полным DevOps workflow
-
-**Архитектура:**
-```
-GitHub Repo (TBD) → GitHub Actions (CI/CD) → Kubernetes Cluster
-                                                ├── API Gateway
-                                                ├── Backend Services
-                                                ├── Database
-                                                ├── Cache
-                                                └── Monitoring
-```
-
-**Deliverables:**
-1. **Code Repository:** TBD workflow + Feature flags + Tests
-2. **CI/CD Pipeline:** < 10 min build + Security scanning + Multi-env
-3. **Infrastructure:** K8s cluster + IaC + Auto-scaling  
-4. **Monitoring:** Metrics + Tracing + Alerting
-5. **Documentation:** Runbooks + Onboarding + ADRs
-
-**Success Criteria (DORA):**
-- [ ] Deployment frequency: Daily
-- [ ] Lead time: < 1 hour
-- [ ] MTTR: < 30 minutes  
-- [ ] Change failure rate: < 15%
-
-**TBD Metrics:**
-- [ ] Branch lifetime: < 24 hours
-- [ ] Merge frequency: > 1/day
-- [ ] Feature flag coverage: > 80%
-
-**Technical Excellence:**
-- [ ] Test coverage: > 80%
-- [ ] Build time: < 10 minutes
-- [ ] Zero-downtime deployments
-- [ ] Automated rollback
+#### **Практические задания:**
+- [ ] Оптимизировать Docker образы (размер < 100MB)
+- [ ] Настроить Kubernetes cluster
+- [ ] Создать Infrastructure as Code с Terraform
+- [ ] Внедрить GitOps с ArgoCD
+- [ ] Настроить multi-environment workflow
+- [ ] Автоматизировать infrastructure provisioning
 
 ---
 
-## 🎯 Ключевые навыки по завершении
+## **Этап 6: Monitoring & Observability (Главы 14-15)**
 
-### **Core DevOps Skills:**
-- [ ] TBD implementation и leadership
-- [ ] Production-ready CI/CD pipelines
-- [ ] Kubernetes orchestration
-- [ ] Infrastructure as Code
-- [ ] Comprehensive monitoring
-- [ ] Security integration
-- [ ] Performance optimization
+### **🎯 Цели этапа:**
+- Построить comprehensive monitoring system
+- Внедрить distributed tracing
+- Настроить intelligent alerting
+- Создать observability culture
 
-### **Leadership & Process:**
-- [ ] DevOps transformation leadership
-- [ ] Team coaching в TBD practices
-- [ ] Metrics-driven decision making
-- [ ] Continuous improvement culture
+### **📋 Итоговый результат:**
+- Production monitoring dashboard
+- Distributed tracing система
+- Automated alerting с smart routing
+- SLI/SLO framework для команды
 
-### **Career Opportunities:**
-- DevOps Engineer ($80k-150k+)
-- Platform Engineer ($100k-180k+)
-- Site Reliability Engineer ($120k-200k+)
-- Cloud Architect ($130k-220k+)
-- DevOps Consultant ($150k-300k+)
+### **📚 Теоретическая часть:**
+
+#### **Глава 14: Metrics и Logging**
+- **Metrics типы: Counter, Gauge, Histogram**
+- **Prometheus архитектура и PromQL**
+- **Structured logging best practices**
+- **Log aggregation и centralized logging**
+- **Grafana dashboards и visualization**
+
+#### **Глава 15: Distributed Tracing**
+- **OpenTelemetry стандарт**
+- **Trace correlation и context propagation**
+- **Performance bottleneck identification**
+- **Jaeger/Zipkin для trace analysis**
+- **SLI/SLO определение и tracking**
+
+### **🛠 Практическая часть:**
+
+#### **Неделя 14: Metrics & Logging**
+1. **Prometheus Setup:**
+   - Prometheus server configuration
+   - Application metrics instrumentation
+   - Service discovery настройка
+
+2. **Grafana Dashboards:**
+   - Business metrics dashboards
+   - Infrastructure monitoring
+   - SLI/SLO tracking panels
+
+3. **Centralized Logging:**
+   - ELK/EFK stack setup
+   - Log parsing и enrichment
+   - Log-based alerting
+
+#### **Неделя 15: Distributed Tracing**
+1. **OpenTelemetry Integration:**
+   - Auto-instrumentation setup
+   - Custom spans creation
+   - Context propagation across services
+
+2. **Trace Analysis:**
+   - Jaeger deployment
+   - Performance bottleneck analysis
+   - Error correlation с traces
+
+3. **SLI/SLO Framework:**
+   - SLI definition для services
+   - SLO targets establishment
+   - Error budgets tracking
+
+#### **Практические задания:**
+- [ ] Настроить Prometheus monitoring
+- [ ] Создать comprehensive Grafana dashboards
+- [ ] Внедрить distributed tracing
+- [ ] Настроить intelligent alerting
+- [ ] Определить SLI/SLO для services
+- [ ] Создать observability runbooks
 
 ---
 
-## 📚 Интеграция с другими курсами
+## **Этап 7: Security (DevSecOps) (Главы 16-17)**
 
-**Связи с Linux курсом:**
-- Недели 13-15: Глубокая интеграция с Linux администрированием
-- Недели 16-17: Linux monitoring и performance tuning
+### **🎯 Цели этапа:**
+- Интегрировать security в CI/CD pipeline
+- Внедрить automated security scanning
+- Настроить runtime security monitoring
+- Создать security-first culture
 
-**Связи с Git курсом:**  
-- Недели 2-3: Расширение базового Git курса
-- Недели 4-5: Git workflows для TBD
+### **📋 Итоговый результат:**
+- Automated security pipeline
+- Vulnerability management process
+- Runtime security monitoring
+- Security compliance automation
 
-**Связи с Monitoring курсом:**
-- Недели 16-17: Полная интеграция monitoring курса
-- Недели 20-21: Advanced monitoring для performance
+### **📚 Теоретическая часть:**
 
-**Готов к интеграции в общий план:** ✅
+#### **Глава 16: Security в Pipeline**
+- **Shift-left security принципы**
+- **SAST/DAST/IAST сканирование**
+- **Dependency vulnerability scanning**
+- **Container security scanning**
+- **Secrets management best practices**
+
+#### **Глава 17: Production Security**
+- **Network policies и micro-segmentation**
+- **Runtime security monitoring**
+- **Compliance automation**
+- **Incident response automation**
+- **Security metrics и KPIs**
+
+### **🛠 Практическая часть:**
+
+#### **Неделя 16: Pipeline Security**
+1. **Security Scanning Integration:**
+   - SAST tools integration (SonarQube, CodeQL)
+   - Dependency scanning (Snyk, OWASP)
+   - Container scanning (Trivy, Twistlock)
+
+2. **Secrets Management:**
+   - HashiCorp Vault setup
+   - Kubernetes secrets automation
+   - Secrets rotation automation
+
+3. **Security Gates:**
+   - Automated security reviews
+   - Vulnerability thresholds
+   - Security approval workflows
+
+#### **Неделя 17: Runtime Security**
+1. **Network Security:**
+   - Kubernetes Network Policies
+   - Service mesh security (mTLS)
+   - Traffic encryption
+
+2. **Runtime Monitoring:**
+   - Falco для runtime security
+   - Anomaly detection setup
+   - Security incident automation
+
+3. **Compliance Automation:**
+   - Policy as Code (OPA/Gatekeeper)
+   - Compliance scanning
+   - Audit logging automation
+
+#### **Практические задания:**
+- [ ] Интегрировать security scanning в pipeline
+- [ ] Настроить secrets management
+- [ ] Внедрить network policies
+- [ ] Настроить runtime security monitoring
+- [ ] Автоматизировать compliance checking
+- [ ] Создать security incident playbooks
 
 ---
 
-*Этот план готов для объединения с планами по Linux, Git и Monitoring в единую comprehensive learning path.*
+## **Этап 8: Performance & Scaling (Главы 18-19)**
+
+### **🎯 Цели этапа:**
+- Внедрить automated performance testing
+- Настроить intelligent auto-scaling
+- Оптимизировать application performance
+- Построить resilient architecture
+
+### **📋 Итоговый результат:**
+- Automated performance testing в CI/CD
+- Production auto-scaling настройка
+- Performance optimization framework
+- Chaos engineering practices
+
+### **📚 Теоретическая часть:**
+
+#### **Глава 18: Performance Testing**
+- **Load testing стратегии и tools (k6, JMeter)**
+- **Performance testing в CI/CD**
+- **Caching strategies (L1/L2/L3)**
+- **Database optimization techniques**
+- **CDN и edge optimization**
+
+#### **Глава 19: Auto-scaling и Circuit Breakers**
+- **Horizontal Pod Autoscaling (HPA)**
+- **Vertical Pod Autoscaling (VPA)**
+- **Cluster Autoscaling**
+- **Circuit Breaker pattern**
+- **Bulkhead pattern для isolation**
+
+### **🛠 Практическая часть:**
+
+#### **Неделя 18: Performance Testing**
+1. **Load Testing Setup:**
+   - k6 performance tests creation
+   - CI/CD integration
+   - Performance regression detection
+
+2. **Caching Implementation:**
+   - Multi-level caching strategy
+   - Redis cluster setup
+   - Cache invalidation patterns
+
+3. **Database Optimization:**
+   - Query optimization
+   - Connection pooling
+   - Read replicas setup
+
+#### **Неделя 19: Auto-scaling & Resilience**
+1. **Auto-scaling Configuration:**
+   - HPA setup с custom metrics
+   - VPA для resource optimization
+   - Cluster autoscaling
+
+2. **Circuit Breakers:**
+   - Circuit breaker implementation
+   - Bulkhead pattern для services
+   - Retry policies с exponential backoff
+
+3. **Chaos Engineering:**
+   - Chaos Monkey setup
+   - Failure injection testing
+   - Resilience validation
+
+#### **Практические задания:**
+- [ ] Настроить automated performance testing
+- [ ] Внедрить multi-level caching
+- [ ] Настроить intelligent auto-scaling
+- [ ] Реализовать circuit breakers
+- [ ] Внедрить chaos engineering
+- [ ] Создать performance optimization playbook
+
+---
+
+## **Этап 9: Advanced Practices (Главы 20-21)**
+
+### **🎯 Цели этапа:**
+- Масштабировать TBD на enterprise уровень
+- Внедрить continuous improvement процессы
+- Освоить advanced DevOps patterns
+- Создать center of excellence
+
+### **📋 Итоговый результат:**
+- Enterprise TBD implementation
+- Continuous improvement framework
+- Advanced DevOps practices
+- Team coaching capabilities
+
+### **📚 Теоретическая часть:**
+
+#### **Глава 20: Enterprise TBD**
+- **Микросервисы в monorepo**
+- **Cross-team coordination**
+- **Dependency management strategies**
+- **TBD metrics для больших команд**
+- **Conway's Law и team topologies**
+
+#### **Глава 21: Continuous Improvement**
+- **SPACE Framework для developer experience**
+- **Value Stream Mapping**
+- **Lean principles в DevOps**
+- **Team topologies и communication patterns**
+- **Metrics-driven improvement**
+
+### **🛠 Практическая часть:**
+
+#### **Неделя 20: Enterprise Scaling**
+1. **Monorepo Strategy:**
+   - Monorepo tooling setup (Nx, Lerna)
+   - Cross-service dependency management
+   - Build optimization для больших codebases
+
+2. **Team Coordination:**
+   - Cross-team TBD practices
+   - Shared library management
+   - API versioning strategies
+
+3. **Advanced TBD Metrics:**
+   - Team-level TBD dashboards
+   - Cross-team collaboration metrics
+   - Developer experience surveys
+
+#### **Неделя 21: Continuous Improvement**
+1. **Value Stream Mapping:**
+   - Current state mapping
+   - Bottleneck identification
+   - Future state design
+
+2. **SPACE Framework Implementation:**
+   - Developer experience metrics
+   - Satisfaction surveys
+   - Productivity measurement
+
+3. **Improvement Process:**
+   - Kaizen events planning
+   - Experiment framework
+   - Results tracking
+
+#### **Практические задания:**
+- [ ] Настроить enterprise TBD workflow
+- [ ] Создать comprehensive team metrics
+- [ ] Провести Value Stream Mapping
+- [ ] Внедрить SPACE framework
+- [ ] Запустить continuous improvement process
+- [ ] Создать DevOps center of excellence
+
+---
+
+## **Этап 10: Capstone Project (Глава 22)**
+
+### **🎯 Цели этапа:**
+- Создать production-ready platform
+- Интегрировать все изученные практики
+- Продемонстрировать DevOps mastery
+- Подготовиться к leadership роли
+
+### **📋 Итоговый результат:**
+- Полностью автоматизированная платформа
+- Соответствие elite DORA метрикам
+- Comprehensive documentation
+- Presentation для stakeholders
+
+### **📚 Теоретическая часть:**
+
+#### **Глава 22: Production-Ready Platform**
+- **End-to-end architecture design**
+- **Production readiness checklist**
+- **Operational excellence principles**
+- **Business value demonstration**
+- **Knowledge transfer processes**
+
+### **🛠 Практическая часть:**
+
+#### **Неделя 22: Platform Development**
+1. **Architecture Design:**
+   - High-level architecture документация
+   - Technology stack обоснование
+   - Security architecture review
+
+2. **Core Platform Building:**
+   - Infrastructure provisioning
+   - CI/CD pipeline implementation
+   - Monitoring и observability setup
+
+#### **Неделя 23: Production Readiness**
+1. **Quality Assurance:**
+   - End-to-end testing
+   - Performance validation
+   - Security audit
+
+2. **Operational Excellence:**
+   - Runbooks creation
+   - Disaster recovery testing
+   - Monitoring validation
+
+#### **Неделя 24: Documentation & Presentation**
+1. **Comprehensive Documentation:**
+   - Architecture Decision Records
+   - Operations playbooks
+   - Developer onboarding guide
+
+2. **Stakeholder Presentation:**
+   - Business value demonstration
+   - ROI calculation
+   - Future roadmap presentation
+
+#### **Финальные deliverables:**
+- [ ] Production-ready платформа
+- [ ] Elite DORA metrics achievement
+- [ ] Comprehensive documentation suite
+- [ ] Stakeholder presentation
+- [ ] Team training materials
+- [ ] Continuous improvement roadmap
+
+---
+
+## **🎓 Программа завершения и карьерного роста**
+
+### **Финальная оценка успеха:**
+
+#### **DORA Metrics (Элитный уровень):**
+- ✅ Deployment frequency: Несколько раз в день
+- ✅ Lead time: < 1 час
+- ✅ MTTR: < 30 минут  
+- ✅ Change failure rate: < 15%
+
+#### **TBD Metrics:**
+- ✅ Branch lifetime: < 24 часа
+- ✅ Merge frequency: > 1/день
+- ✅ Feature flag coverage: > 80%
+
+#### **Technical Excellence:**
+- ✅ Test coverage: > 80%
+- ✅ Build time: < 10 минут
+- ✅ Zero-downtime deployments
+- ✅ Automated rollback
+
+### **Карьерные траектории:**
+
+#### **Technical Leadership:**
+- **Platform Engineer** ($100k-180k+)
+- **Principal DevOps Engineer** ($150k-250k+)
+- **Cloud Architect** ($130k-220k+)
+
+#### **Management Track:**
+- **DevOps Team Lead** ($120k-200k+)
+- **Engineering Manager** ($140k-230k+)
+- **VP of Engineering** ($200k-400k+)
+
+#### **Consulting & Freelance:**
+- **DevOps Consultant** ($150k-300k+)
+- **Digital Transformation Lead** ($200k-500k+)
+
+### **Continuous Learning Roadmap:**
+
+#### **Ближайшие 6 месяцев:**
+- Advanced cloud платформы (AWS/Azure/GCP)
+- Service Mesh (Istio/Linkerd)
+- MLOps и AI/ML pipelines
+
+#### **1 год:**
+- Platform Engineering specialization
+- Developer Experience optimization
+- Enterprise transformation leadership
+
+#### **2+ года:**
+- Cloud-native architecture
+- WebAssembly и edge computing
+- Quantum-ready infrastructure
+
+### **📊 Общие метрики программы:**
+- **Продолжительность:** 6 месяцев intensive study
+- **Еженедельное время:** 20-25 часов
+- **Практических проектов:** 15+
+- **Технологий освоено:** 30+
+- **Сертификаций подготовка:** 5+ (AWS, Kubernetes, etc.)
+
+**Помните:** Ваша миссия как DevOps лидера - не просто автоматизировать процессы, но создать культуру continuous improvement, где команды могут быстро и безопасно доставлять ценность клиентам!

@@ -1,38 +1,16 @@
-# DevOps & Trunk-Based Development: От новичка до эксперта
+# DevOps & Trunk-Based Development: Структурированный обучающий курс
 
-## 🎯 Что вы получите
-
-**За 24 недели:** Превратитесь из backend-разработчика в DevOps-эксперта с глубоким пониманием Trunk-Based Development.
-
-**Результат:** Способность построить production-ready CI/CD pipeline с TBD практиками для любого проекта.
+## 🎯 Цель курса
+Превратиться из backend-разработчика в DevOps-эксперта с глубоким пониманием Trunk-Based Development и способностью построить production-ready CI/CD pipeline.
 
 ---
 
-## 📋 Структура курса
+# Блок 1: Основы DevOps
 
-```
-Неделя 1-3   → DevOps культура + Git mastery
-Неделя 4-5   → Trunk-Based Development
-Неделя 6-8   → Continuous Integration  
-Неделя 9-12  → Continuous Delivery/Deployment
-Неделя 13-15 → Infrastructure & Operations
-Неделя 16-17 → Monitoring & Observability
-Неделя 18-19 → Security (DevSecOps)
-Неделя 20-21 → Performance & Scaling
-Неделя 22-23 → Advanced Practices
-Неделя 24    → Capstone Project
-```
+## Глава 1: DevOps Культура и Философия
 
----
-
-# 🚀 Фаза 1: DevOps Фундаменты (3 недели)
-
-## Неделя 1: DevOps Культура
-
-### 💡 Концепция
-DevOps — это не инструменты, это **культура быстрой доставки качественного ПО**.
-
-**Основная идея:** Разрушить стену между разработкой и операциями.
+### Концепция DevOps
+DevOps — это не инструменты, это **культура быстрой доставки качественного ПО**. Основная идея: разрушить стену между разработкой и операциями.
 
 ```
 БЫЛО:                    СТАЛО:
@@ -41,31 +19,22 @@ Dev → QA → Ops          Dev ↔ DevOps ↔ Ops
 Slow  Bugs  Fire         Fast + Reliable
 ```
 
-### 🎯 DORA Метрики (ваш компас)
-
+### DORA Метрики (компас развития)
 1. **Deployment Frequency** — как часто деплоим
 2. **Lead Time** — от коммита до продакшена  
 3. **MTTR** — время восстановления после сбоя
 4. **Change Failure Rate** — % плохих деплоев
 
-### ✅ Практика: Baseline Measurement
-
-```bash
-# Узнайте текущие метрики вашей команды
-git log --oneline --since="1 month ago" | wc -l  # Коммитов в месяц
-git log --pretty=format:"%h %ad" --date=short | head -10  # Частота
-```
-
 **Цель:** Элитные команды деплоят **несколько раз в день** с **MTTR < 1 часа**.
 
----
+### Практические задания
+- Измерьте базовые метрики команды
+- Создайте dashboard для отслеживания DORA метрик
+- Проанализируйте частоту коммитов за месяц
 
-## Неделя 2-3: Git Mastery
+## Глава 2: Git Mastery и Advanced Practices
 
-### 💡 Концепция
-Git — это не просто система контроля версий, это **основа всей DevOps философии**.
-
-### 🛠 Продвинутые практики
+### Продвинутые Git практики
 
 #### Semantic Versioning
 ```
@@ -90,8 +59,7 @@ test: add integration tests for orders
 npm test && npm run lint
 ```
 
-### ✅ Чек-лист Git Excellence
-
+### Чек-лист Git Excellence
 - [ ] Защищена главная ветка (branch protection)
 - [ ] Настроены pre-commit hooks
 - [ ] Все коммиты следуют конвенции
@@ -99,15 +67,14 @@ npm test && npm run lint
 
 ---
 
-# 🌿 Фаза 2: Trunk-Based Development (2 недели)
+# Блок 2: Trunk-Based Development
 
-## Неделя 4: TBD Философия
+## Глава 3: TBD Философия и Принципы
 
-### 💡 Концепция
+### Концепция Trunk-Based Development
 **Trunk-Based Development** — все разработчики работают с одной главной веткой (trunk/main).
 
-#### Почему TBD побеждает Git Flow?
-
+#### Сравнение подходов
 ```
 Git Flow (медленно):          TBD (быстро):
                              
@@ -119,17 +86,14 @@ main ──────────────          main ●─●─●─
 Merge Hell                          └─●─┘
 ```
 
-### 🎯 Ключевые принципы
-
+### Ключевые принципы TBD
 1. **Короткие ветки** — жизнь < 24 часов
 2. **Маленькие коммиты** — 1-2 файла за раз
 3. **Feature flags** — код в продакшене, фича выключена
 4. **Быстрая интеграция** — merge минимум раз в день
 
-### 🛠 Feature Flags Implementation
-
+### Feature Flags Implementation
 ```javascript
-// Простейший feature flag
 const features = {
   newPaymentFlow: process.env.FEATURE_NEW_PAYMENT === 'true'
 };
@@ -142,27 +106,12 @@ function processPayment(order) {
 }
 ```
 
-### ✅ TBD Workflow
+## Глава 4: Качество в TBD
 
-```
-1. git pull origin main
-2. Создать мини-фичу (2-4 часа работы)
-3. Написать тесты
-4. git commit -m "feat: add payment validation"
-5. git push + создать PR
-6. Code review + merge
-7. Повторить
-```
-
----
-
-## Неделя 5: Качество в TBD
-
-### 💡 Концепция
+### Обеспечение качества через автоматизацию
 В TBD **качество обеспечивается автоматизацией**, а не долгими ветками.
 
-### 🛠 Pre-commit Pipeline
-
+### Pre-commit Pipeline
 ```yaml
 # .pre-commit-config.yaml
 repos:
@@ -178,8 +127,7 @@ repos:
         language: system
 ```
 
-### 🔍 Code Review для TBD
-
+### Code Review для TBD
 **Правило:** PR должен быть reviewable за **15 минут**.
 
 ```
@@ -196,8 +144,7 @@ repos:
 - Без тестов
 ```
 
-### ✅ Definition of Done
-
+### Definition of Done
 - [ ] Тесты проходят
 - [ ] Code coverage не упал
 - [ ] Static analysis passed
@@ -206,11 +153,11 @@ repos:
 
 ---
 
-# 🔄 Фаза 3: Continuous Integration (3 недели)
+# Блок 3: Continuous Integration
 
-## Неделя 6: CI Основы
+## Глава 5: CI Основы и Архитектура
 
-### 💡 Концепция
+### Концепция Continuous Integration
 **Continuous Integration** — каждый коммит автоматически проверяется и собирается.
 
 **Цель:** Найти проблемы за **минуты**, а не дни.
@@ -219,8 +166,7 @@ repos:
 Developer commits → CI triggers → Tests run → Feedback in 5min
 ```
 
-### 🛠 Базовый CI Pipeline
-
+### Базовый CI Pipeline
 ```yaml
 # .github/workflows/ci.yml
 name: CI
@@ -237,8 +183,7 @@ jobs:
       - run: npm run build
 ```
 
-### 📊 Test Pyramid
-
+### Test Pyramid
 ```
     /\     E2E Tests (few, slow, expensive)
    /  \    
@@ -247,25 +192,10 @@ jobs:
 /________\  Unit Tests (many, fast, cheap)
 ```
 
-### ✅ CI Best Practices
+## Глава 6: Advanced CI Techniques
 
-- [ ] Тесты выполняются < 10 минут
-- [ ] Fail fast при первой ошибке
-- [ ] Параллельное выполнение тестов
-- [ ] Кеширование dependencies
-- [ ] Отчеты о coverage
-
----
-
-## Неделя 7: Advanced CI
-
-### 💡 Концепция
-**Оптимизация CI** — это инвестиция в скорость команды.
-
-### 🛠 Test Containers для Integration Tests
-
+### Test Containers для Integration Tests
 ```javascript
-// Изолированные тесты с реальной БД
 const { GenericContainer } = require('testcontainers');
 
 describe('User Service', () => {
@@ -287,8 +217,7 @@ describe('User Service', () => {
 });
 ```
 
-### ⚡ Optimization Strategies
-
+### Optimization Strategies
 ```yaml
 # Параллельные job'ы
 jobs:
@@ -305,24 +234,9 @@ jobs:
     steps: [run integration tests]
 ```
 
-### 🏗 Monorepo CI
+## Глава 7: CI + TBD Integration
 
-```
-repo/
-├── service-a/     → Trigger only if service-a changed
-├── service-b/     → Trigger only if service-b changed  
-└── shared/        → Trigger all if shared changed
-```
-
----
-
-## Неделя 8: CI + TBD Integration
-
-### 💡 Концепция
-CI в TBD должен обеспечивать **мгновенную обратную связь** для коротких веток.
-
-### 🛠 Smart CI для TBD
-
+### Smart CI для TBD
 ```yaml
 # Быстрая feedback loop
 on:
@@ -345,22 +259,7 @@ jobs:
       - run: npm run build
 ```
 
-### 🚨 Automated Rollback
-
-```javascript
-// Health check после деплоя
-const healthCheck = async () => {
-  const response = await fetch('/health');
-  if (!response.ok) {
-    throw new Error('Health check failed');
-  }
-};
-
-// Если health check падает → rollback
-```
-
-### ✅ TBD CI Checklist
-
+### TBD CI Checklist
 - [ ] PR checks завершаются за < 5 минут
 - [ ] Main branch всегда deployable
 - [ ] Автоматический rollback при сбоях
@@ -368,12 +267,11 @@ const healthCheck = async () => {
 
 ---
 
-# 🚀 Фаза 4: Continuous Delivery (4 недели)
+# Блок 4: Continuous Delivery
 
-## Неделя 9-10: CD Основы
+## Глава 8: CD Основы и Deployment Strategies
 
-### 💡 Концепция
-
+### Концепция Continuous Delivery
 **Continuous Delivery** — код всегда готов к деплою одним кликом.
 **Continuous Deployment** — код деплоится автоматически.
 
@@ -384,10 +282,8 @@ Code → Build → Test → Deploy to Staging → Deploy to Prod
            All Automated
 ```
 
-### 🛠 Environment Promotion
-
+### Environment Promotion
 ```yaml
-# Multi-environment pipeline
 stages:
   - build
   - deploy-dev
@@ -400,7 +296,7 @@ deploy-dev:
   
 deploy-staging:
   stage: deploy-staging
-  when: manual  # Требует подтверждения
+  when: manual
   
 deploy-prod:
   stage: deploy-prod
@@ -408,7 +304,7 @@ deploy-prod:
   only: [main]
 ```
 
-### 📋 Deployment Strategies
+### Deployment Strategies
 
 #### Blue-Green Deployment
 ```
@@ -430,27 +326,9 @@ Traffic split:
 Monitor metrics → Gradually increase canary %
 ```
 
-### 🛠 Infrastructure as Code
+## Глава 9: Advanced Deployment Practices
 
-```hcl
-# terraform/main.tf
-resource "aws_instance" "app" {
-  ami           = "ami-12345"
-  instance_type = "t3.micro"
-  
-  tags = {
-    Name = "app-${var.environment}"
-    Environment = var.environment
-  }
-}
-```
-
----
-
-## Неделя 11: Advanced Deployment
-
-### 🛠 Database Migrations в CD
-
+### Database Migrations в CD
 ```sql
 -- V1__create_users.sql (необратимая миграция)
 CREATE TABLE users (
@@ -465,10 +343,8 @@ ALTER TABLE users ADD COLUMN name VARCHAR(255);
 
 **Правило:** Миграции должны быть **backward compatible**.
 
-### 🔐 Secrets Management
-
+### Secrets Management
 ```yaml
-# CI/CD с secrets
 deploy:
   script:
     - echo $DATABASE_URL | base64 -d > .env
@@ -476,13 +352,11 @@ deploy:
     - docker run -d --env-file .env app
   variables:
     DATABASE_URL: 
-      vault: production/db/url  # Из Vault
+      vault: production/db/url
 ```
 
-### 🩺 Health Checks
-
+### Health Checks
 ```javascript
-// app/health.js
 app.get('/health', (req, res) => {
   const checks = {
     database: await dbHealthCheck(),
@@ -495,17 +369,10 @@ app.get('/health', (req, res) => {
 });
 ```
 
----
+## Глава 10: CD для TBD
 
-## Неделя 12: CD для TBD
-
-### 💡 Концепция
-В TBD **каждый merge в main должен автоматически доходить до продакшена**.
-
-### 🛠 Feature Flags в Production
-
+### Feature Flags в Production
 ```javascript
-// Градуальный rollout с feature flags
 const rolloutPercentage = await featureFlag.getRollout('new-checkout');
 
 if (Math.random() * 100 < rolloutPercentage) {
@@ -514,10 +381,8 @@ if (Math.random() * 100 < rolloutPercentage) {
 return oldCheckoutService.process(order);
 ```
 
-### 📊 A/B Testing Integration
-
+### A/B Testing Integration
 ```javascript
-// Встроенное A/B тестирование
 const variant = await abTest.getVariant('checkout-flow', userId);
 
 switch(variant) {
@@ -527,19 +392,7 @@ switch(variant) {
 }
 ```
 
-### 🚨 Production Monitoring
-
-```
-Deploy → Monitor metrics → Auto-rollback if issues
-
-Key metrics:
-- Error rate < 1%
-- Response time < 200ms  
-- Success rate > 99.9%
-```
-
-### ✅ TBD + CD Workflow
-
+### TBD + CD Workflow
 ```
 1. Code → main branch
 2. Automatic deploy to prod  
@@ -551,15 +404,11 @@ Key metrics:
 
 ---
 
-# 🏗 Фаза 5: Infrastructure & Operations (3 недели)
+# Блок 5: Infrastructure & Operations
 
-## Неделя 13: Контейнеризация
+## Глава 11: Контейнеризация и Docker
 
-### 💡 Концепция
-**Контейнеры** решают проблему "у меня работает, у вас нет".
-
-### 🛠 Оптимальный Dockerfile
-
+### Оптимальный Dockerfile
 ```dockerfile
 # Multi-stage build для минимального размера
 FROM node:18-alpine AS builder
@@ -576,10 +425,8 @@ USER node
 CMD ["npm", "start"]
 ```
 
-### 🔧 Docker Compose для разработки
-
+### Docker Compose для разработки
 ```yaml
-# docker-compose.yml
 version: '3.8'
 services:
   app:
@@ -596,25 +443,17 @@ services:
     volumes: ["postgres_data:/var/lib/postgresql/data"]
 ```
 
-### ✅ Container Best Practices
-
+### Container Best Practices
 - [ ] Образы < 100MB (Alpine base)
 - [ ] Non-root user
 - [ ] Health checks included
 - [ ] Secrets не в образе
 - [ ] Multi-stage builds
 
----
+## Глава 12: Kubernetes Orchestration
 
-## Неделя 14: Kubernetes Orchestration
-
-### 💡 Концепция
-**Kubernetes** — автопилот для ваших контейнеров.
-
-### 🛠 Basic Deployment
-
+### Basic Deployment
 ```yaml
-# k8s/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -638,8 +477,7 @@ spec:
           limits: {memory: "256Mi", cpu: "200m"}
 ```
 
-### 🔍 Health Checks в K8s
-
+### Health Checks в K8s
 ```yaml
 livenessProbe:
   httpGet: {path: /health, port: 3000}
@@ -652,8 +490,7 @@ readinessProbe:
   periodSeconds: 5
 ```
 
-### ⚡ Auto-scaling
-
+### Auto-scaling
 ```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -668,17 +505,10 @@ spec:
     resource: {name: cpu, target: {type: Utilization, averageUtilization: 70}}
 ```
 
----
+## Глава 13: Infrastructure as Code
 
-## Неделя 15: Infrastructure as Code
-
-### 💡 Концепция
-**IaC** — инфраструктура описана в коде и управляется как код.
-
-### 🛠 Terraform Example
-
+### Terraform Example
 ```hcl
-# main.tf
 resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
   role_arn = aws_iam_role.cluster.arn
@@ -694,8 +524,7 @@ output "cluster_endpoint" {
 }
 ```
 
-### 🔄 GitOps Workflow
-
+### GitOps Workflow
 ```
 Git Repo (Source of Truth)
     ↓
@@ -706,8 +535,7 @@ Kubernetes Cluster (Reality)
 Any drift → Auto-sync back to Git state
 ```
 
-### 🛠 ArgoCD Application
-
+### ArgoCD Application
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -725,27 +553,14 @@ spec:
     automated: {prune: true, selfHeal: true}
 ```
 
-### ✅ IaC Best Practices
-
-- [ ] State в remote backend
-- [ ] Environments как переменные
-- [ ] Модульная структура
-- [ ] Plan перед apply
-- [ ] Drift detection настроен
-
 ---
 
-# 📊 Фаза 6: Monitoring & Observability (2 недели)
+# Блок 6: Monitoring & Observability
 
-## Неделя 16: Metrics & Logging
+## Глава 14: Metrics и Logging
 
-### 💡 Концепция
-**Нельзя управлять тем, что не измеряешь.**
-
-### 📈 Key Metrics для Backend
-
+### Key Metrics для Backend
 ```javascript
-// Prometheus metrics в Node.js
 const prometheus = require('prom-client');
 
 const httpDuration = new prometheus.Histogram({
@@ -768,10 +583,8 @@ app.use((req, res, next) => {
 });
 ```
 
-### 📝 Structured Logging
-
+### Structured Logging
 ```javascript
-// Правильное логирование
 const winston = require('winston');
 
 const logger = winston.createLogger({
@@ -780,7 +593,6 @@ const logger = winston.createLogger({
   transports: [new winston.transports.Console()]
 });
 
-// В коде
 logger.info('User created', {
   userId: user.id,
   email: user.email,
@@ -789,34 +601,10 @@ logger.info('User created', {
 });
 ```
 
-### 📊 Grafana Dashboard
+## Глава 15: Distributed Tracing
 
-```
-┌─ Response Time ─┐  ┌─ Error Rate ─┐
-│     150ms       │  │     0.5%     │
-└─────────────────┘  └──────────────┘
-
-┌─ Throughput ────────────────────────┐
-│ ████████████████████████████████████│
-│ 1,200 requests/min                  │
-└─────────────────────────────────────┘
-
-┌─ Database Pool ─┐  ┌─ Memory Usage ┐
-│ Active: 5/20    │  │     78%       │
-└─────────────────┘  └───────────────┘
-```
-
----
-
-## Неделя 17: Distributed Tracing
-
-### 💡 Концепция
-**Трейсинг** показывает путь запроса через микросервисы.
-
-### 🛠 OpenTelemetry Integration
-
+### OpenTelemetry Integration
 ```javascript
-// Автоматическое создание spans
 const { NodeTracerProvider } = require('@opentelemetry/sdk-node');
 const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumentations-node');
 
@@ -828,8 +616,7 @@ const sdk = new NodeSDK({
 sdk.start();
 ```
 
-### 📊 Trace Visualization
-
+### Trace Visualization
 ```
 Request: GET /api/orders/123
 │
@@ -845,10 +632,8 @@ Request: GET /api/orders/123
 Total: 135ms
 ```
 
-### 🚨 Alerting Rules
-
+### Alerting Rules
 ```yaml
-# Prometheus alerting rules
 groups:
 - name: backend-alerts
   rules:
@@ -863,27 +648,14 @@ groups:
     for: 5m
 ```
 
-### ✅ Observability Checklist
-
-- [ ] 4 Golden Signals мониторятся (latency, traffic, errors, saturation)
-- [ ] Distributed tracing настроен
-- [ ] Алерты настроены для SLI нарушений
-- [ ] Dashboards для каждого сервиса
-- [ ] Runbooks для каждого алерта
-
 ---
 
-# 🔒 Фаза 7: Security (DevSecOps) (2 недели)
+# Блок 7: Security (DevSecOps)
 
-## Неделя 18: Security в Pipeline
+## Глава 16: Security в Pipeline
 
-### 💡 Концепция
-**Shift-left security** — безопасность проверяется на каждом этапе, а не в конце.
-
-### 🛠 Security Pipeline
-
+### Security Pipeline
 ```yaml
-# Security checks в CI
 security-scan:
   steps:
     - name: Secret scanning
@@ -899,8 +671,7 @@ security-scan:
       run: trivy image myapp:latest
 ```
 
-### 🔐 Secrets Management
-
+### Secrets Management
 ```javascript
 // НЕ ДЕЛАЙТЕ ТАК
 const dbUrl = "postgres://user:password@localhost/db";
@@ -914,10 +685,8 @@ const secrets = await vault.read('secret/database');
 const dbUrl = secrets.data.url;
 ```
 
-### 🛡 Container Security
-
+### Container Security
 ```dockerfile
-# Security hardened Dockerfile
 FROM node:18-alpine
 
 # Создать non-root пользователя
@@ -929,19 +698,12 @@ COPY --chown=nextjs:nodejs . .
 
 # Переключиться на non-root
 USER nextjs
-
-# Read-only filesystem
-COPY --from=builder --chown=nextjs:nodejs /app .
 ```
 
----
+## Глава 17: Production Security
 
-## Неделя 19: Production Security
-
-### 🛠 Network Security
-
+### Network Security
 ```yaml
-# Kubernetes Network Policies
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -955,16 +717,10 @@ spec:
     - podSelector:
         matchLabels: {app: frontend}
     ports: [protocol: TCP, port: 3000]
-  egress:
-  - to:
-    - podSelector:
-        matchLabels: {app: database}
 ```
 
-### 🔍 Runtime Security
-
+### Runtime Security
 ```javascript
-// Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -975,49 +731,34 @@ app.use(helmet({
   hsts: {maxAge: 31536000}
 }));
 
-// Rate limiting
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000, // 15 минут
   max: 100 // максимум 100 запросов
 }));
 ```
 
-### 📋 Security Checklist
-
-- [ ] Dependency scanning в CI
-- [ ] Container images сканируются
-- [ ] Secrets в Vault, не в коде
-- [ ] Network policies настроены
-- [ ] HTTPS everywhere
-- [ ] Security headers настроены
-
 ---
 
-# ⚡ Фаза 8: Performance & Scaling (2 недели)
+# Блок 8: Performance & Scaling
 
-## Неделя 20: Performance Testing
+## Глава 18: Performance Testing
 
-### 💡 Концепция
-**Performance regression** — когда новый код делает приложение медленнее.
-
-### 🛠 Load Testing в CI
-
+### Load Testing в CI
 ```javascript
-// k6 performance test
 import http from 'k6/http';
 import { check } from 'k6';
 
 export let options = {
   stages: [
-    { duration: '2m', target: 100 },  // Ramp up
-    { duration: '5m', target: 100 },  // Stay at 100 users  
-    { duration: '2m', target: 200 },  // Ramp to 200 users
-    { duration: '5m', target: 200 },  // Stay at 200
-    { duration: '2m', target: 0 },    // Ramp down
+    { duration: '2m', target: 100 },
+    { duration: '5m', target: 100 },
+    { duration: '2m', target: 200 },
+    { duration: '5m', target: 200 },
+    { duration: '2m', target: 0 },
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'], // 95% of requests < 500ms
-    http_req_failed: ['rate<0.1'],    // Error rate < 10%
+    http_req_duration: ['p(95)<500'],
+    http_req_failed: ['rate<0.1'],
   },
 };
 
@@ -1030,29 +771,8 @@ export default function() {
 }
 ```
 
-### 📊 Performance Monitoring
-
+### Caching Strategy
 ```javascript
-// APM integration
-const apm = require('elastic-apm-node').start();
-
-app.get('/slow-endpoint', async (req, res) => {
-  const span = apm.startSpan('database-query');
-  
-  const result = await db.query('SELECT * FROM large_table');
-  
-  span?.end();
-  res.json(result);
-});
-```
-
-### 🗄 Caching Strategy
-
-```javascript
-// Multi-level caching
-const redis = require('redis');
-const client = redis.createClient();
-
 app.get('/api/user/:id', async (req, res) => {
   const { id } = req.params;
   
@@ -1063,30 +783,23 @@ app.get('/api/user/:id', async (req, res) => {
   // L2: Redis cache  
   user = await client.get(`user:${id}`);
   if (user) {
-    memoryCache.set(`user:${id}`, user, 300); // 5min
+    memoryCache.set(`user:${id}`, user, 300);
     return res.json(JSON.parse(user));
   }
   
   // L3: Database
   user = await db.findUser(id);
-  await client.setex(`user:${id}`, 3600, JSON.stringify(user)); // 1hr
+  await client.setex(`user:${id}`, 3600, JSON.stringify(user));
   memoryCache.set(`user:${id}`, user, 300);
   
   res.json(user);
 });
 ```
 
----
+## Глава 19: Auto-scaling и Circuit Breakers
 
-## Неделя 21: Auto-scaling
-
-### 💡 Концепция
-**Elastic infrastructure** — ресурсы масштабируются автоматически под нагрузку.
-
-### 🛠 Kubernetes HPA
-
+### Kubernetes HPA
 ```yaml
-# Horizontal Pod Autoscaler
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -1105,12 +818,6 @@ spec:
       target:
         type: Utilization
         averageUtilization: 70
-  - type: Resource  
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 60
@@ -1118,26 +825,21 @@ spec:
       - type: Percent
         value: 100
         periodSeconds: 15
-    scaleDown:
-      stabilizationWindowSeconds: 300
 ```
 
-### 🔧 Circuit Breaker Pattern
-
+### Circuit Breaker Pattern
 ```javascript
 const CircuitBreaker = require('opossum');
 
 const options = {
-  timeout: 3000,        // Таймаут 3 сек
-  errorThresholdPercentage: 50, // 50% ошибок
-  resetTimeout: 30000   // Пытаться снова через 30 сек
+  timeout: 3000,
+  errorThresholdPercentage: 50,
+  resetTimeout: 30000
 };
 
 const breaker = new CircuitBreaker(callExternalAPI, options);
-
 breaker.fallback(() => 'Service temporarily unavailable');
 
-// Использование
 app.get('/api/data', async (req, res) => {
   try {
     const data = await breaker.fire(req.params);
@@ -1148,40 +850,13 @@ app.get('/api/data', async (req, res) => {
 });
 ```
 
-### 💰 Cost Optimization
-
-```yaml
-# Vertical Pod Autoscaler для оптимизации ресурсов
-apiVersion: autoscaling.k8s.io/v1
-kind: VerticalPodAutoscaler
-metadata:
-  name: backend-vpa
-spec:
-  targetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: backend
-  updatePolicy:
-    updateMode: "Auto"
-  resourcePolicy:
-    containerPolicies:
-    - containerName: backend
-      maxAllowed:
-        cpu: 1
-        memory: 2Gi
-```
-
 ---
 
-# 🚀 Фаза 9: Advanced Practices (2 недели)
+# Блок 9: Advanced Practices
 
-## Неделя 22: Enterprise TBD
+## Глава 20: Enterprise TBD
 
-### 💡 Концепция
-**Scaling TBD** для больших команд требует дополнительных практик.
-
-### 🏗 Микросервисы + TBD
-
+### Микросервисы + TBD
 ```
 Monorepo Structure:
 ├── services/
@@ -1194,41 +869,31 @@ Monorepo Structure:
 └── .github/workflows/   ← Shared CI/CD
 ```
 
-### 🛠 Cross-team Coordination
-
+### Cross-team Coordination
 ```yaml
 # Dependency management в TBD
-# services/order-service/package.json
 {
   "dependencies": {
-    "@company/auth-types": "^1.2.0",    # Только major.minor
-    "@company/payment-sdk": "^2.1.0"    # Backward compatible
+    "@company/auth-types": "^1.2.0",
+    "@company/payment-sdk": "^2.1.0"
   }
 }
 ```
 
-### 📊 TBD Metrics для команды
-
+### TBD Metrics для команды
 ```javascript
-// Metrics dashboard для TBD
 const tbdMetrics = {
-  branchLifetime: '4.2 hours avg',     // Цель: < 24h
-  mergeFrequency: '3.5 merges/day',    // Цель: > 1/day  
-  buildSuccess: '96%',                 // Цель: > 95%
-  codeReviewTime: '45 min avg',        // Цель: < 2h
-  featureFlagCoverage: '78%'           // Цель: > 80%
+  branchLifetime: '4.2 hours avg',
+  mergeFrequency: '3.5 merges/day',
+  buildSuccess: '96%',
+  codeReviewTime: '45 min avg',
+  featureFlagCoverage: '78%'
 };
 ```
 
----
+## Глава 21: Continuous Improvement
 
-## Неделя 23: Continuous Improvement
-
-### 💡 Концепция
-**DevOps — это journey, не destination.** Постоянное улучшение процессов.
-
-### 📈 SPACE Framework
-
+### SPACE Framework
 ```
 S - Satisfaction and well-being
 P - Performance  
@@ -1237,15 +902,13 @@ C - Communication and collaboration
 E - Efficiency and flow
 ```
 
-### 🛠 Chaos Engineering
-
+### Chaos Engineering
 ```javascript
-// Chaos Monkey для Node.js
 const chaos = require('chaos-monkey');
 
 if (process.env.NODE_ENV === 'staging') {
   chaos.configure({
-    probability: 0.01,  // 1% вероятность хаоса
+    probability: 0.01,
     attacks: [
       'kill-process',
       'slow-requests', 
@@ -1256,8 +919,7 @@ if (process.env.NODE_ENV === 'staging') {
 }
 ```
 
-### 🔄 Value Stream Mapping
-
+### Value Stream Mapping
 ```
 Idea → Code → Build → Test → Deploy → Monitor
   ↓      ↓      ↓       ↓       ↓        ↓
@@ -1268,48 +930,13 @@ Processing Time: 39 minutes
 Efficiency: 39m / 2.5d = 1.1%  ← Opportunity!
 ```
 
-### ✅ Maturity Assessment
-
-```
-DevOps Maturity Levels:
-
-Level 1 - Initial (Manual)
-[ ] Manual deployments
-[ ] No automated tests  
-[ ] Long-lived branches
-
-Level 2 - Managed (Basic CI/CD)  
-[ ] Automated builds
-[ ] Some tests automated
-[ ] Feature branches
-
-Level 3 - Defined (Advanced CI/CD)
-[ ] Trunk-based development
-[ ] Deployment automation  
-[ ] Infrastructure as Code
-
-Level 4 - Quantitatively Managed  
-[ ] Metrics-driven decisions
-[ ] Performance monitoring
-[ ] Continuous optimization  
-
-Level 5 - Optimizing (Elite)
-[ ] Continuous experimentation  
-[ ] Self-healing systems
-[ ] Full observability
-```
-
 ---
 
-# 🎯 Фаза 10: Capstone Project (1 неделя)
+# Блок 10: Capstone Project
 
-## Неделя 24: Финальный проект
+## Глава 22: Production-Ready Platform
 
-### 🎯 Задача
-Создать **production-ready платформу** с полным TBD + DevOps workflow.
-
-### 🛠 Архитектура решения
-
+### Архитектура решения
 ```
 GitHub Repo (TBD)
     ↓
@@ -1323,36 +950,36 @@ Kubernetes Cluster
     └── Monitoring (Prometheus/Grafana)
 ```
 
-### 📋 Deliverables
+### Deliverables
 
-1. **Code Repository**
-   - Trunk-based workflow настроен
-   - Feature flags implemented
-   - Comprehensive test suite
+#### 1. Code Repository
+- Trunk-based workflow настроен
+- Feature flags implemented
+- Comprehensive test suite
 
-2. **CI/CD Pipeline**  
-   - < 10 min build time
-   - Automated security scanning
-   - Multi-environment deployment
+#### 2. CI/CD Pipeline
+- < 10 min build time
+- Automated security scanning
+- Multi-environment deployment
 
-3. **Infrastructure**
-   - Kubernetes cluster (local/cloud)
-   - Infrastructure as Code
-   - Auto-scaling configured
+#### 3. Infrastructure
+- Kubernetes cluster
+- Infrastructure as Code
+- Auto-scaling configured
 
-4. **Monitoring & Observability**
-   - Metrics dashboard
-   - Distributed tracing
-   - Alerting rules
+#### 4. Monitoring & Observability
+- Metrics dashboard
+- Distributed tracing
+- Alerting rules
 
-5. **Documentation**
-   - Runbooks для операций
-   - Developer onboarding guide
-   - Architecture decision records
+#### 5. Documentation
+- Runbooks для операций
+- Developer onboarding guide
+- Architecture decision records
 
-### 🎖 Success Criteria
+### Success Criteria
 
-**DORA Metrics achieved:**
+**DORA Metrics:**
 - [ ] Deployment frequency: Daily
 - [ ] Lead time: < 1 hour  
 - [ ] MTTR: < 30 minutes
@@ -1371,80 +998,49 @@ Kubernetes Cluster
 
 ---
 
-# 🎓 Graduation & Next Steps
+# 🎓 Результаты обучения
 
-## 🏆 Вы достигли статуса DevOps Expert!
+## Полученные навыки
 
-### 💪 Ваши новые суперсилы:
+### Core DevOps Skills
+- TBD implementation и leadership
+- Production-ready CI/CD pipelines
+- Kubernetes orchestration
+- Infrastructure as Code
+- Comprehensive monitoring
+- Security integration
+- Performance optimization
 
-- **TBD Mastery** — можете внедрить TBD в любой команде
-- **CI/CD Expertise** — строите надежные пайплайны с нуля  
-- **Infrastructure Skills** — управляете Kubernetes как профи
-- **Observability** — видите что происходит в production
-- **Security Mindset** — встраиваете безопасность в процессы
+### Leadership & Process
+- DevOps transformation leadership
+- Team coaching в TBD practices
+- Metrics-driven decision making
+- Continuous improvement culture
 
-### 🚀 Карьерные возможности:
-
+## Карьерные возможности
 - **DevOps Engineer** ($80k-150k+)
 - **Platform Engineer** ($100k-180k+)  
 - **Site Reliability Engineer** ($120k-200k+)
 - **Cloud Architect** ($130k-220k+)
 - **DevOps Consultant** ($150k-300k+)
 
-### 📚 Дальнейшее развитие:
+## Дальнейшее развитие
 
-1. **Специализация:**
-   - Cloud platforms (AWS/Azure/GCP)
-   - Service Mesh (Istio/Linkerd)
-   - GitOps (ArgoCD/Flux)
+### Специализация
+- Cloud platforms (AWS/Azure/GCP)
+- Service Mesh (Istio/Linkerd)
+- GitOps (ArgoCD/Flux)
 
-2. **Leadership:**
-   - DevOps transformation
-   - Platform teams building  
-   - Developer experience
+### Leadership
+- DevOps transformation
+- Platform teams building  
+- Developer experience
 
-3. **Cutting-edge:**
-   - ML/AI Operations (MLOps)
-   - WebAssembly platforms
-   - Edge computing
-
----
-
-## 📈 Continuous Learning Path
-
-### Месяц 7-12: Углубление
-- Cloud provider certification
-- Advanced Kubernetes (CKA/CKAD)
-- Service Mesh mastery
-- Advanced security practices
-
-### Год 2: Экспертиза  
-- Архитектурные паттерны
-- Multi-cloud strategies
-- Performance engineering
-- Team leadership
-
-### Год 3+: Innovation
-- Emerging technologies
-- Conference speaking
-- Open source contribution
-- Mentoring others
+### Cutting-edge
+- ML/AI Operations (MLOps)
+- WebAssembly platforms
+- Edge computing
 
 ---
 
-## 🎯 Final Wisdom
-
-> **"DevOps — это не про инструменты, это про людей."**
-
-**Помните:**
-- Автоматизируйте все, что можно автоматизировать
-- Измеряйте все, что важно
-- Улучшайте процессы постоянно
-- Делитесь знаниями с командой
-- **Trunk-Based Development + DevOps = Скорость + Надежность**
-
-**Ваша миссия теперь:** Помочь другим командам достичь такого же уровня excellence!
-
----
-
-*Поздравляем с завершением курса! Вы прошли путь от новичка до DevOps эксперта. Теперь идите и меняйте мир разработки к лучшему! 🚀*
+**Помните:** DevOps — это не про инструменты, это про людей. Ваша миссия: помочь командам достичь скорости и надежности через культуру continuous improvement!

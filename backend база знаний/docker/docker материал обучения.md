@@ -1,21 +1,44 @@
-# 🐳 Docker для Backend разработчика: Полный курс от новичка к эксперту
-
-## 📖 Содержание курса
-
-1. [Введение и мотивация](#введение)
-2. [Модуль 1: Основы Docker](#модуль-1-основы-docker)
-3. [Модуль 2: Dockerfile мастерство](#модуль-2-dockerfile-мастерство)
-4. [Модуль 3: Управление данными и сетями](#модуль-3-управление-данными-и-сетями)
-5. [Модуль 4: Docker Compose основы](#модуль-4-docker-compose-основы)
-6. [Модуль 5: Docker Compose продвинутое](#модуль-5-docker-compose-продвинутое)
-7. [Модуль 6: Production и реальные проекты](#модуль-6-production-и-реальные-проекты)
-8. [Бонус: Экспертные техники](#бонус-экспертные-техники)
+# 🐳 Docker для Backend разработчика: Структурированный курс
 
 ---
 
-## 🎯 Введение
+## 📖 Содержание курса
 
-### Проблемы традиционной разработки
+**Блок 1: Введение в Docker**
+- Глава 1: Проблемы традиционной разработки и решения Docker
+- Глава 2: Архитектура Docker и установка
+
+**Блок 2: Основы работы с Docker** 
+- Глава 3: Образы и контейнеры
+- Глава 4: Управление контейнерами и практические сценарии
+
+**Блок 3: Создание образов**
+- Глава 5: Основы Dockerfile
+- Глава 6: Продвинутые техники создания образов
+
+**Блок 4: Управление данными и сетями**
+- Глава 7: Volumes и управление данными
+- Глава 8: Networks и сетевое взаимодействие
+
+**Блок 5: Docker Compose**
+- Глава 9: Основы Docker Compose
+- Глава 10: Продвинутые возможности Compose
+
+**Блок 6: Production-готовые решения**
+- Глава 11: Production конфигурации
+- Глава 12: Реальные проекты и CI/CD
+
+**Блок 7: Экспертные техники**
+- Глава 13: Оптимизация и безопасность
+- Глава 14: Мониторинг и отладка
+
+---
+
+# Блок 1: Введение в Docker
+
+## Глава 1: Проблемы традиционной разработки и решения Docker
+
+### 1.1 Проблемы традиционной разработки
 
 ```
 🏠 Локальная машина     →     🔧 Тестовый сервер     →     🚀 Продакшн
@@ -26,7 +49,7 @@ MySQL 8.0               →     MySQL 5.7              →     PostgreSQL 13
 
 **Результат:** "У меня работает!" → "На тесте падает" → "В продакшне не запускается"
 
-### Docker решение
+### 1.2 Docker решение
 
 ```
 📦 Контейнер с приложением
@@ -36,7 +59,7 @@ MySQL 8.0               →     MySQL 5.7              →     PostgreSQL 13
 └── Гарантированно работает везде
 ```
 
-### Сравнение: Виртуальные машины vs Docker
+### 1.3 Сравнение: Виртуальные машины vs Docker
 
 ```
 🖥️ ВИРТУАЛЬНЫЕ МАШИНЫ                 🐳 DOCKER КОНТЕЙНЕРЫ
@@ -55,37 +78,26 @@ MySQL 8.0               →     MySQL 5.7              →     PostgreSQL 13
 Ресурсы: Много                        Ресурсы: Мало
 ```
 
-### Архитектура Docker
+## Глава 2: Архитектура Docker и установка
 
-```mermaid
-graph TB
-    A[Docker Client] -->|docker run| B[Docker Daemon]
-    B --> C[Images]
-    B --> D[Containers]
-    B --> E[Networks]
-    B --> F[Volumes]
-    
-    C --> G[Docker Hub]
-    C --> H[Local Registry]
-    
-    subgraph "Docker Host"
-        B
-        C
-        D
-        E
-        F
-    end
+### 2.1 Архитектура Docker
+
+```
+Docker Client → Docker Daemon → Images/Containers/Networks/Volumes
+     ↓               ↓               ↓
+docker run     Управление      Docker Hub/Registry
 ```
 
----
+**Основные компоненты:**
+- **Docker Client** - интерфейс командной строки
+- **Docker Daemon** - фоновый процесс управления
+- **Docker Images** - шаблоны для контейнеров
+- **Docker Containers** - запущенные экземпляры
+- **Docker Registry** - хранилище образов
 
-## 📚 Модуль 1: Основы Docker (1 неделя)
+### 2.2 Установка Docker
 
-### День 1-2: Установка и первое знакомство
-
-#### Установка Docker
-
-**Ubuntu/Debian:**
+#### Ubuntu/Debian:
 ```bash
 # Обновление пакетов
 sudo apt update
@@ -107,7 +119,7 @@ sudo apt install docker-ce docker-ce-cli containerd.io
 sudo usermod -aG docker $USER
 ```
 
-**macOS:**
+#### macOS:
 ```bash
 # Установка через Homebrew
 brew install --cask docker
@@ -115,13 +127,13 @@ brew install --cask docker
 # Или скачать Docker Desktop с официального сайта
 ```
 
-**Windows:**
+#### Windows:
 ```bash
 # Скачать Docker Desktop с официального сайта
 # Требует WSL2 для лучшей производительности
 ```
 
-#### Проверка установки
+### 2.3 Проверка установки
 
 ```bash
 # Проверка версии
@@ -135,7 +147,7 @@ docker info
 docker run hello-world
 ```
 
-#### Жизненный цикл контейнера
+### 2.4 Жизненный цикл контейнера
 
 ```
 📥 PULL IMAGE    →    🏗️ CREATE        →    ▶️ START       →    ⏸️ STOP        →    🗑️ REMOVE
@@ -144,9 +156,13 @@ docker pull           docker create        docker start       docker stop       
 Скачивание образа    Создание контейнера   Запуск процесса    Остановка          Удаление
 ```
 
-### День 3-4: Работа с образами и контейнерами
+---
 
-#### Основные команды для образов
+# Блок 2: Основы работы с Docker
+
+## Глава 3: Образы и контейнеры
+
+### 3.1 Основные команды для образов
 
 ```bash
 # Поиск образов
@@ -173,7 +189,7 @@ docker rmi nginx:latest
 docker rmi $(docker images -q)  # Удаление всех образов
 ```
 
-#### Работа с контейнерами
+### 3.2 Работа с контейнерами
 
 ```bash
 # Запуск контейнера (различные способы)
@@ -211,7 +227,7 @@ docker rm -f my-nginx               # Принудительное удален�
 docker container prune              # Удаление всех остановленных
 ```
 
-#### Работа с запущенными контейнерами
+### 3.3 Работа с запущенными контейнерами
 
 ```bash
 # Выполнение команд в контейнере
@@ -234,9 +250,9 @@ docker stats                        # Все контейнеры
 docker stats my-nginx               # Конкретный контейнер
 ```
 
-### День 5-7: Практические сценарии
+## Глава 4: Управление контейнерами и практические сценарии
 
-#### Сценарий 1: Веб-сервер с кастомным контентом
+### 4.1 Практический сценарий: Веб-сервер с кастомным контентом
 
 ```bash
 # Создание директории с контентом
@@ -254,7 +270,7 @@ docker run -d \
 curl http://localhost:8080
 ```
 
-#### Сценарий 2: База данных PostgreSQL
+### 4.2 Практический сценарий: База данных PostgreSQL
 
 ```bash
 # Запуск PostgreSQL с постоянным хранением
@@ -274,7 +290,7 @@ docker exec -it my-postgres psql -U developer -d myapp
 docker exec my-postgres psql -U developer -d myapp -c "CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(100));"
 ```
 
-#### Сценарий 3: Redis для кэширования
+### 4.3 Практический сценарий: Redis для кэширования
 
 ```bash
 # Запуск Redis
@@ -289,7 +305,7 @@ docker exec -it my-redis redis-cli
 # 127.0.0.1:6379> GET test
 ```
 
-#### Отладка и диагностика
+### 4.4 Отладка и диагностика
 
 ```bash
 # Просмотр процессов в контейнере
@@ -309,12 +325,7 @@ docker export my-nginx > my-nginx.tar
 docker import my-nginx.tar my-nginx:backup
 ```
 
-#### Практическое задание: Многоконтейнерное приложение
-
-Создайте связку из трех контейнеров:
-1. **Frontend**: nginx для статики
-2. **Backend**: простой API сервер
-3. **Database**: PostgreSQL
+### 4.5 Многоконтейнерное приложение
 
 ```bash
 # Создание сети
@@ -329,7 +340,7 @@ docker run -d \
   -e POSTGRES_PASSWORD=secret \
   postgres:15-alpine
 
-# Backend (предполагаем, что у вас есть простое API)
+# Backend
 docker run -d \
   --name api \
   --network myapp-network \
@@ -346,11 +357,11 @@ docker run -d \
 
 ---
 
-## 🔨 Модуль 2: Dockerfile мастерство (1 неделя)
+# Блок 3: Создание образов
 
-### День 1-2: Основы создания образов
+## Глава 5: Основы Dockerfile
 
-#### Анатомия Dockerfile
+### 5.1 Анатомия Dockerfile
 
 ```dockerfile
 # Комментарий: выбор базового образа
@@ -403,7 +414,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
 CMD ["npm", "start"]
 ```
 
-#### Выбор базового образа
+### 5.2 Выбор базового образа
 
 ```dockerfile
 # ❌ Плохо: слишком большой
@@ -427,9 +438,9 @@ node:18-alpine   → ~172MB
 distroless       → ~58MB
 ```
 
-#### Инструкции Dockerfile подробно
+### 5.3 Инструкции Dockerfile
 
-**COPY vs ADD:**
+#### COPY vs ADD:
 ```dockerfile
 # COPY - простое копирование (рекомендуется)
 COPY src/ /app/src/
@@ -440,7 +451,7 @@ ADD https://example.com/file.tar.gz /tmp/  # Скачивание URL
 ADD archive.tar.gz /app/                   # Автораспаковка архивов
 ```
 
-**RUN оптимизация:**
+#### RUN оптимизация:
 ```dockerfile
 # ❌ Плохо: много слоев
 RUN apt-get update
@@ -457,7 +468,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 ```
 
-**CMD vs ENTRYPOINT:**
+#### CMD vs ENTRYPOINT:
 ```dockerfile
 # CMD - может быть переопределена
 CMD ["npm", "start"]
@@ -473,102 +484,7 @@ ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["npm", "start"]
 ```
 
-#### Пример docker-entrypoint.sh
-
-```bash
-#!/bin/bash
-set -e
-
-# Ожидание базы данных
-if [ "$DATABASE_URL" ]; then
-    echo "Waiting for database..."
-    while ! nc -z db 5432; do
-        sleep 1
-    done
-    echo "Database is ready!"
-fi
-
-# Миграции
-if [ "$RUN_MIGRATIONS" = "true" ]; then
-    echo "Running migrations..."
-    npm run migrate
-fi
-
-# Запуск основной команды
-exec "$@"
-```
-
-### День 3-4: Продвинутые техники
-
-#### Многоэтапная сборка (Multi-stage builds)
-
-```dockerfile
-# ==========================================
-# Этап 1: Установка зависимостей
-# ==========================================
-FROM node:18-alpine AS dependencies
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --include=dev
-
-# ==========================================
-# Этап 2: Сборка приложения
-# ==========================================
-FROM dependencies AS builder
-
-COPY . .
-RUN npm run build \
-    && npm run test \
-    && npm prune --production
-
-# ==========================================
-# Этап 3: Продакшн образ
-# ==========================================
-FROM node:18-alpine AS production
-
-# Создание пользователя
-RUN addgroup -g 1001 -S nodejs \
-    && adduser -S nextjs -u 1001
-
-WORKDIR /app
-
-# Копирование только необходимого
-COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-
-USER nextjs
-
-EXPOSE 3000
-
-CMD ["npm", "start"]
-```
-
-#### Оптимизация кэширования слоев
-
-```dockerfile
-# ❌ Плохо: кэш инвалидируется при изменении любого файла
-FROM node:18-alpine
-COPY . .
-RUN npm install
-
-# ✅ Хорошо: кэш зависимостей отдельно от кода
-FROM node:18-alpine
-WORKDIR /app
-
-# Слой 1: package.json (меняется редко)
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Слой 2: исходный код (меняется часто)
-COPY . .
-
-# Слой 3: сборка (только если изменился код)
-RUN npm run build
-```
-
-#### .dockerignore для оптимизации
+### 5.4 .dockerignore для оптимизации
 
 ```dockerignore
 # Документация
@@ -618,7 +534,77 @@ temp/
 *.tmp
 ```
 
-#### ARG и ENV переменные
+## Глава 6: Продвинутые техники создания образов
+
+### 6.1 Многоэтапная сборка (Multi-stage builds)
+
+```dockerfile
+# ==========================================
+# Этап 1: Установка зависимостей
+# ==========================================
+FROM node:18-alpine AS dependencies
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --include=dev
+
+# ==========================================
+# Этап 2: Сборка приложения
+# ==========================================
+FROM dependencies AS builder
+
+COPY . .
+RUN npm run build \
+    && npm run test \
+    && npm prune --production
+
+# ==========================================
+# Этап 3: Продакшн образ
+# ==========================================
+FROM node:18-alpine AS production
+
+# Создание пользователя
+RUN addgroup -g 1001 -S nodejs \
+    && adduser -S nextjs -u 1001
+
+WORKDIR /app
+
+# Копирование только необходимого
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+USER nextjs
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
+```
+
+### 6.2 Оптимизация кэширования слоев
+
+```dockerfile
+# ❌ Плохо: кэш инвалидируется при изменении любого файла
+FROM node:18-alpine
+COPY . .
+RUN npm install
+
+# ✅ Хорошо: кэш зависимостей отдельно от кода
+FROM node:18-alpine
+WORKDIR /app
+
+# Слой 1: package.json (меняется редко)
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Слой 2: исходный код (меняется часто)
+COPY . .
+
+# Слой 3: сборка (только если изменился код)
+RUN npm run build
+```
+
+### 6.3 ARG и ENV переменные
 
 ```dockerfile
 # ARG - переменные времени сборки
@@ -663,7 +649,7 @@ docker build \
   -t myapp:1.2.3 .
 ```
 
-### День 5-7: Специализированные примеры
+### 6.4 Специализированные примеры
 
 #### Dockerfile для Python приложения
 
@@ -750,73 +736,13 @@ USER 1000
 ENTRYPOINT ["/main"]
 ```
 
-#### Dockerfile для Java приложения
-
-```dockerfile
-# ==========================================
-# Этап сборки
-# ==========================================
-FROM maven:3.9-openjdk-17 AS builder
-
-WORKDIR /app
-
-# Копирование pom.xml для кэширования зависимостей
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
-
-# Копирование исходного кода и сборка
-COPY src ./src
-RUN mvn clean package -DskipTests
-
-# ==========================================
-# Продакшн образ
-# ==========================================
-FROM openjdk:17-jre-slim
-
-# Создание пользователя
-RUN groupadd -r spring && useradd -r -g spring spring
-
-WORKDIR /app
-
-# Копирование JAR файла
-COPY --from=builder /app/target/*.jar app.jar
-
-# JVM оптимизации
-ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport"
-
-RUN chown spring:spring app.jar
-USER spring
-
-EXPOSE 8080
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
-
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
-```
-
-#### Практическое задание: Создание образа для микросервиса
-
-Создайте Dockerfile для Node.js микросервиса со следующими требованиями:
-
-1. Использует Node.js 18 Alpine
-2. Многоэтапная сборка
-3. Запускается от имени непривилегированного пользователя
-4. Включает healthcheck
-5. Оптимизирован для production
-6. Размер образа < 200MB
-
-```dockerfile
-# Ваш Dockerfile здесь
-```
-
 ---
 
-## 💾 Модуль 3: Управление данными и сетями (1 неделя)
+# Блок 4: Управление данными и сетями
 
-### День 1-3: Volumes - управление данными
+## Глава 7: Volumes и управление данными
 
-#### Проблема временности контейнеров
+### 7.1 Проблема временности контейнеров
 
 ```
 🐳 Контейнер запускается
@@ -827,28 +753,24 @@ ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 💔 Данные теряются НАВСЕГДА!
 ```
 
-#### Типы хранения данных
+### 7.2 Типы хранения данных
 
-```mermaid
-graph TB
-    A[Типы хранения в Docker] --> B[Volumes]
-    A --> C[Bind Mounts]
-    A --> D[tmpfs mounts]
-    
-    B --> E[Управляются Docker]
-    B --> F[Лучшая производительность]
-    B --> G[Переносимость между контейнерами]
-    
-    C --> H[Прямое монтирование с хоста]
-    C --> I[Зависимость от структуры хоста]
-    C --> J[Подходит для разработки]
-    
-    D --> K[Хранение в памяти]
-    D --> L[Временные данные]
-    D --> M[Исчезают при остановке]
-```
+**Volumes (Рекомендуется):**
+- Управляются Docker
+- Лучшая производительность
+- Переносимость между контейнерами
 
-#### Named Volumes
+**Bind Mounts:**
+- Прямое монтирование с хоста
+- Зависимость от структуры хоста
+- Подходит для разработки
+
+**tmpfs mounts:**
+- Хранение в памяти
+- Временные данные
+- Исчезают при остановке
+
+### 7.3 Named Volumes
 
 ```bash
 # Создание volume
@@ -884,7 +806,7 @@ docker volume rm mydata
 docker volume prune  # Удаление неиспользуемых volumes
 ```
 
-#### Bind Mounts
+### 7.4 Bind Mounts
 
 ```bash
 # Абсолютный путь (Linux/macOS)
@@ -912,9 +834,9 @@ docker run -d \
   nginx
 ```
 
-#### Практические сценарии с volumes
+### 7.5 Практические сценарии с volumes
 
-**Сценарий 1: База данных с постоянным хранением**
+#### База данных с постоянным хранением
 
 ```bash
 # Создание специального volume для PostgreSQL
@@ -960,93 +882,29 @@ docker run -d \
 docker exec -it postgres-new psql -U developer -d myapp -c "SELECT * FROM users;"
 ```
 
-**Сценарий 2: Разработка с live reload**
+## Глава 8: Networks и сетевое взаимодействие
 
-```bash
-# Структура проекта
-mkdir -p myapp/{src,public}
-echo "console.log('Hello from Node.js!');" > myapp/src/app.js
-echo "<h1>Hello World!</h1>" > myapp/public/index.html
+### 8.1 Типы сетей Docker
 
-# Создание package.json
-cat > myapp/package.json << EOF
-{
-  "name": "myapp",
-  "version": "1.0.0",
-  "main": "src/app.js",
-  "scripts": {
-    "dev": "nodemon src/app.js"
-  },
-  "dependencies": {
-    "express": "^4.18.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.0"
-  }
-}
-EOF
+**bridge (по умолчанию):**
+- Изолированная сеть
+- NAT к хосту
+- Используется по умолчанию
 
-# Запуск с bind mount для разработки
-docker run -it --rm \
-  --name dev-container \
-  -v $(pwd)/myapp:/app \
-  -w /app \
-  -p 3000:3000 \
-  node:18-alpine \
-  sh -c "npm install && npm run dev"
-```
+**host:**
+- Использует сеть хоста
+- Нет изоляции
+- Максимальная производительность
 
-**Сценарий 3: Логи и мониторинг**
+**none:**
+- Без сети
+- Полная изоляция
 
-```bash
-# Создание volume для логов
-docker volume create app_logs
+**overlay:**
+- Многохостовые сети
+- Docker Swarm
 
-# Запуск приложения с логами в volume
-docker run -d \
-  --name myapp \
-  -v app_logs:/var/log/app \
-  myapp:latest
-
-# Запуск анализатора логов
-docker run -d \
-  --name log-analyzer \
-  -v app_logs:/logs:ro \
-  fluentd:latest
-
-# Просмотр логов через отдельный контейнер
-docker run --rm \
-  -v app_logs:/logs \
-  alpine tail -f /logs/app.log
-```
-
-### День 4-7: Networks - сетевое взаимодействие
-
-#### Типы сетей Docker
-
-```mermaid
-graph TB
-    A[Docker Networks] --> B[bridge]
-    A --> C[host]
-    A --> D[none]
-    A --> E[overlay]
-    
-    B --> F[Изолированная сеть]
-    B --> G[NAT к хосту]
-    B --> H[По умолчанию]
-    
-    C --> I[Использует сеть хоста]
-    C --> J[Нет изоляции]
-    C --> K[Максимальная производительность]
-    
-    D --> L[Без сети]
-    D --> M[Полная изоляция]
-    
-    E --> N[Многохостовые сети]
-    E --> O[Docker Swarm]
-```
-
-#### Работа с сетями
+### 8.2 Работа с сетями
 
 ```bash
 # Просмотр сетей
@@ -1073,9 +931,7 @@ docker network rm myapp-network
 docker network prune  # Удаление неиспользуемых сетей
 ```
 
-#### Практические примеры сетевого взаимодействия
-
-**Пример 1: Связка Frontend + Backend + Database**
+### 8.3 Связка Frontend + Backend + Database
 
 ```bash
 # Создание сети
@@ -1106,70 +962,15 @@ docker run -d \
   myfrontend:latest
 ```
 
-**Пример 2: Микросервисная архитектура**
-
-```bash
-# Создание сетей для разных сервисов
-docker network create frontend-network
-docker network create backend-network
-docker network create database-network
-
-# Database сервисы
-docker run -d \
-  --name postgres \
-  --network database-network \
-  -e POSTGRES_DB=users \
-  postgres:15-alpine
-
-docker run -d \
-  --name redis \
-  --network database-network \
-  redis:alpine
-
-# Backend сервисы
-docker run -d \
-  --name user-service \
-  --network backend-network \
-  --network database-network \
-  -e DATABASE_URL=postgresql://postgres:5432/users \
-  -e REDIS_URL=redis://redis:6379 \
-  user-service:latest
-
-docker run -d \
-  --name auth-service \
-  --network backend-network \
-  --network database-network \
-  -e REDIS_URL=redis://redis:6379 \
-  auth-service:latest
-
-# API Gateway
-docker run -d \
-  --name api-gateway \
-  --network frontend-network \
-  --network backend-network \
-  -p 80:80 \
-  -e USER_SERVICE_URL=http://user-service:3000 \
-  -e AUTH_SERVICE_URL=http://auth-service:3001 \
-  api-gateway:latest
-
-# Frontend
-docker run -d \
-  --name frontend \
-  --network frontend-network \
-  -p 8080:80 \
-  -e API_URL=http://api-gateway \
-  frontend:latest
-```
-
-#### Service Discovery и DNS
+### 8.4 Service Discovery и DNS
 
 ```bash
 # Проверка DNS резолюции между контейнерами
-docker exec -it frontend nslookup api-gateway
+docker exec -it frontend nslookup api
 
 # Проверка подключения
-docker exec -it frontend ping api-gateway
-docker exec -it frontend curl http://api-gateway/health
+docker exec -it frontend ping api
+docker exec -it frontend curl http://api/health
 
 # Просмотр сетевых интерфейсов контейнера
 docker exec -it frontend ip addr show
@@ -1178,7 +979,7 @@ docker exec -it frontend ip addr show
 docker exec -it frontend ip route
 ```
 
-#### Сетевые политики безопасности
+### 8.5 Сетевые политики безопасности
 
 ```bash
 # Создание изолированных сетей
@@ -1196,28 +997,13 @@ docker run -d \
 docker exec -it secure-api curl https://google.com
 ```
 
-#### Мониторинг сетевого трафика
-
-```bash
-# Просмотр статистики сети контейнера
-docker stats --format "table {{.Container}}\t{{.NetIO}}"
-
-# Анализ трафика с помощью tcpdump
-docker run --rm --net container:myapp \
-  nicolaka/netshoot tcpdump -i eth0
-
-# Сканирование портов
-docker run --rm --net container:myapp \
-  nicolaka/netshoot nmap -p 1-1000 localhost
-```
-
 ---
 
-## 🏗️ Модуль 4: Docker Compose основы (1 неделя)
+# Блок 5: Docker Compose
 
-### День 1-2: Введение в Docker Compose
+## Глава 9: Основы Docker Compose
 
-#### Проблемы управления множественными контейнерами
+### 9.1 Проблемы управления множественными контейнерами
 
 ```bash
 # Без Compose: много команд для одного приложения
@@ -1244,7 +1030,7 @@ docker run -d --name frontend --network myapp-network \
   myfrontend:latest
 ```
 
-#### Docker Compose решение
+### 9.2 Docker Compose решение
 
 ```yaml
 # docker-compose.yml - одна команда для всего
@@ -1297,7 +1083,7 @@ networks:
 docker-compose up -d
 ```
 
-#### Основные команды Docker Compose
+### 9.3 Основные команды Docker Compose
 
 ```bash
 # Запуск сервисов
@@ -1337,254 +1123,8 @@ docker-compose config --services    # Список сервисов
 docker-compose port api 3000        # Проброшенный порт
 ```
 
-### День 3-4: Конфигурация сервисов
+### 9.4 Полноценное веб-приложение
 
-#### Полная структура docker-compose.yml
-
-```yaml
-version: '3.8'
-
-# Определение сервисов
-services:
-  
-  # Веб-сервер
-  nginx:
-    image: nginx:alpine
-    container_name: myapp_nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-      - static_files:/usr/share/nginx/html
-    networks:
-      - frontend
-    depends_on:
-      - api
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
-  # API сервис
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        - NODE_ENV=production
-        - VERSION=1.0.0
-      target: production
-    container_name: myapp_api
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
-      - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=${JWT_SECRET}
-    env_file:
-      - .env
-    volumes:
-      - ./uploads:/app/uploads
-      - app_logs:/var/log/app
-    networks:
-      - frontend
-      - backend
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-
-  # База данных
-  postgres:
-    image: postgres:15-alpine
-    container_name: myapp_postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '1.0'
-
-  # Кэш
-  redis:
-    image: redis:alpine
-    container_name: myapp_redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
-  # Воркеры для фоновых задач
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
-      - REDIS_URL=redis://redis:6379
-    command: ["npm", "run", "worker"]
-    volumes:
-      - app_logs:/var/log/app
-    networks:
-      - backend
-    depends_on:
-      - postgres
-      - redis
-    deploy:
-      replicas: 2
-
-# Volumes для постоянного хранения
-volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
-  app_logs:
-    driver: local
-  static_files:
-    driver: local
-
-# Сети для изоляции сервисов
-networks:
-  frontend:
-    driver: bridge
-  backend:
-    driver: bridge
-    internal: true  # Без доступа к интернету
-```
-
-#### Переменные окружения
-
-**.env файл:**
-```bash
-# Database
-DB_NAME=myapp
-DB_USER=api
-DB_PASSWORD=super_secret_password
-
-# Redis
-REDIS_PASSWORD=redis_secret
-
-# Application
-JWT_SECRET=your_jwt_secret_here
-API_PORT=3000
-NODE_ENV=production
-
-# External APIs
-STRIPE_SECRET_KEY=sk_test_...
-SENDGRID_API_KEY=SG.xxx
-
-# Monitoring
-SENTRY_DSN=https://xxx@sentry.io/xxx
-```
-
-**Использование переменных:**
-```yaml
-services:
-  api:
-    environment:
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
-      - PORT=${API_PORT:-3000}  # Значение по умолчанию
-      - DEBUG=${DEBUG:-false}
-    env_file:
-      - .env
-      - .env.local  # Локальные переопределения
-```
-
-#### Зависимости между сервисами
-
-```yaml
-services:
-  api:
-    depends_on:
-      # Простая зависимость
-      - postgres
-      - redis
-      
-  api-with-health:
-    depends_on:
-      # Зависимость с проверкой здоровья
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      migration:
-        condition: service_completed_successfully
-
-  migration:
-    image: myapi:latest
-    command: ["npm", "run", "migrate"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: "no"  # Выполнить один раз
-```
-
-### День 5-7: Практические примеры
-
-#### Полноценное веб-приложение
-
-**Структура проекта:**
-```
-myproject/
-├── docker-compose.yml
-├── .env
-├── nginx/
-│   └── nginx.conf
-├── api/
-│   ├── Dockerfile
-│   ├── package.json
-│   └── src/
-├── frontend/
-│   ├── Dockerfile
-│   ├── package.json
-│   └── src/
-└── scripts/
-    ├── init.sql
-    └── wait-for-it.sh
-```
-
-**docker-compose.yml:**
 ```yaml
 version: '3.8'
 
@@ -1663,130 +1203,11 @@ networks:
     internal: true
 ```
 
-**nginx.conf:**
-```nginx
-events {
-    worker_connections 1024;
-}
+## Глава 10: Продвинутые возможности Compose
 
-http {
-    upstream api {
-        server api:3000;
-    }
+### 10.1 Множественные окружения
 
-    upstream frontend {
-        server frontend:80;
-    }
-
-    server {
-        listen 80;
-        
-        # API прокси
-        location /api/ {
-            proxy_pass http://api/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-        
-        # Frontend
-        location / {
-            proxy_pass http://frontend/;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-        }
-    }
-}
-```
-
-#### Скрипт для разработки
-
-**start-dev.sh:**
-```bash
-#!/bin/bash
-
-# Проверка .env файла
-if [ ! -f .env ]; then
-    echo "Создание .env файла из шаблона..."
-    cp .env.example .env
-fi
-
-# Сборка и запуск для разработки
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build -d
-
-echo "Приложение запущено!"
-echo "Frontend: http://localhost:3000"
-echo "API: http://localhost:3001"
-echo "Adminer: http://localhost:8080"
-
-# Просмотр логов
-docker-compose logs -f
-```
-
-**docker-compose.dev.yml (override для разработки):**
-```yaml
-version: '3.8'
-
-services:
-  frontend:
-    build:
-      target: development
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
-    environment:
-      - REACT_APP_API_URL=http://localhost:3001
-    ports:
-      - "3000:3000"
-    command: ["npm", "run", "dev"]
-
-  api:
-    build:
-      target: development
-    volumes:
-      - ./api/src:/app/src
-    environment:
-      - NODE_ENV=development
-      - DEBUG=api:*
-    ports:
-      - "3001:3000"
-    command: ["npm", "run", "dev"]
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "8080:8080"
-    networks:
-      - backend
-```
-
----
-
-## 🚀 Модуль 5: Docker Compose продвинутое (1 неделя)
-
-### День 1-3: Множественные окружения
-
-#### Стратегия окружений
-
-```
-📁 Структура конфигураций
-├── docker-compose.yml           # Базовая конфигурация
-├── docker-compose.dev.yml       # Разработка
-├── docker-compose.test.yml      # Тестирование
-├── docker-compose.staging.yml   # Staging
-├── docker-compose.prod.yml      # Production
-├── .env.example                 # Шаблон переменных
-├── .env.dev                     # Переменные для разработки
-├── .env.test                    # Переменные для тестов
-├── .env.staging                 # Переменные для staging
-└── .env.prod                    # Переменные для production
-```
-
-#### Базовая конфигурация
-
-**docker-compose.yml:**
+#### Базовая конфигурация (docker-compose.yml):
 ```yaml
 version: '3.8'
 
@@ -1842,9 +1263,7 @@ networks:
     driver: bridge
 ```
 
-#### Development окружение
-
-**docker-compose.dev.yml:**
+#### Development окружение (docker-compose.dev.yml):
 ```yaml
 version: '3.8'
 
@@ -1889,55 +1308,7 @@ services:
       ADMINER_DEFAULT_SERVER: postgres
 ```
 
-#### Test окружение
-
-**docker-compose.test.yml:**
-```yaml
-version: '3.8'
-
-services:
-  api:
-    build:
-      target: test
-    environment:
-      - NODE_ENV=test
-      - DATABASE_URL=postgresql://test:test@postgres-test:5432/test_db
-    command: ["npm", "run", "test"]
-    depends_on:
-      postgres-test:
-        condition: service_healthy
-
-  postgres-test:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: test_db
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: test
-    tmpfs:
-      - /var/lib/postgresql/data  # В памяти для скорости
-    networks:
-      - test
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test -d test_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  redis-test:
-    image: redis:alpine
-    tmpfs:
-      - /data
-    networks:
-      - test
-
-networks:
-  test:
-    driver: bridge
-```
-
-#### Production окружение
-
-**docker-compose.prod.yml:**
+#### Production окружение (docker-compose.prod.yml):
 ```yaml
 version: '3.8'
 
@@ -1978,11 +1349,6 @@ services:
     networks:
       - frontend
       - backend
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-        tag: api.{{.Name}}
 
   postgres:
     restart: unless-stopped
@@ -2001,36 +1367,15 @@ services:
     networks:
       - backend
 
-  worker:
-    build:
-      target: production
-    restart: unless-stopped
-    command: ["npm", "run", "worker"]
-    deploy:
-      replicas: 2
-    networks:
-      - backend
-
-  monitoring:
-    image: prom/prometheus
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - monitoring
-
 volumes:
   static_files:
 
 networks:
   frontend:
     driver: bridge
-  monitoring:
-    driver: bridge
 ```
 
-#### Запуск разных окружений
+### 10.2 Запуск разных окружений
 
 ```bash
 # Development
@@ -2039,16 +1384,11 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.d
 # Test
 docker-compose -f docker-compose.yml -f docker-compose.test.yml --env-file .env.test up --abort-on-container-exit
 
-# Staging
-docker-compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d
-
 # Production
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
 
-### День 4-7: Продвинутые возможности
-
-#### Profiles для условного запуска
+### 10.3 Profiles для условного запуска
 
 ```yaml
 version: '3.8'
@@ -2084,14 +1424,11 @@ docker-compose up -d
 # С кэшем
 docker-compose --profile cache up -d
 
-# С мониторингом
-docker-compose --profile monitoring up -d
-
 # Полная конфигурация
 docker-compose --profile cache --profile monitoring --profile debug up -d
 ```
 
-#### Масштабирование сервисов
+### 10.4 Масштабирование сервисов
 
 ```yaml
 version: '3.8'
@@ -2132,167 +1469,13 @@ docker-compose up -d --scale api=5
 docker-compose up -d --scale api=3 --no-recreate
 ```
 
-#### Продвинутые healthchecks
-
-```yaml
-version: '3.8'
-
-services:
-  api:
-    build: .
-    healthcheck:
-      test: |
-        curl -f http://localhost:3000/health || exit 1
-        curl -f http://localhost:3000/ready || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
-  postgres:
-    image: postgres:15-alpine
-    healthcheck:
-      test: |
-        pg_isready -U $POSTGRES_USER -d $POSTGRES_DB &&
-        psql -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT 1" > /dev/null
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  redis:
-    image: redis:alpine
-    healthcheck:
-      test: |
-        redis-cli ping &&
-        redis-cli info replication | grep role:master
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
-  elasticsearch:
-    image: elasticsearch:8.8.0
-    healthcheck:
-      test: |
-        curl -s http://localhost:9200/_cluster/health | grep -q '"status":"green"' ||
-        curl -s http://localhost:9200/_cluster/health | grep -q '"status":"yellow"'
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-```
-
-#### Секреты и безопасность
-
-```yaml
-version: '3.8'
-
-services:
-  api:
-    build: .
-    environment:
-      - DATABASE_URL_FILE=/run/secrets/db_url
-      - JWT_SECRET_FILE=/run/secrets/jwt_secret
-    secrets:
-      - db_url
-      - jwt_secret
-    user: "1001:1001"  # Непривилегированный пользователь
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
-    secrets:
-      - db_password
-
-secrets:
-  db_url:
-    file: ./secrets/db_url.txt
-  jwt_secret:
-    file: ./secrets/jwt_secret.txt
-  db_password:
-    file: ./secrets/db_password.txt
-```
-
-#### Мониторинг и логирование
-
-```yaml
-version: '3.8'
-
-x-logging: &default-logging
-  driver: "json-file"
-  options:
-    max-size: "10m"
-    max-file: "3"
-
-services:
-  api:
-    build: .
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: fluentd:24224
-        tag: "api.{{.Name}}"
-    depends_on:
-      - fluentd
-
-  fluentd:
-    image: fluentd:v1.16-1
-    volumes:
-      - ./fluentd/conf:/fluentd/etc
-      - ./logs:/var/log/fluentd
-    ports:
-      - "24224:24224"
-    networks:
-      - logging
-
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
-    networks:
-      - monitoring
-
-  grafana:
-    image: grafana/grafana
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    ports:
-      - "3000:3000"
-    networks:
-      - monitoring
-
-volumes:
-  prometheus_data:
-  grafana_data:
-
-networks:
-  logging:
-    driver: bridge
-  monitoring:
-    driver: bridge
-```
-
 ---
 
-## 🎯 Модуль 6: Production и реальные проекты (1 неделя)
+# Блок 6: Production-готовые решения
 
-### День 1-3: Production-ready конфигурация
+## Глава 11: Production конфигурации
 
-#### Полный production stack
+### 11.1 Полный production stack
 
 ```yaml
 version: '3.8'
@@ -2386,23 +1569,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-
-  frontend:
-    image: nginx:alpine
-    <<: *restart-policy
-    volumes:
-      - ./dist:/usr/share/nginx/html:ro
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`example.com`)"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
-    healthcheck:
-      <<: *healthcheck-defaults
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
-    logging: *logging
 
   postgres:
     image: postgres:15-alpine
@@ -2519,63 +1685,9 @@ networks:
     internal: true
 ```
 
-#### CI/CD интеграция
+### 11.2 Мониторинг и логирование
 
-**GitHub Actions workflow:**
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Run tests
-        run: |
-          docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm api npm test
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Build and push Docker image
-        env:
-          DOCKER_BUILDKIT: 1
-        run: |
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker build --target production -t myapp:${{ github.sha }} .
-          docker tag myapp:${{ github.sha }} myapp:latest
-          docker push myapp:${{ github.sha }}
-          docker push myapp:latest
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /app
-            docker-compose pull
-            docker-compose up -d --no-deps api worker
-            docker system prune -f
-```
-
-#### Monitoring и логирование
-
-**monitoring/prometheus.yml:**
+#### Prometheus конфигурация (monitoring/prometheus.yml):
 ```yaml
 global:
   scrape_interval: 15s
@@ -2608,26 +1720,41 @@ alerting:
           - alertmanager:9093
 ```
 
-**Grafana dashboards configuration:**
+#### Добавление мониторинга в docker-compose:
 ```yaml
-# monitoring/grafana/provisioning/dashboards/dashboard.yml
-apiVersion: 1
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring
 
-providers:
-  - name: 'default'
-    orgId: 1
-    folder: ''
-    type: file
-    disableDeletion: false
-    updateIntervalSeconds: 10
-    allowUiUpdates: true
-    options:
-      path: /etc/grafana/provisioning/dashboards
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
 ```
 
-### День 4-7: Реальные проекты и кейсы
+## Глава 12: Реальные проекты и CI/CD
 
-#### Кейс 1: E-commerce платформа
+### 12.1 E-commerce платформа
 
 ```yaml
 version: '3.8'
@@ -2678,15 +1805,6 @@ services:
       - kong-net
       - order-net
 
-  payment-service:
-    build: ./services/payment-service
-    environment:
-      - DATABASE_URL=postgresql://payments:password@payment-db:5432/payments
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-    networks:
-      - kong-net
-      - payment-net
-
   # Базы данных
   user-db:
     image: postgres:15-alpine
@@ -2734,32 +1852,11 @@ services:
     networks:
       - order-net
 
-  # Кэш
-  redis:
-    image: redis:alpine
-    volumes:
-      - redis_data:/data
-    networks:
-      - order-net
-
-  # Frontend
-  web-app:
-    build: ./frontend
-    ports:
-      - "80:80"
-    environment:
-      - API_URL=http://kong:8000
-    depends_on:
-      - kong
-
 volumes:
   user_data:
   product_data:
-  order_data:
-  payment_data:
   elasticsearch_data:
   rabbitmq_data:
-  redis_data:
 
 networks:
   kong-net:
@@ -2769,89 +1866,64 @@ networks:
     internal: true
   order-net:
     internal: true
-  payment-net:
-    internal: true
 ```
 
-#### Кейс 2: Data Pipeline
+### 12.2 CI/CD интеграция
 
+#### GitHub Actions workflow (.github/workflows/deploy.yml):
 ```yaml
-version: '3.8'
+name: Deploy to Production
 
-services:
-  # Data Sources
-  postgres-source:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: source_data
-      POSTGRES_USER: etl
-      POSTGRES_PASSWORD: password
-    volumes:
-      - source_data:/var/lib/postgresql/data
+on:
+  push:
+    branches: [main]
 
-  # ETL Pipeline
-  airflow-webserver:
-    image: apache/airflow:2.6.0
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./logs:/opt/airflow/logs
-      - ./plugins:/opt/airflow/plugins
-    depends_on:
-      - postgres
-      - redis
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run tests
+        run: |
+          docker-compose -f docker-compose.yml -f docker-compose.test.yml run --rm api npm test
 
-  airflow-scheduler:
-    image: apache/airflow:2.6.0
-    command: scheduler
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
-      - AIRFLOW__CELERY__BROKER_URL=redis://:@redis:6379/0
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./logs:/opt/airflow/logs
-      - ./plugins:/opt/airflow/plugins
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build and push Docker image
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker build --target production -t myapp:${{ github.sha }} .
+          docker tag myapp:${{ github.sha }} myapp:latest
+          docker push myapp:${{ github.sha }}
+          docker push myapp:latest
 
-  # Data Warehouse
-  clickhouse:
-    image: clickhouse/clickhouse-server
-    ports:
-      - "8123:8123"
-      - "9000:9000"
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-    environment:
-      CLICKHOUSE_DB: analytics
-      CLICKHOUSE_USER: default
-      CLICKHOUSE_PASSWORD: password
-
-  # Analytics
-  superset:
-    image: apache/superset
-    ports:
-      - "8088:8088"
-    environment:
-      - SUPERSET_SECRET_KEY=your-secret-key
-    volumes:
-      - superset_data:/app/superset_home
-
-volumes:
-  source_data:
-  clickhouse_data:
-  superset_data:
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /app
+            docker-compose pull
+            docker-compose up -d --no-deps api worker
+            docker system prune -f
 ```
 
-#### Скрипты управления
+### 12.3 Скрипты управления
 
-**deploy.sh:**
+#### deploy.sh:
 ```bash
 #!/bin/bash
 
@@ -2904,7 +1976,6 @@ case $ACTION in
   rollback)
     echo "⏪ Rolling back..."
     docker-compose $COMPOSE_FILES --env-file $ENV_FILE down
-    # Логика для отката к предыдущей версии
     ;;
 
   logs)
@@ -2927,7 +1998,7 @@ esac
 echo "✅ $ACTION completed for $ENV environment"
 ```
 
-**backup.sh:**
+#### backup.sh:
 ```bash
 #!/bin/bash
 
@@ -2962,11 +2033,11 @@ echo "✅ Backup completed: $DATE"
 
 ---
 
-## 🏆 Бонус: Экспертные техники
+# Блок 7: Экспертные техники
 
-### Оптимизация производительности
+## Глава 13: Оптимизация и безопасность
 
-#### BuildKit и кэширование
+### 13.1 BuildKit и кэширование
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -2998,7 +2069,7 @@ CMD ["npm", "start"]
 DOCKER_BUILDKIT=1 docker build --target runtime .
 ```
 
-#### Distroless образы
+### 13.2 Distroless образы
 
 ```dockerfile
 # Multi-stage для минимального размера
@@ -3012,9 +2083,7 @@ COPY --from=builder /app/app /app
 ENTRYPOINT ["/app"]
 ```
 
-### Безопасность
-
-#### Сканирование уязвимостей
+### 13.3 Сканирование уязвимостей
 
 ```bash
 # Сканирование образа
@@ -3026,7 +2095,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
   aquasec/trivy image --exit-code 1 --severity HIGH,CRITICAL myapp:latest
 ```
 
-#### Подписывание образов
+### 13.4 Подписывание образов
 
 ```bash
 # Docker Content Trust
@@ -3038,9 +2107,79 @@ notary -s https://notary.docker.io -d ~/.docker/trust init myapp
 notary -s https://notary.docker.io -d ~/.docker/trust publish myapp:latest
 ```
 
-### Продвинутая отладка
+### 13.5 Секреты и безопасность
 
-#### Отладочные контейнеры
+```yaml
+version: '3.8'
+
+services:
+  api:
+    build: .
+    environment:
+      - DATABASE_URL_FILE=/run/secrets/db_url
+      - JWT_SECRET_FILE=/run/secrets/jwt_secret
+    secrets:
+      - db_url
+      - jwt_secret
+    user: "1001:1001"  # Непривилегированный пользователь
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_password
+
+secrets:
+  db_url:
+    file: ./secrets/db_url.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  db_password:
+    file: ./secrets/db_password.txt
+```
+
+### 13.6 Оптимизация размера образов
+
+#### Лучшие практики:
+```dockerfile
+# 1. Использование alpine базовых образов
+FROM node:18-alpine
+
+# 2. Минимизация слоев
+RUN apk add --no-cache curl wget \
+    && npm ci --only=production \
+    && npm cache clean --force \
+    && rm -rf /tmp/*
+
+# 3. Удаление ненужных файлов
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# 4. Использование .dockerignore
+# См. предыдущие примеры .dockerignore
+
+# 5. Multi-stage builds для разделения build и runtime
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine AS production
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+CMD ["npm", "start"]
+```
+
+## Глава 14: Мониторинг и отладка
+
+### 14.1 Отладочные контейнеры
 
 ```yaml
 # docker-compose.debug.yml
@@ -3056,9 +2195,36 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_PTRACE
+
+  debug-standalone:
+    image: nicolaka/netshoot
+    command: ["sleep", "infinity"]
+    networks:
+      - backend
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
 ```
 
-#### Анализ производительности
+Использование отладочного контейнера:
+```bash
+# Запуск отладочного контейнера
+docker-compose -f docker-compose.yml -f docker-compose.debug.yml up -d debug
+
+# Подключение к отладочному контейнеру
+docker-compose exec debug bash
+
+# Внутри отладочного контейнера доступны инструменты:
+# - tcpdump для анализа трафика
+# - nmap для сканирования портов
+# - curl/wget для HTTP запросов
+# - netstat для анализа соединений
+# - iftop для мониторинга сети
+```
+
+### 14.2 Анализ производительности
 
 ```bash
 # Анализ производительности контейнера
@@ -3068,34 +2234,357 @@ docker run --rm -it --pid container:myapp --cap-add SYS_PTRACE \
 # Профилирование с помощью htop
 docker run --rm -it --pid container:myapp \
   terencehill/htop
+
+# Мониторинг ресурсов
+docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"
+
+# Анализ использования дискового пространства
+docker exec myapp du -sh /*
+docker exec myapp df -h
+
+# Анализ процессов в контейнере
+docker exec myapp ps aux
+docker top myapp
 ```
 
-### Заключение
+### 14.3 Логирование и мониторинг
 
-Поздравляем! Вы прошли полный курс Docker для backend разработчиков. Теперь вы обладаете знаниями и навыками для:
+#### Централизованное логирование с ELK Stack:
+```yaml
+version: '3.8'
 
-🎯 **Базового уровня:**
-- Контейнеризации любых приложений
-- Создания эффективных Dockerfile
-- Управления данными и сетями
-- Использования Docker Compose
+services:
+  app:
+    build: .
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: fluentd:24224
+        tag: "app.{{.Name}}"
 
-🚀 **Продвинутого уровня:**
-- Настройки production окружений
-- Масштабирования приложений
-- Мониторинга и логирования
-- CI/CD интеграции
+  fluentd:
+    image: fluentd:v1.16-1
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+      - ./logs:/var/log/fluentd
+    ports:
+      - "24224:24224"
+    depends_on:
+      - elasticsearch
 
-💎 **Экспертного уровня:**
-- Оптимизации производительности
-- Обеспечения безопасности
-- Отладки сложных проблем
-- Управления большими проектами
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
 
-**Следующие шаги:**
-1. Практикуйтесь на реальных проектах
-2. Изучите Kubernetes для оркестрации
-3. Погрузитесь в DevOps практики
-4. Следите за новыми возможностями Docker
+  kibana:
+    image: kibana:8.8.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
 
-Удачи в вашем путешествии с Docker! 🐳
+volumes:
+  elasticsearch_data:
+```
+
+#### Fluentd конфигурация (fluentd/conf/fluent.conf):
+```xml
+<source>
+  @type forward
+  port 24224
+  bind 0.0.0.0
+</source>
+
+<match app.**>
+  @type elasticsearch
+  host elasticsearch
+  port 9200
+  index_name docker-logs
+  type_name _doc
+  <buffer>
+    flush_interval 10s
+  </buffer>
+</match>
+```
+
+### 14.4 Мониторинг производительности
+
+#### Prometheus + Grafana для мониторинга:
+```yaml
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+
+  node-exporter:
+    image: prom/node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($|/)'
+    ports:
+      - "9100:9100"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8080:8080"
+
+volumes:
+  prometheus_data:
+  grafana_data:
+```
+
+### 14.5 Отладка сетевых проблем
+
+```bash
+# Анализ сетевых соединений
+docker exec myapp netstat -tlnp
+docker exec myapp ss -tlnp
+
+# Трассировка сетевого трафика
+docker exec myapp tcpdump -i eth0 -n
+
+# Тестирование подключения к другим сервисам
+docker exec myapp ping postgres
+docker exec myapp telnet postgres 5432
+docker exec myapp curl -v http://api:3000/health
+
+# Анализ DNS
+docker exec myapp nslookup postgres
+docker exec myapp dig postgres
+
+# Просмотр сетевых интерфейсов
+docker exec myapp ip addr show
+docker exec myapp ip route show
+
+# Анализ с помощью netshoot
+docker run --rm -it --net container:myapp nicolaka/netshoot
+```
+
+### 14.6 Отладка проблем с volumes
+
+```bash
+# Просмотр содержимого volume
+docker run --rm -v myapp_data:/data alpine ls -la /data
+
+# Поиск файлов в volume
+docker run --rm -v myapp_data:/data alpine find /data -name "*.log"
+
+# Анализ использования дискового пространства в volume
+docker run --rm -v myapp_data:/data alpine du -sh /data/*
+
+# Копирование данных из volume
+docker run --rm -v myapp_data:/data -v $(pwd):/backup alpine cp -r /data/* /backup/
+
+# Восстановление данных в volume
+docker run --rm -v myapp_data:/data -v $(pwd):/backup alpine cp -r /backup/* /data/
+
+# Очистка volume
+docker run --rm -v myapp_data:/data alpine sh -c "rm -rf /data/*"
+```
+
+### 14.7 Профилирование приложений
+
+#### Node.js профилирование:
+```dockerfile
+FROM node:18-alpine
+
+# Установка инструментов профилирования
+RUN npm install -g clinic
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+# Команды для профилирования
+# docker exec myapp clinic doctor -- node app.js
+# docker exec myapp clinic bubbleprof -- node app.js
+# docker exec myapp clinic flame -- node app.js
+
+CMD ["npm", "start"]
+```
+
+#### Python профилирование:
+```dockerfile
+FROM python:3.11-slim
+
+# Установка инструментов профилирования
+RUN pip install py-spy memory-profiler line-profiler
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+# Команды для профилирования
+# docker exec myapp py-spy top --pid 1
+# docker exec myapp python -m memory_profiler app.py
+
+CMD ["python", "app.py"]
+```
+
+### 14.8 Автоматизированное тестирование production среды
+
+#### Health checks и smoke tests:
+```bash
+#!/bin/bash
+# smoke-test.sh
+
+set -e
+
+echo "🔍 Running smoke tests..."
+
+# Проверка доступности сервисов
+curl -f http://localhost/health || exit 1
+curl -f http://localhost/api/health || exit 1
+
+# Проверка базы данных
+docker-compose exec -T postgres pg_isready -U $DB_USER -d $DB_NAME || exit 1
+
+# Проверка Redis
+docker-compose exec -T redis redis-cli ping | grep PONG || exit 1
+
+# Проверка основных endpoints
+curl -f -X POST http://localhost/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test"}' || exit 1
+
+echo "✅ All smoke tests passed!"
+```
+
+#### Автоматизированное тестирование в CI/CD:
+```yaml
+# .github/workflows/production-tests.yml
+name: Production Health Check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Каждые 15 минут
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run health checks
+        run: |
+          curl -f https://api.example.com/health
+          curl -f https://example.com/
+          
+      - name: Run smoke tests
+        run: |
+          ./scripts/smoke-test.sh
+          
+      - name: Notify on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: "Production health check failed!"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+```
+
+---
+
+## 🎓 Заключение курса
+
+### Изученные навыки по блокам:
+
+**Блок 1 - Введение в Docker:**
+- ✅ Понимание проблем традиционной разработки
+- ✅ Знание архитектуры Docker
+- ✅ Установка и настройка Docker
+
+**Блок 2 - Основы работы с Docker:**
+- ✅ Управление образами и контейнерами
+- ✅ Работа с портами, volumes, переменными окружения
+- ✅ Практические сценарии применения
+
+**Блок 3 - Создание образов:**
+- ✅ Создание эффективных Dockerfile
+- ✅ Многоэтапная сборка
+- ✅ Оптимизация размера образов
+
+**Блок 4 - Управление данными и сетями:**
+- ✅ Постоянное хранение данных с volumes
+- ✅ Сетевое взаимодействие между контейнерами
+- ✅ Изоляция и безопасность
+
+**Блок 5 - Docker Compose:**
+- ✅ Оркестрация множественных контейнеров
+- ✅ Управление различными окружениями
+- ✅ Масштабирование и профили
+
+**Блок 6 - Production-готовые решения:**
+- ✅ Production конфигурации
+- ✅ CI/CD интеграция
+- ✅ Мониторинг и резервное копирование
+
+**Блок 7 - Экспертные техники:**
+- ✅ Оптимизация производительности
+- ✅ Безопасность и сканирование уязвимостей
+- ✅ Продвинутая отладка и мониторинг
+
+### Рекомендации для дальнейшего развития:
+
+1. **Практикуйтесь на реальных проектах** - применяйте полученные знания в своих проектах
+2. **Изучите Kubernetes** - следующий шаг в оркестрации контейнеров
+3. **Погрузитесь в DevOps практики** - GitOps, Infrastructure as Code
+4. **Следите за новыми возможностями** - Docker постоянно развивается
+
+### Полезные ресурсы:
+
+- 📚 [Официальная документация Docker](https://docs.docker.com/)
+- 🐙 [Docker Hub](https://hub.docker.com/) - репозиторий образов
+- 💬 [Docker Community](https://www.docker.com/community/) - сообщество разработчиков
+- 🛠️ [Awesome Docker](https://github.com/veggiemonk/awesome-docker) - полезные инструменты
+
+**Удачи в вашем путешествии с Docker! 🐳**
